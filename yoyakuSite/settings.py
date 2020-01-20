@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'yoyaku.apps.YoyakuConfig',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [

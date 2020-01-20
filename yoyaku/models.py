@@ -96,9 +96,9 @@ class Subject(models.Model):
 
 
 class Event(models.Model):
-    teacher_user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='teachers',
-                                     related_query_name='teacher')
-    student_user = models.ManyToManyField(MyUser, related_name='students', related_query_name='student')
+    teacher_user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='teacherEvents',
+                                     related_query_name='teacherEvent')
+    student_user = models.ManyToManyField(MyUser, related_name='studentEvents', related_query_name='studentEvent')
     group_id = models.BigIntegerField(_('group id'))
     title = models.CharField(_('event title'), max_length=200)
     start = models.DateTimeField(_('start datetime'))
