@@ -1,8 +1,9 @@
+import pytz
+
+from timezone_field import TimeZoneField
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import ugettext_lazy as _
-import pytz
-from timezone_field import TimeZoneField
 
 
 class MyUserManager(BaseUserManager):
@@ -57,6 +58,9 @@ class MyUser(AbstractUser):
 
     objects = MyUserManager()
 
+    def __str__(self):
+        return "{} {}".format(self.first_name, self.last_name)
+
 
 class StudentProfile(models.Model):
     SCHOOL_GRADE_CHOICES = [
@@ -91,8 +95,11 @@ class Subject(models.Model):
         (MID_JAPANESE, _('Middle School Japanese')),
         (MID_ENGLISH, _('Middle School English')),
     ]
-    user = models.ManyToManyField(MyUser)
+    user = models.ManyToManyField(MyUser, related_name='subjects', related_query_name='subject')
     subject_name = models.CharField(_('subject name'), choices=SUBJECT_OPTIONS, max_length=200)
+
+    def __str__(self):
+        return self.subject_name
 
 
 class Event(models.Model):
