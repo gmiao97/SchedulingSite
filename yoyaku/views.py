@@ -21,7 +21,6 @@ class EventList(APIView):
                 events = request.user.teacherEvents.all()
             elif request.user.user_type == 'STUDENT':
                 events = request.user.studentEvents.all()
-            # events = Event.objects.all().filter(teacher_user_id=request.user.id)
             serializer = EventSerializer(events, many=True)
             return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
