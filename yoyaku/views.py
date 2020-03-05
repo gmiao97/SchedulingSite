@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, Http404
 from rest_framework import status
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
@@ -12,6 +12,19 @@ from .serializers import *
 
 def index(request):
     return HttpResponse("Hello World")
+
+
+class UserDetail(APIView):
+    def get_object(self, pk):
+        try:
+            return MyUser.objects.get(pk=pk)
+        except MyUser.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        my_user = self.get_object(pk)
+        serializer = MyUserSerializer(my_user)
+        return Response(serializer.data)
 
 
 class EventList(APIView):

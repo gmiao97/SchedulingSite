@@ -86,6 +86,7 @@ class StudentProfile(models.Model):
 
 class TeacherProfile(models.Model):
     user = models.OneToOneField(MyUser, on_delete=models.CASCADE, null=True, related_name='teacher_profile')
+    association = models.CharField(_("group association"), max_length=200)
 
 
 class Subject(models.Model):
