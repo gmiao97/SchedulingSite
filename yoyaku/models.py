@@ -51,7 +51,7 @@ class MyUser(AbstractUser):
     username = None
     email = models.EmailField(_('email address'), unique=True)
     user_type = models.CharField(_('user type'), choices=USER_TYPE_CHOICES, max_length=10)
-    time_zone = TimeZoneField(default='UTC')
+    time_zone = TimeZoneField(default='UTC', choices=[(tz, tz) for tz in pytz.all_timezones])
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -73,19 +73,19 @@ class StudentProfile(models.Model):
         (5, _('Fifth Grade')),
         (6, _('Sixth Grade')),
         (7, _('Seventh Grade')),
-        (8, _('Eight Grade')),
+        (8, _('Eighth Grade')),
         (9, _('Ninth Grade')),
         (10, _('Tenth Grade')),
         (11, _('Eleventh Grade')),
         (12, _('Twelfth Grade')),
     ]
-    user = models.OneToOneField(MyUser, on_delete=models.CASCADE, null=True, related_name='student_profile')
+    user = models.OneToOneField(MyUser, on_delete=models.CASCADE, related_name='student_profile')
     school_name = models.CharField(_('school name'), max_length=200)
     school_grade = models.IntegerField(_('school grade'), choices=SCHOOL_GRADE_CHOICES)
 
 
 class TeacherProfile(models.Model):
-    user = models.OneToOneField(MyUser, on_delete=models.CASCADE, null=True, related_name='teacher_profile')
+    user = models.OneToOneField(MyUser, on_delete=models.CASCADE, related_name='teacher_profile')
     association = models.CharField(_("group association"), max_length=200)
 
 

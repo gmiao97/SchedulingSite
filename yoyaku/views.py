@@ -1,30 +1,30 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, Http404
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
 from .models import *
 from .serializers import *
+from .permissions import IsAdminUser, IsLoggedInUserOrAdmin
 
 
-def index(request):
-    return HttpResponse("Hello World")
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = MyUser.objects.all()
+    serializer_class = MyUserSerializer
 
-
-class UserDetail(APIView):
-    def get_object(self, pk):
-        try:
-            return MyUser.objects.get(pk=pk)
-        except MyUser.DoesNotExist:
-            raise Http404
-
-    def get(self, request, pk, format=None):
-        my_user = self.get_object(pk)
-        serializer = MyUserSerializer(my_user)
-        return Response(serializer.data)
+    def get_permissions(self):
+        permission_classes = []
+        if self.action == 'create':
+            permission_classes = [AllowAny]
+        elif self.action == 'retrieve' or self.action == 'update' or self.action == 'partial_update':
+            permission_classes = [IsLoggedInUserOrAdmin]
+        elif self.action == 'list' or self.action == 'destroy':
+            permission_classes = [IsAdminUser]
+        return [permission() for permission in permission_classes]
 
 
 class EventList(APIView):
