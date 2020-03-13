@@ -28,6 +28,13 @@ class UserViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
 
+class ValidateToken(APIView):
+    def get(self, request, format=None):
+        if request.user.is_authenticated:
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
 class EventList(APIView):
     def get(self, request, format=None):
         if request.user.is_authenticated:

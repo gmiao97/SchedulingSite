@@ -14,6 +14,7 @@ urlpatterns = [
     path('events/', views.EventList.as_view()),
     path('subjects-by-teacher/', views.SubjectListByTeacher.as_view()),
     path('teachers-by-subject/', views.TeacherListBySubject.as_view()),
+    path('validate-token/', views.ValidateToken.as_view()),
     path('blacklist/', views.LogoutAndBlacklistRefreshTokenForUserView.as_view(), name='blacklist'),
 ]
 
