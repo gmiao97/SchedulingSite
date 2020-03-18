@@ -38,6 +38,7 @@ class ValidateToken(APIView):
 class EventList(APIView):
     def get(self, request, format=None):
         if request.user.is_authenticated:
+            events = None
             if request.user.user_type == 'TEACHER':
                 events = request.user.teacherEvents.all()
             elif request.user.user_type == 'STUDENT':

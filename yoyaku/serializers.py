@@ -3,21 +3,6 @@ from rest_framework import serializers
 from .models import *
 
 
-class EventSerializer(serializers.ModelSerializer):
-    teacher_user = serializers.StringRelatedField(many=False)
-    student_user = serializers.StringRelatedField(many=True)
-
-    class Meta:
-        model = Event
-        fields = ['id', 'group_id', 'title', 'start', 'end', 'teacher_user', 'student_user']
-
-
-class SubjectSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Subject
-        fields = ['subject_name']
-
-
 class StudentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentProfile
@@ -74,3 +59,20 @@ class MyUserSerializer(serializers.ModelSerializer):
         instance.time_zone = validated_data.get('time_zone', instance.time_zone)
         instance.save()
         return instance
+
+
+class EventSerializer(serializers.ModelSerializer):
+    teacher_user = serializers.StringRelatedField()
+    student_user = serializers.StringRelatedField(many=True)
+    # teacher_user = MyUserSerializer()
+    # student_user = MyUserSerializer(many=True)
+
+    class Meta:
+        model = Event
+        fields = ['id', 'group_id', 'title', 'start', 'end', 'teacher_user', 'student_user']
+
+
+class SubjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subject
+        fields = ['subject_name']

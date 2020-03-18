@@ -59,7 +59,7 @@ class MyUser(AbstractUser):
     objects = MyUserManager()
 
     def __str__(self):
-        return "{} {}".format(self.first_name, self.last_name)
+        return "{} {} ({:05})".format(self.first_name, self.last_name, self.id)
 
 
 class StudentProfile(models.Model):
