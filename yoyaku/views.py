@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, Http404
+from django.utils.dateparse import parse_datetime
 from rest_framework import status, viewsets
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -26,6 +27,24 @@ class UserViewSet(viewsets.ModelViewSet):
         elif self.action == 'list' or self.action == 'destroy':
             permission_classes = [IsAdminUser]
         return [permission() for permission in permission_classes]
+
+    @action(detail=True)
+    def events(self, request, pk=None):
+        events = None
+        user = MyUser.objects.get(pk=pk)
+        active_start = parse_datetime(request.query_params.get('activeStart', None))
+        active_end = parse_datetime(request.query_params.get('activeEnd', None))
+        if user.user_type == 'TEACHER':
+            events = MyUser.objects.get(pk=pk).teacherEvents.filter(start__gte=active_start).filter(end__lte=active_end)
+        elif user.user_type == 'STUDENT':
+            events = MyUser.objects.get(pk=pk).studentEvents.filter(start__gte=active_start).filter(end__lte=active_end)
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
+
+
+class EventViewSet(viewsets.ModelViewSet):
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
 
 
 class ValidateToken(APIView):
