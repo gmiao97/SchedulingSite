@@ -32,8 +32,9 @@ class UserViewSet(viewsets.ModelViewSet):
     def events(self, request, pk=None):
         events = None
         user = MyUser.objects.get(pk=pk)
-        active_start = parse_datetime(request.query_params.get('activeStart', None))
-        active_end = parse_datetime(request.query_params.get('activeEnd', None))
+        active_start = parse_datetime(request.query_params.get('start', None))
+        active_end = parse_datetime(request.query_params.get('end', None))
+        print(active_start, active_end)
         if user.user_type == 'TEACHER':
             events = MyUser.objects.get(pk=pk).teacherEvents.filter(start__gte=active_start).filter(end__lte=active_end)
         elif user.user_type == 'STUDENT':
@@ -45,6 +46,9 @@ class UserViewSet(viewsets.ModelViewSet):
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
+
+    def get_permissions(self):
+        permission_classes = []
 
 
 class ValidateToken(APIView):
