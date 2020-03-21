@@ -9,8 +9,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import *
-from .serializers import *
+from .models import MyUser, Event, Subject
+from .serializers import MyUserSerializer, EventSerializer, SubjectSerializer
 from .permissions import IsAdminUser, IsLoggedInUserOrAdmin
 
 

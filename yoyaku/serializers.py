@@ -1,6 +1,7 @@
+import pytz
 from rest_framework import serializers
 
-from .models import *
+from .models import StudentProfile, TeacherProfile, Event, Subject, MyUser
 
 
 class StudentProfileSerializer(serializers.ModelSerializer):
