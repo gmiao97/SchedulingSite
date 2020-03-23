@@ -63,10 +63,28 @@ class MyUserSerializer(serializers.ModelSerializer):
 
 
 class EventSerializer(serializers.ModelSerializer):
-    teacher_user = serializers.StringRelatedField()
-    student_user = serializers.StringRelatedField(many=True)
-    # teacher_user = MyUserSerializer()
-    # student_user = MyUserSerializer(many=True)
+    teacher_user = serializers.PrimaryKeyRelatedField(queryset=MyUser.objects.all())
+    student_user = serializers.PrimaryKeyRelatedField(many=True, queryset=MyUser.objects.all())
+
+    class Meta:
+        model = Event
+        fields = ['id', 'group_id', 'title', 'start', 'end', 'teacher_user', 'student_user']
+
+    # def create(self, validated_data):
+    #     print(validated_data)
+    #     # teacher = MyUser.objects.get(pk=validated_data.pop('teacher_user', None))
+    #     # student = [MyUser.objects.get(pk=student_id) for student_id in validated_data.pop('student_user', None)]
+    #     # validated_data.put('teacher_user', teacher)
+    #     # validated_data.put('student_user', student)
+    #     # return self.Meta.model.objects.create(**validated_data)
+    #
+    # def update(self, instance, validated_data):
+    #     pass
+
+
+class EventReadSerializer(serializers.ModelSerializer):
+    teacher_user = MyUserSerializer()
+    student_user = MyUserSerializer(many=True)
 
     class Meta:
         model = Event
