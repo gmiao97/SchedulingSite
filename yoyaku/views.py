@@ -12,7 +12,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import MyUser, Event, Subject
 from .serializers import MyUserSerializer, EventSerializer, EventReadSerializer, SubjectSerializer
-from .permissions import IsAdminUser, IsLoggedInUserOrAdmin, IsLoggedInUserAndEventOwner
+from .permissions import IsAdminUser, IsLoggedInUserOrAdmin, IsLoggedInTeacherUser, IsLoggedInUserAndEventOwner
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -27,9 +27,17 @@ class UserViewSet(viewsets.ModelViewSet):
             permission_classes = [IsLoggedInUserOrAdmin]
         elif self.action == 'list' or self.action == 'destroy':
             permission_classes = [IsAdminUser]
+        elif self.action == 'student_list':
+            permission_classes = [IsLoggedInTeacherUser | IsAdminUser]
         return [permission() for permission in permission_classes]
 
-    @action(detail=True, permission_classes=[IsLoggedInUserOrAdmin])
+    @action(detail=False)
+    def student_list(self, request):
+        students = self.queryset.filter(user_type='STUDENT')
+        serializer = MyUserSerializer(students, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True)
     def events(self, request, pk=None):
         """
         get a specific user's events between a start and end datetime
@@ -74,19 +82,6 @@ class ValidateToken(APIView):
         if request.user.is_authenticated:
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-
-# class EventList(APIView):
-#     def get(self, request, format=None):
-#         if request.user.is_authenticated:
-#             events = None
-#             if request.user.user_type == 'TEACHER':
-#                 events = request.user.teacherEvents.all()
-#             elif request.user.user_type == 'STUDENT':
-#                 events = request.user.studentEvents.all()
-#             serializer = EventSerializer(events, many=True)
-#             return Response(serializer.data)
-#         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 class SubjectListByTeacher(APIView):

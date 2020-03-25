@@ -94,8 +94,8 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.BasicAuthentication',
     ),
     'EXCEPTION_HANDLER': 'yoyaku.exceptions.custom_exception_handler',
 }
@@ -104,7 +104,7 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=14),
     'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,  # python manage.py flushexpiredtokens to delete old tokens
+    'BLACKLIST_AFTER_ROTATION': True,  # TODO python manage.py flushexpiredtokens to delete old tokens
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
     'VERIFYING_KEY': None,
@@ -119,6 +119,7 @@ CORS_ORIGIN_WHITELIST = (
     'http://localhost:3000',
 )
 
+# TODO enable SSL
 # SECURE_SSL_REDIRECT = True
 # SESSION_COOKIE_SECURE = True
 # CSRF_COOKIE_SECURE = True

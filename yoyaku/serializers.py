@@ -31,11 +31,11 @@ class MyUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MyUser
-        fields = ['first_name', 'last_name', 'email', 'password', 'user_type', 'time_zone', 'student_profile',
+        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'user_type', 'time_zone', 'student_profile',
                   'teacher_profile']
         extra_kwargs = {'password': {'write_only': True}}
 
-    def create(self, validated_data):  # TODO validate correct profile type
+    def create(self, validated_data):
         student_profile = validated_data.pop('student_profile')
         teacher_profile = validated_data.pop('teacher_profile')
         password = validated_data.pop('password')
@@ -55,7 +55,7 @@ class MyUserSerializer(serializers.ModelSerializer):
         teacher_profile = validated_data.pop('teacher_profile')
 
         instance.first_name = validated_data.get('first_name', instance.first_name)
-        instance.first_name = validated_data.get('last_name', instance.last_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.email = validated_data.get('email', instance.email)
         instance.time_zone = validated_data.get('time_zone', instance.time_zone)
         instance.save()
@@ -70,25 +70,10 @@ class EventSerializer(serializers.ModelSerializer):
         model = Event
         fields = ['id', 'group_id', 'title', 'start', 'end', 'teacher_user', 'student_user']
 
-    # def create(self, validated_data):
-    #     print(validated_data)
-    #     # teacher = MyUser.objects.get(pk=validated_data.pop('teacher_user', None))
-    #     # student = [MyUser.objects.get(pk=student_id) for student_id in validated_data.pop('student_user', None)]
-    #     # validated_data.put('teacher_user', teacher)
-    #     # validated_data.put('student_user', student)
-    #     # return self.Meta.model.objects.create(**validated_data)
-    #
-    # def update(self, instance, validated_data):
-    #     pass
 
-
-class EventReadSerializer(serializers.ModelSerializer):
+class EventReadSerializer(EventSerializer):
     teacher_user = MyUserSerializer()
     student_user = MyUserSerializer(many=True)
-
-    class Meta:
-        model = Event
-        fields = ['id', 'group_id', 'title', 'start', 'end', 'teacher_user', 'student_user']
 
 
 class SubjectSerializer(serializers.ModelSerializer):
