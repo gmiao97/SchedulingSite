@@ -52,6 +52,9 @@ class MyUser(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
     user_type = models.CharField(_('user type'), choices=USER_TYPE_CHOICES, max_length=10)
     time_zone = TimeZoneField(default='UTC', choices=[(tz, tz) for tz in pytz.all_timezones])
+    phone_number = models.CharField(_('phone number'), max_length=15)
+    birthday = models.DateField(_('birthday'))
+    description = models.CharField(_('personal description'), max_length=300, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -107,7 +110,7 @@ class Event(models.Model):
     teacher_user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='teacherEvents',
                                      related_query_name='teacherEvent')
     student_user = models.ManyToManyField(MyUser, related_name='studentEvents', related_query_name='studentEvent')
-    group_id = models.BigIntegerField(_('group id'))
+    # group_id = models.BigIntegerField(_('group id'))
     title = models.CharField(_('event title'), max_length=200)
     start = models.DateTimeField(_('start datetime'))
     end = models.DateTimeField(_('end datetime'))

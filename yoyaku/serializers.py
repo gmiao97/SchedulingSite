@@ -31,8 +31,8 @@ class MyUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MyUser
-        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'user_type', 'time_zone', 'student_profile',
-                  'teacher_profile']
+        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'user_type', 'time_zone', 'phone_number',
+                  'birthday', 'description', 'student_profile', 'teacher_profile']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -68,7 +68,7 @@ class EventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ['id', 'group_id', 'title', 'start', 'end', 'teacher_user', 'student_user']
+        fields = ['id', 'title', 'start', 'end', 'teacher_user', 'student_user']
 
 
 class EventReadSerializer(EventSerializer):

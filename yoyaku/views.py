@@ -78,6 +78,8 @@ class EventViewSet(viewsets.ModelViewSet):
 
 
 class ValidateToken(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request, format=None):
         if request.user.is_authenticated:
             return Response(status=status.HTTP_200_OK)
