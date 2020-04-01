@@ -17,4 +17,3 @@ urlpatterns = [
     path('validate-token/', ValidateToken.as_view()),
     path('blacklist/', LogoutAndBlacklistRefreshTokenForUserView.as_view(), name='blacklist'),
 ]
-
