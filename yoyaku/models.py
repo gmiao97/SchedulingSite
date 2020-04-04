@@ -57,7 +57,7 @@ class MyUser(AbstractUser):
     description = models.CharField(_('personal description'), max_length=300, blank=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = [user_type, time_zone, phone_number, birthday, description]
+    REQUIRED_FIELDS = ['user_type', 'time_zone', 'phone_number', 'birthday', 'description']
 
     objects = MyUserManager()
 
