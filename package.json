@@ -1,0 +1,12 @@
+{
+  "name": "yoyakufront",
+  "version": "0.1.0",
+  "author": "George Miao",
+  "private": true,
+  "scripts": {
+    "heroku-prebuild": "NODE_ENV=production cd frontend/ && npm install && npm run build && cd .."
+  },
+  "cacheDirectories": [
+    "frontend/node_modules"
+  ]
+}
