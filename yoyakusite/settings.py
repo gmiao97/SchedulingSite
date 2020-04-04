@@ -11,19 +11,25 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
-import django_heroku
+# import django_heroku
 import dj_database_url
 import dotenv
 from datetime import timedelta
 
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# load DATABASE_URL and SECRET_KEY if .env file exists (in local dev environment)
+dotenv_file = os.path.join(BASE_DIR, '.env')
+if os.path.isfile(dotenv_file):
+    dotenv.load_dotenv(dotenv_file)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '4xbe&ddhcpfqz_4k@0!3sw#x6_rm@n@twt=b2_p9uj3q613zle'
+SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -78,11 +84,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'yoyakusite.wsgi.application'
 
 # Database
-# load DATABASE_URL variable if .env file exists (in local dev environment)
-dotenv_file = os.path.join(BASE_DIR, '.env')
-if os.path.isfile(dotenv_file):
-    dotenv.load_dotenv(dotenv_file)
-
 DATABASES = {'default': dj_database_url.config(conn_max_age=600, ssl_require=True)}
 
 REST_FRAMEWORK = {
@@ -115,11 +116,6 @@ SIMPLE_JWT = {
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:3000',
 )
-
-# TODO enable SSL
-# SECURE_SSL_REDIRECT = True
-# SESSION_COOKIE_SECURE = True
-# CSRF_COOKIE_SECURE = True
 
 AUTH_USER_MODEL = 'yoyaku.MyUser'
 
@@ -160,4 +156,4 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-django_heroku.settings(locals())
+# django_heroku.settings(locals())
