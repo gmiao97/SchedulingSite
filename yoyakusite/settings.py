@@ -47,13 +47,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'yoyaku.apps.YoyakuConfig',
     'rest_framework',
-    'corsheaders',
+    # 'corsheaders',
     'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    # 'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -113,9 +113,10 @@ SIMPLE_JWT = {
     'TOKEN_TYPE_CLAIM': 'token_type',
 }
 
-CORS_ORIGIN_WHITELIST = (
-    'http://localhost:3000',
-)
+# CORS_ORIGIN_WHITELIST = (
+#     'http://localhost:3000',
+#     'http://localhost:8000',
+# )
 
 AUTH_USER_MODEL = 'yoyaku.MyUser'
 
@@ -154,6 +155,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+REACT_APP_DIR = os.path.join(BASE_DIR, 'frontend')
+STATICFILES_DIRS = [
+    os.path.join(REACT_APP_DIR, 'build', 'static'),
+]
 
 # django_heroku.settings(locals())

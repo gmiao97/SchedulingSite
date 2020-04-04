@@ -1,0 +1,37 @@
+@import '~@fullcalendar/core/main.css';
+@import '~@fullcalendar/daygrid/main.css';
+@import '~@fullcalendar/bootstrap/main.css';
+@import '~@fortawesome/fontawesome-free/css/all.css';
+@import '~@fullcalendar/timegrid/main.css';
+$font-path: '~react-widgets/lib/fonts';
+$img-path: '~react-widgets/lib/img';
+@import '~react-widgets/dist/css/react-widgets.css';
+
+
+.fc-today {
+  background: #fdfdea;
+}
+
+#landing {
+  // background-color: #ffcccc;
+  height: 100%;
+  // background-image: url('./static/classroom.png');
+  background: linear-gradient( rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3) ), url('./static/classroom.png');
+  background-size: cover;
+}
+
+html, body, #root, #app {
+  height: 100%;
+}
+
+// html, body, #root, div {
+//   height: 100%;
+// }
+
+// #background {
+//   background-image: url('./static/tori_lake_background.jpg');
+// }
+
+// #data {
+//   background-color: white;
+// }
