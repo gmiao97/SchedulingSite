@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
 import FullCalendar from '@fullcalendar/react';
+import rrulePlugin from '@fullcalendar/rrule';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from "@fullcalendar/interaction";
 import bootstrapPlugin from '@fullcalendar/bootstrap';
+import { RRule } from 'rrule';
 import { DateTimePicker, Multiselect } from 'react-widgets';
 import { AvForm, AvField } from 'availity-reactstrap-validation';
 import {
@@ -188,7 +190,7 @@ class Calendar extends Component {
         <Container>
           <FullCalendar
             ref={this.calendarRef}
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, bootstrapPlugin]} 
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, bootstrapPlugin, rrulePlugin]} 
             defaultView='dayGridMonth'
             themeSystem='bootstrap'
             slotDuration='00:15:00'
@@ -204,20 +206,34 @@ class Calendar extends Component {
               right: 'timeGridDay,timeGridWeek,dayGridMonth',
             }}
             events={
-              (info, successCallback, failureCallback) => {
-                axiosInstance.get(`/yoyaku/users/${getUserIdFromToken()}/events/`, {
-                  params: {
-                    start: info.startStr,
-                    end: info.endStr,
+              // (info, successCallback, failureCallback) => {
+              //   axiosInstance.get(`/yoyaku/users/${getUserIdFromToken()}/events/`, {
+              //     params: {
+              //       start: info.startStr,
+              //       end: info.endStr,
+              //     }
+              //   })
+              //   .then(result => {
+              //     successCallback(result.data);
+              //   })
+              //   .catch(err => {
+              //     failureCallback(err);
+              //   });
+              // }
+
+              [
+                {
+                  title: 'recurring event',
+                  rrule: {
+                    freq: 'weekly',
+                    interval: 2,
+                    // byweekday: [RRule.MO.nth(2)],
+                    // bymonthday: 15,
+                    dtstart: '2019-04-01T10:30:00',
+                    until: '2021-06-01'
                   }
-                })
-                .then(result => {
-                  successCallback(result.data);
-                })
-                .catch(err => {
-                  failureCallback(err);
-                });
-              }
+                }
+              ]
             }
           />
           {getUserTypeFromToken() === 'TEACHER' ? 
