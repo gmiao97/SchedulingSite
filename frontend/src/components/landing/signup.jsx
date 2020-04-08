@@ -97,7 +97,7 @@ class Signup extends Component {
         <AvForm onValidSubmit={this.handleSubmit}>
           <GeneralSignup 
             profile={this.state}
-            handleChange={this.handleChange}
+            onChange={this.handleChange}
           />
           {this.state.user_type === 'STUDENT' && 
             <StudentProfileSignup
@@ -121,11 +121,11 @@ class Signup extends Component {
 export function GeneralSignup(props) {
   return(
     <div>
-      <AvField type='email' label='Email' name='email' value={props.profile.email} onChange={props.handleChange} validate={{
+      <AvField type='email' label='Email' name='email' value={props.profile.email} onChange={props.onChange} validate={{
         required: {value: true, errorMessage: 'Please enter an email'},
         email: {value: true, errorMessage: 'Please enter a valid email address (e.g. example@website.com)'},
       }}/>
-      <AvField type='password' label='Password' name='password' value={props.profile.password} onChange={props.handleChange} validate={{
+      <AvField type='password' label='Password' name='password' value={props.profile.password} onChange={props.onChange} validate={{
         required: {value: true, errorMessage: 'Please enter a password'},
         minLength: {value: 8, errorMessage: 'Password must have at least 8 characters'},
       }}/>
@@ -135,25 +135,25 @@ export function GeneralSignup(props) {
       }}/>
       <Row form>
         <Col md='6'>
-          <AvField type='text' label='First Name' name='first_name' value={props.profile.first_name} onChange={props.handleChange} validate={{
+          <AvField type='text' label='First Name' name='first_name' value={props.profile.first_name} onChange={props.onChange} validate={{
             required: {value: true, errorMessage: 'Please enter first name'},
           }}/>
         </Col>
         <Col md='6'>
-          <AvField type='text' label='Last Name' name='last_name' value={props.profile.last_name} onChange={props.handleChange} validate={{
+          <AvField type='text' label='Last Name' name='last_name' value={props.profile.last_name} onChange={props.onChange} validate={{
             required: {value: true, errorMessage: 'Please enter last name'},
           }}/>
         </Col>
       </Row>
       <Row form>
         <Col md='6'>
-          <AvField type='text' label='Phone Number' name='phone_number' value={props.profile.phone_number} onChange={props.handleChange} validate={{
+          <AvField type='text' label='Phone Number' name='phone_number' value={props.profile.phone_number} onChange={props.onChange} validate={{
             required: {value: true, errorMessage: 'Please enter phone number using only numbers'},
             pattern: {value: '^[0-9]+$', errorMessage: 'Please enter only numbers'},
           }}/>
         </Col>
         <Col md='6'>
-          <AvField type='date' label='Date of Birth' name='birthday' value={props.profile.birthday} onChange={props.handleChange} validate={{
+          <AvField type='date' label='Date of Birth' name='birthday' value={props.profile.birthday} onChange={props.onChange} validate={{
             required: {value: true, errorMessage: 'Please enter birth date'},
             date: {format: 'MM/DD/YYYY'},
           }}/>
@@ -163,13 +163,13 @@ export function GeneralSignup(props) {
         <legend>User Type</legend>
         <FormGroup check>
           <Label check>
-            <Input type='radio' name='user_type' value='TEACHER' onChange={props.handleChange}/>
+            <Input type='radio' name='user_type' value='TEACHER' onChange={props.onChange}/>
             Teacher
           </Label>
         </FormGroup>
         <FormGroup check>
           <Label check>
-            <Input type='radio' name='user_type' value='STUDENT' defaultChecked onChange={props.handleChange}/>
+            <Input type='radio' name='user_type' value='STUDENT' defaultChecked onChange={props.onChange}/>
             Student
           </Label>
         </FormGroup>
@@ -177,7 +177,7 @@ export function GeneralSignup(props) {
       <FormGroup>
         <Label>
           Select Time Zone
-          <Input type='select' name='time_zone' value={props.profile.time_zone} onChange={props.handleChange}> 
+          <Input type='select' name='time_zone' value={props.profile.time_zone} onChange={props.onChange}> 
             {moment.tz.names().filter(tz => tz !== 'Asia/Qostanay').map((value, index) =>  // TODO Asia/Qostanay isn't in pytz timezones
               <option key={index} value={value}>{value}</option>
             )}

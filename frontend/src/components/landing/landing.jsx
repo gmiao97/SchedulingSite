@@ -30,7 +30,7 @@ function Landing(props) {
     <div id='landing'>
       <Navbar color='dark' dark expand='sm'>
         <NavbarBrand className='text-warning' href='/'>
-          <span className='m-2'><FontAwesomeIcon icon='school' size='md'/></span>
+          <span className='m-2'><FontAwesomeIcon icon='school' size='1x'/></span>
           Success Academy
         </NavbarBrand>
         <NavbarToggler onClick={navToggle} />
