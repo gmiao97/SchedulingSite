@@ -153,7 +153,7 @@ export function GeneralSignup(props) {
           }}/>
         </Col>
         <Col md='6'>
-          <AvField type='date' label='Date of Birth' name='birthday' value={props.profile.birthday} onChange={props.onChange} validate={{
+          <AvField type='date' label='Date of Birth' name='birthday' value={props.profile.birthday} onChange={props.onChange} validate={{ // TODO Safari not supported
             required: {value: true, errorMessage: 'Please enter birth date'},
             date: {format: 'MM/DD/YYYY'},
           }}/>

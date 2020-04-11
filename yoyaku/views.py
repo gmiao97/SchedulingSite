@@ -9,6 +9,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from dateutil.rrule import rrule, FREQNAMES
 
 from .models import MyUser, Event, Subject
 from .serializers import MyUserSerializer, EventSerializer, EventReadSerializer, SubjectSerializer

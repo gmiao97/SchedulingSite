@@ -106,6 +106,13 @@ class Subject(models.Model):
         return self.subject_name
 
 
+class Recurrence(models.Model):
+    freq = models.CharField(_('frequency'), max_length=10)
+    dtstart = models.DateTimeField(_('recurrence start'))
+    until = models.DateTimeField(_('recurrence end'))
+    interval = models.IntegerField(_('interval'))
+
+
 class Event(models.Model):
     teacher_user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='teacherEvents',
                                      related_query_name='teacherEvent')
@@ -114,4 +121,7 @@ class Event(models.Model):
     title = models.CharField(_('event title'), max_length=200)
     start = models.DateTimeField(_('start datetime'))
     end = models.DateTimeField(_('end datetime'))
+    isRecurrence = models.BooleanField(default=False)
+    recurrence = models.ForeignKey(Recurrence, null=True, on_delete=models.CASCADE, related_name='recurrenceEvents',
+                                   related_query_name='recurrenceEvent')
 

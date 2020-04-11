@@ -5,7 +5,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from "@fullcalendar/interaction";
 import bootstrapPlugin from '@fullcalendar/bootstrap';
-import { RRule } from 'rrule';
+import moment from 'moment-timezone';
 import { DateTimePicker, Multiselect } from 'react-widgets';
 import { AvForm, AvField } from 'availity-reactstrap-validation';
 import {
@@ -14,7 +14,6 @@ import {
   ModalHeader, 
   ModalBody, 
   Button, 
-  Form, 
   FormGroup, 
   Label,
   Input,
@@ -33,6 +32,13 @@ class Calendar extends Component {
       end: '',
       student_user: [],
       teacher_user: '',
+      isRecurrence: false,
+      recurrence: {
+        freq: 'DAILY',
+        dstart: '',
+        interval: 1,
+        until: '',
+      },
 
       selectedEvent: '',
       studentList: [],
@@ -46,7 +52,9 @@ class Calendar extends Component {
     this.handleEventClick = this.handleEventClick.bind(this);
     this.handleSelect = this.handleSelect.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.handleRecurrenceChange = this.handleRecurrenceChange.bind(this);
     this.handleWidgetChange = this.handleWidgetChange.bind(this);
+    this.handleRecurrenceWidgetChange = this.handleRecurrenceWidgetChange.bind(this);
     this.handleNewEventSubmit = this.handleNewEventSubmit.bind(this);
     this.handleEditEventSubmit = this.handleEditEventSubmit.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
@@ -89,6 +97,13 @@ class Calendar extends Component {
         end: info.dateStr,
         student_user: [],
         selectedEvent: '',
+        isRecurrence: false,
+        recurrence: {
+          freq: 'DAILY',
+          interval: 1,
+          dstart: info.dateStr,
+          until: info.dateStr,
+        },
       });
       this.toggleForm('new');
     }
@@ -100,9 +115,9 @@ class Calendar extends Component {
     // alert(info.event.extendedProps.student_user[0].first_name);
     this.setState({
       title: info.event.title,
-      start: info.event.start.toISOString(),
-      end: info.event.end.toISOString(),
-      student_user: info.event.extendedProps.student_user.map(user => String(user.id)),
+      start: moment(info.event.start).format(),
+      end: moment(info.event.end).format(),
+      student_user: info.event.extendedProps.student_user.map(user => user.id),
       selectedEvent: info.event.id,
     });
     this.toggleForm('edit');
@@ -122,14 +137,39 @@ class Calendar extends Component {
     });
   }
 
+  handleRecurrenceChange(event) {
+    this.setState({
+      recurrence: {
+        ...this.state.recurrence,
+        [event.target.name]: event.target.value,
+      }
+    });
+  }
+
   async handleWidgetChange(name, value) {
     await Promise.resolve(this.setState({
       [name]: value,
     }));
-    // alert(`${this.state.end} ${this.state.start} ${new Date(this.state.end) < new Date(this.state.start)}`);
     if (new Date(this.state.end) < new Date(this.state.start)) {
       this.setState({
         end: this.state.start,
+      });
+    }
+  }
+
+  async handleRecurrenceWidgetChange(name, value) {
+    await Promise.resolve(this.setState({
+      recurrence: {
+        ...this.state.recurrence,
+        [name]: value,
+      }
+    }));
+    if (new Date(this.state.recurrence.until) < new Date(this.state.recurrence.dstart)) {
+      this.setState({
+        recurrence: {
+          ...this.state.recurrence,
+          until: this.state.recurrence.dstart,
+        }
       });
     }
   }
@@ -206,34 +246,35 @@ class Calendar extends Component {
               right: 'timeGridDay,timeGridWeek,dayGridMonth',
             }}
             events={
-              // (info, successCallback, failureCallback) => {
-              //   axiosInstance.get(`/yoyaku/users/${getUserIdFromToken()}/events/`, {
-              //     params: {
-              //       start: info.startStr,
-              //       end: info.endStr,
-              //     }
-              //   })
-              //   .then(result => {
-              //     successCallback(result.data);
-              //   })
-              //   .catch(err => {
-              //     failureCallback(err);
-              //   });
-              // }
-
-              [
-                {
-                  title: 'recurring event',
-                  rrule: {
-                    freq: 'weekly',
-                    interval: 2,
-                    // byweekday: [RRule.MO.nth(2)],
-                    // bymonthday: 15,
-                    dtstart: '2019-04-01T10:30:00',
-                    until: '2021-06-01'
+              (info, successCallback, failureCallback) => {
+                axiosInstance.get(`/yoyaku/users/${getUserIdFromToken()}/events/`, {
+                  params: {
+                    start: info.startStr,
+                    end: info.endStr,
                   }
-                }
-              ]
+                })
+                .then(result => {
+                  successCallback(result.data);
+                })
+                .catch(err => {
+                  failureCallback(err);
+                });
+              }
+
+              // [
+              //   {
+              //     title: 'recurring event',
+              //     rrule: {
+              //       freq: 'daily',
+              //       interval: 1,
+              //       // byweekday: [RRule.MO.nth(2)],
+              //       // bymonthday: 15,
+              //       dtstart: '2020-04-09T10:30:00',
+              //       until: '2020-04-09T10:30:00'
+              //     },
+              //     duration: '02:00'
+              //   }
+              // ]
             }
           />
           {getUserTypeFromToken() === 'TEACHER' ? 
@@ -242,7 +283,9 @@ class Calendar extends Component {
                 state={this.state} 
                 toggle={this.toggleForm} 
                 onChange={this.handleChange} 
+                onRecurrenceChange={this.handleRecurrenceChange}
                 onWidgetChange={this.handleWidgetChange}
+                onRecurrenceWidgetChange={this.handleRecurrenceWidgetChange}
                 onSubmit={this.handleNewEventSubmit}/>
               <EditEventForm 
                 state={this.state} 
@@ -276,13 +319,13 @@ function NewEventForm(props) {
             <Multiselect
               name='student_user'
               data={props.state.studentList}
-              onChange={value => props.onWidgetChange('student_user', value.map(student => student.split(' ')[2].slice(1, -1)))}
+              onChange={value => props.onWidgetChange('student_user', value.map(student => +student.split(' ')[2].slice(1, -1)))}
             />
-            <FormGroup> {/* TODO validations that start < end */}
+            <FormGroup>
               Start
               <DateTimePicker
                 value={new Date(props.state.start)}
-                onChange={value => props.onWidgetChange('start', value.toISOString())}
+                onChange={value => props.onWidgetChange('start', moment(value).format())}
                 date={false}
                 step={15}
                 inputProps={{readOnly: true}}
@@ -290,14 +333,36 @@ function NewEventForm(props) {
               End
               <DateTimePicker
                 value={new Date(props.state.end)}
-                onChange={value => props.onWidgetChange('end', value.toISOString())}
+                onChange={value => props.onWidgetChange('end', moment(value).format())}
                 date={false}
                 step={15}
                 min={new Date(props.state.start)}  
                 inputProps={{readOnly: true}}
               />
             </FormGroup>
-            <Button outline color='info'>Submit</Button>
+            <FormGroup tag='fieldset'>
+              <legend>Repeating Event</legend>
+              <FormGroup check>
+                <Label check>
+                  <Input type='radio' name='isRecurrence' onChange={() => props.onWidgetChange('isRecurrence', true)}/>
+                  yes
+                </Label>
+              </FormGroup>
+              <FormGroup check>
+                <Label check>
+                  <Input type='radio' name='isRecurrence' defaultChecked onChange={() => props.onWidgetChange('isRecurrence', false)}/>
+                  no
+                </Label>
+              </FormGroup>
+            </FormGroup>
+            {props.state.isRecurrence === true ? 
+              <RecurEventForm 
+                onChange={props.onRecurrenceChange} 
+                onWidgetChange={props.onRecurrenceWidgetChange}
+                state={props.state.recurrence}
+              /> 
+              : null}
+            <Button className='my-2' outline color='info'>Submit</Button>
           </AvForm>
         </Container>
       </ModalBody>
@@ -305,10 +370,44 @@ function NewEventForm(props) {
   );
 }
 
+function RecurEventForm(props) {
+  return(
+    <div>
+      <FormGroup>
+        <Label>
+          Frequency
+          <Input type="select" name="freq" value={props.state.freq} onChange={props.onChange}>
+            <option value='DAILY'>Daily</option>
+            <option value='WEEKLY'>Weekly</option>
+            <option value='MONTLY'>Monthly</option>
+          </Input>
+        </Label>
+      </FormGroup>
+      <FormGroup>
+        Repeat from
+        <DateTimePicker
+          value={new Date(props.state.dstart)}
+          onChange={value => props.onWidgetChange('dstart', moment(value).format())}
+          time={false}
+          inputProps={{readOnly: true}}
+        />
+        Until
+        <DateTimePicker
+          value={new Date(props.state.until)}
+          onChange={value => props.onWidgetChange('until', moment(value).format())}
+          time={false}
+          min={new Date(props.state.dstart)}
+          inputProps={{readOnly: true}}
+        />
+      </FormGroup>
+    </div>
+  );
+}
+
 function EditEventForm(props) {
   return(
     <Modal isOpen={props.state.displayEditEventForm} toggle={() => {props.toggle('edit');}}>
-      <ModalHeader toggle={() => props.toggle('edit')}>Edit Event</ModalHeader>
+      <ModalHeader toggle={() => props.toggle('edit')}>Edit Event on {props.state.start.slice(0, 10)}</ModalHeader>
       <ModalBody>
         <Container>
           <AvForm onValidSubmit={props.onSubmit}>
@@ -319,14 +418,14 @@ function EditEventForm(props) {
             <Multiselect
               name='student_user'
               data={props.state.studentList}
-              onChange={value => props.onWidgetChange('student_user', value.map(student => student.split(' ')[2].slice(1, -1)))}
-              defaultValue={props.state.studentList.filter(user => props.state.student_user.includes(user.split(' ')[2].slice(1, -1)))}
+              onChange={value => props.onWidgetChange('student_user', value.map(student => +student.split(' ')[2].slice(1, -1)))}
+              defaultValue={props.state.studentList.filter(user => props.state.student_user.includes(+user.split(' ')[2].slice(1, -1)))}
             />
-            <FormGroup> {/* TODO validations that start < end */}
+            <FormGroup>
               Start
               <DateTimePicker
                 value={new Date(props.state.start)}
-                onChange={value => props.onWidgetChange('start', value.toISOString())}
+                onChange={value => props.onWidgetChange('start', moment(value).format())}
                 date={false}
                 step={15}
                 inputProps={{readOnly: true}}
@@ -334,7 +433,7 @@ function EditEventForm(props) {
               End
               <DateTimePicker
                 value={new Date(props.state.end)}
-                onChange={value => props.onWidgetChange('end', value.toISOString())}
+                onChange={value => props.onWidgetChange('end', moment(value).format())}
                 date={false}
                 step={15}
                 min={new Date(props.state.start)}

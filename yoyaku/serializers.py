@@ -52,7 +52,7 @@ class MyUserSerializer(serializers.ModelSerializer):
 
         return user
 
-    def update(self, instance, validated_data):  # TODO update student/teacher profile
+    def update(self, instance, validated_data):
         student_data = validated_data.pop('student_profile')
         teacher_data = validated_data.pop('teacher_profile')
         student_instance = validated_data.pop('student_id')

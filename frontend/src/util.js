@@ -35,3 +35,11 @@ export function getUserTypeFromToken() {
   const userType = payloadObject.user_type;
   return userType;
 }
+
+//export function getDateFromISODateTime(dateTime) {
+//  return dateTime.slice(0, 10);
+//}
+//
+//export function getTimeFromISODateTime(dateTime) {
+//  return dateTime.slice(11);
+//}
