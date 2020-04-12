@@ -80,6 +80,7 @@ class EventViewSet(viewsets.ModelViewSet):
             return EventReadSerializer
         return EventSerializer
 
+    # Override
     def create(self, request, *args, **kwargs):
         if request.data.get('isRecurrence'):
             data_to_serialize = []
@@ -115,6 +116,15 @@ class EventViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         else:
             return super().create(request, *args, **kwargs)
+
+    # Override
+    def destroy(self, request, *args, **kwargs):
+        event_instance = self.get_object()
+        recurrence_instance = event_instance.recurrence
+        self.perform_destroy(event_instance)
+        if recurrence_instance and recurrence_instance.recurrenceEvents.count() == 0:
+            recurrence_instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ValidateToken(APIView):

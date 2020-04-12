@@ -110,13 +110,11 @@ class Calendar extends Component {
   }
 
   handleEventClick(info) {
-    // alert(info.event.title);
-    // alert(info.event.id);
     // alert(info.event.extendedProps.student_user[0].first_name);
     this.setState({
       title: info.event.title,
       start: moment(info.event.start).format(),
-      end: moment(info.event.end).format(),
+      end: moment(info.event.end || info.event.start).format(),
       student_user: info.event.extendedProps.student_user.map(user => user.id),
       selectedEvent: info.event.id,
     });
