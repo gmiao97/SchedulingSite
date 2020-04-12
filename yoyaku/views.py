@@ -10,9 +10,12 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from dateutil.rrule import rrule, FREQNAMES
+from dateutil.parser import parse
+from datetime import datetime
+import copy
 
 from .models import MyUser, Event, Subject
-from .serializers import MyUserSerializer, EventSerializer, EventReadSerializer, SubjectSerializer
+from .serializers import MyUserSerializer, RecurrenceSerializer, EventSerializer, EventReadSerializer, SubjectSerializer
 from .permissions import IsAdminUser, IsLoggedInUserOrAdmin, IsLoggedInTeacherUser, IsLoggedInUserAndEventOwner
 
 
@@ -76,6 +79,42 @@ class EventViewSet(viewsets.ModelViewSet):
         if self.request.method == 'GET':
             return EventReadSerializer
         return EventSerializer
+
+    def create(self, request, *args, **kwargs):
+        if request.data.get('isRecurrence'):
+            data_to_serialize = []
+            recurrence_data = request.data.pop('recurrence')
+            dtstart = parse(recurrence_data.get('dtstart')).date()
+            freq = recurrence_data.get('freq')
+            interval = recurrence_data.get('interval')
+            until = parse(recurrence_data.get('until')).date()
+            start_time = parse(request.data.get('start')).time()
+            end_time = parse(request.data.get('end')).time()
+            tz_info = parse(request.data.get('start')).tzinfo
+
+            recurrence_dates = [dt.date() for dt in rrule(dtstart=dtstart, freq=FREQNAMES.index(freq), interval=interval, until=until)]
+
+            recurrence_serializer = RecurrenceSerializer(data=recurrence_data)
+            recurrence_serializer.is_valid(raise_exception=True)
+            recurrence_instance = recurrence_serializer.save()
+            recurrence_instance_id = recurrence_instance.id
+            request.data['recurrence'] = recurrence_instance_id
+
+            for date in recurrence_dates:
+                start = datetime.combine(date, start_time, tz_info)
+                end = datetime.combine(date, end_time, tz_info)
+                request.data['start'] = start
+                request.data['end'] = end
+                data_to_serialize.append(copy.deepcopy(request.data))
+
+            # Original code for create with 'many' set as True
+            serializer = self.get_serializer(data=data_to_serialize, many=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        else:
+            return super().create(request, *args, **kwargs)
 
 
 class ValidateToken(APIView):

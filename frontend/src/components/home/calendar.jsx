@@ -35,7 +35,7 @@ class Calendar extends Component {
       isRecurrence: false,
       recurrence: {
         freq: 'DAILY',
-        dstart: '',
+        dtstart: '',
         interval: 1,
         until: '',
       },
@@ -101,7 +101,7 @@ class Calendar extends Component {
         recurrence: {
           freq: 'DAILY',
           interval: 1,
-          dstart: info.dateStr,
+          dtstart: info.dateStr,
           until: info.dateStr,
         },
       });
@@ -164,11 +164,11 @@ class Calendar extends Component {
         [name]: value,
       }
     }));
-    if (new Date(this.state.recurrence.until) < new Date(this.state.recurrence.dstart)) {
+    if (new Date(this.state.recurrence.until) < new Date(this.state.recurrence.dtstart)) {
       this.setState({
         recurrence: {
           ...this.state.recurrence,
-          until: this.state.recurrence.dstart,
+          until: this.state.recurrence.dtstart,
         }
       });
     }
@@ -177,6 +177,11 @@ class Calendar extends Component {
   async handleNewEventSubmit(event) {
     event.preventDefault();
     try {
+      if (!this.state.isRecurrence) {
+        this.setState({
+          recurrence: null,
+        });
+      }
       const response = await axiosInstance.post('/yoyaku/events/', this.state);
       this.forceUpdate();
       return response;
@@ -190,7 +195,8 @@ class Calendar extends Component {
   async handleEditEventSubmit(event) {
     event.preventDefault();
     try {
-      const response = await axiosInstance.put(`/yoyaku/events/${this.state.selectedEvent}/`, this.state);
+      const {selectedEvent, studentList, displayNewEventForm, displayEditEventForm, ...payload} = this.state;
+      const response = await axiosInstance.put(`/yoyaku/events/${this.state.selectedEvent}/`, payload);
       this.forceUpdate();
       return response;
     } catch (error) {
@@ -386,8 +392,8 @@ function RecurEventForm(props) {
       <FormGroup>
         Repeat from
         <DateTimePicker
-          value={new Date(props.state.dstart)}
-          onChange={value => props.onWidgetChange('dstart', moment(value).format())}
+          value={new Date(props.state.dtstart)}
+          onChange={value => props.onWidgetChange('dtstart', moment(value).format())}
           time={false}
           inputProps={{readOnly: true}}
         />
@@ -396,7 +402,7 @@ function RecurEventForm(props) {
           value={new Date(props.state.until)}
           onChange={value => props.onWidgetChange('until', moment(value).format())}
           time={false}
-          min={new Date(props.state.dstart)}
+          min={new Date(props.state.dtstart)}
           inputProps={{readOnly: true}}
         />
       </FormGroup>
