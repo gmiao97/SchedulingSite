@@ -6,6 +6,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from "@fullcalendar/interaction";
 import bootstrapPlugin from '@fullcalendar/bootstrap';
 import moment from 'moment-timezone';
+import { confirmAlert } from 'react-confirm-alert';
 import { DateTimePicker, Multiselect } from 'react-widgets';
 import { AvForm, AvField } from 'availity-reactstrap-validation';
 import {
@@ -116,6 +117,8 @@ class Calendar extends Component {
       start: moment(info.event.start).format(),
       end: moment(info.event.end || info.event.start).format(),
       student_user: info.event.extendedProps.student_user.map(user => user.id),
+      isRecurrence: info.event.extendedProps.isRecurrence,
+      recurrence: info.event.extendedProps.recurrence,
       selectedEvent: info.event.id,
     });
     this.toggleForm('edit');
@@ -205,15 +208,42 @@ class Calendar extends Component {
   }
 
   async handleDelete() {
-    try {
-      const response = await axiosInstance.delete(`/yoyaku/events/${this.state.selectedEvent}/`);
+    // try {
+    //   const response = await axiosInstance.delete(`/yoyaku/events/${this.state.selectedEvent}/`);
+    //   this.forceUpdate();
+    //   return response;
+    // } catch(error) {
+    //   console.log(error.stack);
+    // } finally {
+    //   this.toggleForm('edit');
+    // }
+    
+    if (this.state.isRecurrence) {
+      confirmAlert({
+        title: 'Deletion Selection',
+        message: 'Delete single event or all upcoming events in series?',
+        buttons: [
+          {
+            label: 'Delete Single Event',
+            onClick: async () => {
+              await axiosInstance.delete(`/yoyaku/events/${this.state.selectedEvent}/`);
+              this.forceUpdate();
+            },
+          },
+          {
+            label: 'Delete Series',
+            onClick: async () => {
+              await axiosInstance.delete(`/yoyaku/events/${this.state.recurrence.id}/destroy_recurrence/`);
+              this.forceUpdate();
+            }
+          },
+        ]
+      });
+    } else {
+      await axiosInstance.delete(`/yoyaku/events/${this.state.selectedEvent}/`);
       this.forceUpdate();
-      return response;
-    } catch(error) {
-      console.log(error.stack);
-    } finally {
-      this.toggleForm('edit');
     }
+    this.toggleForm('edit');
   }
 
   toggleForm(formType) {
@@ -297,6 +327,8 @@ class Calendar extends Component {
                 onDelete={this.handleDelete}
                 onChange={this.handleChange} 
                 onWidgetChange={this.handleWidgetChange}
+                onRecurrenceChange={this.handleRecurrenceChange}
+                onRecurrenceWidgetChange={this.handleRecurrenceWidgetChange}
                 onSubmit={this.handleEditEventSubmit}
               />
             </div> 
@@ -383,7 +415,7 @@ function RecurEventForm(props) {
           <Input type="select" name="freq" value={props.state.freq} onChange={props.onChange}>
             <option value='DAILY'>Daily</option>
             <option value='WEEKLY'>Weekly</option>
-            <option value='MONTLY'>Monthly</option>
+            <option value='MONTHLY'>Monthly</option>
           </Input>
         </Label>
       </FormGroup>
@@ -444,6 +476,13 @@ function EditEventForm(props) {
                 inputProps={{readOnly: true}}
               />
             </FormGroup>
+            {props.state.isRecurrence === true ? 
+              <RecurEventForm 
+                onChange={props.onRecurrenceChange} 
+                onWidgetChange={props.onRecurrenceWidgetChange}
+                state={props.state.recurrence}
+              /> 
+            : null}
             <Button outline color='info'>Submit</Button>
           </AvForm>
         </Container>

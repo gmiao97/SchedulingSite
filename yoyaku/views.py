@@ -14,7 +14,7 @@ from dateutil.parser import parse
 from datetime import datetime
 import copy
 
-from .models import MyUser, Event, Subject
+from .models import MyUser, Recurrence, Event, Subject
 from .serializers import MyUserSerializer, RecurrenceSerializer, EventSerializer, EventReadSerializer, SubjectSerializer
 from .permissions import IsAdminUser, IsLoggedInUserOrAdmin, IsLoggedInTeacherUser, IsLoggedInUserAndEventOwner
 
@@ -73,6 +73,9 @@ class EventViewSet(viewsets.ModelViewSet):
             permission_classes = [IsLoggedInUserAndEventOwner]
         elif self.action == 'list':
             permission_classes = [IsAdminUser]
+        elif self.action == 'destroy_recurrence':
+            permission_classes = [IsLoggedInTeacherUser]
+
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
@@ -124,6 +127,14 @@ class EventViewSet(viewsets.ModelViewSet):
         self.perform_destroy(event_instance)
         if recurrence_instance and recurrence_instance.recurrenceEvents.count() == 0:
             recurrence_instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['delete'])
+    def destroy_recurrence(self, request, pk=None):
+        recurrence = Recurrence.objects.get(pk=pk)
+        recurrence.recurrenceEvents.filter(start__gte=datetime.now()).delete()
+        if recurrence.recurrenceEvents.count() == 0:
+            recurrence.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
