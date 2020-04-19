@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import rrulePlugin from '@fullcalendar/rrule';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -19,6 +19,13 @@ import {
   Label,
   Input,
   ModalFooter, 
+  UncontrolledButtonDropdown,
+  ButtonDropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem,
+  ListGroup,
+  ListGroupItem,
 } from 'reactstrap';
 
 import { getUserIdFromToken, getUserTypeFromToken } from '../../util';
@@ -43,6 +50,7 @@ class Calendar extends Component {
 
       selectedEvent: '',
       studentList: [],
+      teacherName: '',
       displayNewEventForm: false,
       displayEditEventForm: false,
     };
@@ -120,6 +128,7 @@ class Calendar extends Component {
       isRecurrence: info.event.extendedProps.isRecurrence,
       recurrence: info.event.extendedProps.recurrence,
       selectedEvent: info.event.id,
+      teacherName: `${info.event.extendedProps.teacher_user.last_name}, ${info.event.extendedProps.teacher_user.first_name}`
     });
     this.toggleForm('edit');
   }
@@ -207,17 +216,7 @@ class Calendar extends Component {
     }
   }
 
-  async handleDelete() {
-    // try {
-    //   const response = await axiosInstance.delete(`/yoyaku/events/${this.state.selectedEvent}/`);
-    //   this.forceUpdate();
-    //   return response;
-    // } catch(error) {
-    //   console.log(error.stack);
-    // } finally {
-    //   this.toggleForm('edit');
-    // }
-    
+  async handleDelete() {    
     if (this.state.isRecurrence) {
       confirmAlert({
         title: 'Deletion Selection',
@@ -226,22 +225,28 @@ class Calendar extends Component {
           {
             label: 'Delete Single Event',
             onClick: async () => {
-              await axiosInstance.delete(`/yoyaku/events/${this.state.selectedEvent}/`);
-              this.forceUpdate();
+              if (window.confirm('Do you really want to delete this event?')) {
+                await axiosInstance.delete(`/yoyaku/events/${this.state.selectedEvent}/`);
+                this.forceUpdate();
+              }
             },
           },
           {
             label: 'Delete Series',
             onClick: async () => {
-              await axiosInstance.delete(`/yoyaku/events/${this.state.recurrence.id}/destroy_recurrence/`);
-              this.forceUpdate();
+              if (window.confirm('Do you really want to delete all future events in this series?')) {
+                await axiosInstance.delete(`/yoyaku/events/${this.state.recurrence.id}/destroy_recurrence/`);
+                this.forceUpdate();
+              }
             }
           },
         ]
       });
     } else {
-      await axiosInstance.delete(`/yoyaku/events/${this.state.selectedEvent}/`);
-      this.forceUpdate();
+      if (window.confirm('Do you really want to delete this event?')) {
+        await axiosInstance.delete(`/yoyaku/events/${this.state.selectedEvent}/`);
+        this.forceUpdate();
+      }
     }
     this.toggleForm('edit');
   }
@@ -441,9 +446,54 @@ function RecurEventForm(props) {
 }
 
 function EditEventForm(props) {
-  return(
-    <Modal isOpen={props.state.displayEditEventForm} toggle={() => {props.toggle('edit');}}>
-      <ModalHeader toggle={() => props.toggle('edit')}>Edit Event on {props.state.start.slice(0, 10)}</ModalHeader>
+  const [editOpen, setEditOpen] = useState(false);
+  const [seriesEditOpen, setSeriesEditOpen] = useState(false);
+
+  const eventInfo = 
+    <div>
+      <ModalBody>
+        <Container>
+          <h5>Teacher</h5>
+          <p>{props.state.teacherName}</p>
+          <h5>Students</h5>
+          {props.state.studentList.filter(user => props.state.student_user.includes(+user.split(' ')[2].slice(1, -1))).map(student => <p>{student}</p>)}
+          <hr/>
+          From
+          <DateTimePicker
+            value={new Date(props.state.start)}
+            time={false}
+            date={false}
+            inputProps={{readOnly: true}}
+          />
+          To
+          <DateTimePicker
+            value={new Date(props.state.end)}
+            time={false}
+            date={false}
+            inputProps={{readOnly: true}}
+          />       
+        </Container>
+      </ModalBody>
+      <ModalFooter>
+        {props.state.isRecurrence ?
+          <UncontrolledButtonDropdown>
+            <DropdownToggle caret outline color='primary'>
+              Edit
+            </DropdownToggle>
+            <DropdownMenu>
+              <DropdownItem header>Edit Event</DropdownItem>
+              <DropdownItem onClick={() => setEditOpen(true)}>Edit Single Event</DropdownItem>
+              <DropdownItem onClick={() => {setEditOpen(true); setSeriesEditOpen(true);}}>Edit Series</DropdownItem>
+            </DropdownMenu>
+          </UncontrolledButtonDropdown>
+        : 
+          <Button outline color='primary' onClick={() => setEditOpen(true)}>Edit</Button>}
+        <Button outline color='danger' onClick={props.onDelete}>Delete</Button>
+      </ModalFooter>
+    </div>;
+
+  const editEvent = 
+    <div>
       <ModalBody>
         <Container>
           <AvForm onValidSubmit={props.onSubmit}>
@@ -476,7 +526,7 @@ function EditEventForm(props) {
                 inputProps={{readOnly: true}}
               />
             </FormGroup>
-            {props.state.isRecurrence === true ? 
+            {seriesEditOpen === true ? 
               <RecurEventForm 
                 onChange={props.onRecurrenceChange} 
                 onWidgetChange={props.onRecurrenceWidgetChange}
@@ -487,9 +537,13 @@ function EditEventForm(props) {
           </AvForm>
         </Container>
       </ModalBody>
-      <ModalFooter>
-        <Button outline color='danger' onClick={props.onDelete}>Delete</Button>
-      </ModalFooter>
+    </div>
+  
+
+  return(
+    <Modal isOpen={props.state.displayEditEventForm} toggle={() => {props.toggle('edit'); setEditOpen(false); setSeriesEditOpen(false)}}>
+      <ModalHeader toggle={() => props.toggle('edit')}>{props.state.title}</ModalHeader>
+      {editOpen ? editEvent: eventInfo}
     </Modal>
   );
 }
