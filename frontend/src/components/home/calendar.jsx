@@ -42,6 +42,7 @@ class Calendar extends Component {
       teacher_user: '',
       isRecurrence: false,
       recurrence: {
+        id: '',
         freq: 'DAILY',
         dtstart: '',
         interval: 1,
@@ -202,10 +203,11 @@ class Calendar extends Component {
     }
   }
 
-  async handleEditEventSubmit(event) {
+  async handleEditEventSubmit(event, editSeries) {
     event.preventDefault();
     try {
       const {selectedEvent, studentList, displayNewEventForm, displayEditEventForm, ...payload} = this.state;
+      payload.editSeries = editSeries;
       const response = await axiosInstance.put(`/yoyaku/events/${this.state.selectedEvent}/`, payload);
       this.forceUpdate();
       return response;
@@ -225,7 +227,7 @@ class Calendar extends Component {
           {
             label: 'Delete Single Event',
             onClick: async () => {
-              if (window.confirm('Do you really want to delete this event?')) {
+              if (window.confirm('Event will be deleted')) {
                 await axiosInstance.delete(`/yoyaku/events/${this.state.selectedEvent}/`);
                 this.forceUpdate();
               }
@@ -234,8 +236,10 @@ class Calendar extends Component {
           {
             label: 'Delete Series',
             onClick: async () => {
-              if (window.confirm('Do you really want to delete all future events in this series?')) {
-                await axiosInstance.delete(`/yoyaku/events/${this.state.recurrence.id}/destroy_recurrence/`);
+              if (window.confirm('All future events in this series will be deleted?')) {
+                await axiosInstance.post(`/yoyaku/events/${this.state.recurrence.id}/destroy_recurrence/`, {
+                  delete_from: new Date(Date.now()).toISOString(),
+                });
                 this.forceUpdate();
               }
             }
@@ -243,7 +247,7 @@ class Calendar extends Component {
         ]
       });
     } else {
-      if (window.confirm('Do you really want to delete this event?')) {
+      if (window.confirm('Event will be deleted')) {
         await axiosInstance.delete(`/yoyaku/events/${this.state.selectedEvent}/`);
         this.forceUpdate();
       }
@@ -430,6 +434,7 @@ function RecurEventForm(props) {
           value={new Date(props.state.dtstart)}
           onChange={value => props.onWidgetChange('dtstart', moment(value).format())}
           time={false}
+          min={new Date(Date.now())}
           inputProps={{readOnly: true}}
         />
         Until
@@ -437,7 +442,7 @@ function RecurEventForm(props) {
           value={new Date(props.state.until)}
           onChange={value => props.onWidgetChange('until', moment(value).format())}
           time={false}
-          min={new Date(props.state.dtstart)}
+          min={Math.max.apply( null, [new Date(props.state.dtstart), new Date(Date.now())] )}
           inputProps={{readOnly: true}}
         />
       </FormGroup>
@@ -496,7 +501,7 @@ function EditEventForm(props) {
     <div>
       <ModalBody>
         <Container>
-          <AvForm onValidSubmit={props.onSubmit}>
+          <AvForm onValidSubmit={() => {setEditOpen(false); setSeriesEditOpen(false); props.onSubmit(window.event, seriesEditOpen);}}>
             <AvField type='text' label='Event Name' name='title' value={props.state.title} onChange={props.onChange} validate={{
               required: {value: true, errorMessage: 'Please enter event name'},
             }}/>
@@ -541,8 +546,8 @@ function EditEventForm(props) {
   
 
   return(
-    <Modal isOpen={props.state.displayEditEventForm} toggle={() => {props.toggle('edit'); setEditOpen(false); setSeriesEditOpen(false)}}>
-      <ModalHeader toggle={() => props.toggle('edit')}>{props.state.title}</ModalHeader>
+    <Modal isOpen={props.state.displayEditEventForm} toggle={() => {props.toggle('edit'); setEditOpen(false); setSeriesEditOpen(false);}}>
+      <ModalHeader toggle={() => {props.toggle('edit'); setEditOpen(false); setSeriesEditOpen(false);}}>{props.state.title}</ModalHeader>
       {editOpen ? editEvent: eventInfo}
     </Modal>
   );
