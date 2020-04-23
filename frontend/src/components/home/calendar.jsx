@@ -463,17 +463,17 @@ function EditEventForm(props) {
           <h5>Students</h5>
           {props.state.studentList.filter(user => props.state.student_user.includes(+user.split(' ')[2].slice(1, -1))).map(student => <p>{student}</p>)}
           <hr/>
-          From
+          Start
           <DateTimePicker
             value={new Date(props.state.start)}
-            time={false}
+            disabled
             date={false}
             inputProps={{readOnly: true}}
           />
-          To
+          End
           <DateTimePicker
             value={new Date(props.state.end)}
-            time={false}
+            disabled
             date={false}
             inputProps={{readOnly: true}}
           />       
@@ -532,11 +532,42 @@ function EditEventForm(props) {
               />
             </FormGroup>
             {seriesEditOpen === true ? 
-              <RecurEventForm 
-                onChange={props.onRecurrenceChange} 
-                onWidgetChange={props.onRecurrenceWidgetChange}
-                state={props.state.recurrence}
-              /> 
+              // <RecurEventForm 
+              //   onChange={props.onRecurrenceChange} 
+              //   onWidgetChange={props.onRecurrenceWidgetChange}
+              //   state={props.state.recurrence}
+              // /> 
+              <div>
+                <FormGroup>
+                  <Label>
+                    Frequency
+                    <Input type="select" name="freq" value={props.state.recurrence.freq} onChange={props.onRecurrenceChange}>
+                      <option value='DAILY'>Daily</option>
+                      <option value='WEEKLY'>Weekly</option>
+                      <option value='MONTHLY'>Monthly</option>
+                    </Input>
+                  </Label>
+                </FormGroup>
+                <FormGroup>
+                  Repeat from
+                  <DateTimePicker
+                    value={new Date(props.state.recurrence.dtstart)}
+                    onChange={value => props.onRecurrenceWidgetChange('dtstart', moment(value).format())}
+                    time={false}
+                    disabled
+                    min={new Date(Date.now())}
+                    inputProps={{readOnly: true}}
+                  />
+                  Until
+                  <DateTimePicker
+                    value={new Date(props.state.recurrence.until)}
+                    onChange={value => props.onRecurrenceWidgetChange('until', moment(value).format())}
+                    time={false}
+                    min={Math.max.apply( null, [new Date(props.state.recurrence.dtstart), new Date(Date.now())] )}
+                    inputProps={{readOnly: true}}
+                  />
+                </FormGroup>
+              </div>
             : null}
             <Button outline color='info'>Submit</Button>
           </AvForm>

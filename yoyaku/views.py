@@ -96,6 +96,8 @@ class EventViewSet(viewsets.ModelViewSet):
             tz_info = parse(request.data.get('start')).tzinfo
 
             recurrence_dates = [dt.date() for dt in rrule(dtstart=dtstart, freq=FREQNAMES.index(freq), interval=interval, until=until)]
+            recurrence_data['dtstart'] = datetime.combine(recurrence_dates[0], start_time, tz_info)
+            recurrence_data['until'] = datetime.combine(recurrence_dates[-1], end_time, tz_info)
 
             recurrence_serializer = RecurrenceSerializer(data=recurrence_data)
             recurrence_serializer.is_valid(raise_exception=True)
@@ -147,7 +149,13 @@ class EventViewSet(viewsets.ModelViewSet):
                 instance_until = recurrence_instance.until.date()
                 instance_freq = instance_recurrence_data.get('freq')
 
-                if request_recurrence_data == instance_recurrence_data:
+                if request_freq != instance_freq: # recreate recurrence from dtstart if frequency changes
+                    request.data['delete_from'] = datetime.combine(max(request_dtstart, now_datetime.date()), time(), request_tz_info)
+                    self.destroy_recurrence(request, pk=recurrence_instance.id)
+                    request.data.pop('delete_from')
+                    return self.create(request, *args, **kwargs)
+                else:
+                    # update all fields in future recurrence events
                     request_data = copy.deepcopy(request.data)
                     request_data.pop('isRecurrence')
                     request_data.pop('recurrence')
@@ -163,54 +171,40 @@ class EventViewSet(viewsets.ModelViewSet):
                             # If 'prefetch_related' has been applied to a queryset, we need to
                             # forcibly invalidate the prefetch cache on the instance.
                             instance._prefetched_objects_cache = {}
+
+                    # extension or reduction of recurrence
+                    if request_until != instance_until:
+                        data_to_serialize = []
+                        recurrence_instance_id = recurrence_instance.id
+                        recurrence_dates = []
+                        request.data['recurrence'] = recurrence_instance_id
+
+                        if request_until < instance_until:
+                            recurrence_instance.recurrenceEvents.filter(start__gte=datetime.combine(request_until + timedelta(days=1), request_start_time, request_tz_info)).delete()
+                            updated_until = recurrence_instance.recurrenceEvents.order_by('-start')[0].end
+                            recurrence_instance.until = updated_until
+                            recurrence_instance.save(update_fields=['until'])
+                        if request_until > instance_until:
+                            recurrence_dates += [dt.date() for dt in rrule(dtstart=instance_until, freq=FREQNAMES.index(instance_freq),
+                                                                           interval=instance_interval, until=request_until)][1:]
+                            recurrence_instance.until = datetime.combine(recurrence_dates[-1], request_end_time, request_tz_info)
+                            recurrence_instance.save(update_fields=['until'])
+
+                        for dt in recurrence_dates:
+                            start = datetime.combine(dt, request_start_time, request_tz_info)
+                            end = datetime.combine(dt, request_end_time, request_tz_info)
+                            request.data['start'] = start
+                            request.data['end'] = end
+                            data_to_serialize.append(copy.deepcopy(request.data))
+
+                        # Original code for create with 'many' set as True
+                        serializer = self.get_serializer(data=data_to_serialize, many=True)
+                        serializer.is_valid(raise_exception=True)
+                        self.perform_create(serializer)
+                        headers = self.get_success_headers(serializer.data)
+                        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
                     return Response(status=status.HTTP_202_ACCEPTED)
-                elif request_freq != instance_freq:
-                    request.data['delete_from'] = datetime.combine(request_dtstart, time(), request_tz_info)
-                    self.destroy_recurrence(request, pk=recurrence_instance.id)
-                    request.data.pop('delete_from')
-                    return self.create(request, *args, **kwargs)
-                else:
-                    data_to_serialize = []
-                    recurrence_instance_id = recurrence_instance.id
-                    recurrence_dates = []
-                    request.data['recurrence'] = recurrence_instance_id
-
-                    if request_dtstart < instance_dtstart:
-                        recurrence_dates += [dt.date() for dt in rrule(dtstart=request_dtstart, freq=FREQNAMES.index(instance_freq),
-                                                                       interval=instance_interval, until=instance_dtstart - timedelta(days=1))]
-                        recurrence_instance.dtstart = datetime.combine(request_dtstart, request_start_time, request_tz_info)
-                        recurrence_instance.save(update_fields=['dtstart'])
-                    if request_dtstart > instance_dtstart:
-                        recurrence_instance.recurrenceEvents.filter(start__gte=now_datetime, start__lte=datetime.combine(request_dtstart - timedelta(days=1), request_end_time, request_tz_info)).delete()
-                        for event in recurrence_instance.recurrenceEvents.filter(start__lt=now_datetime):
-                            event.isRecurrence = False
-                            event.recurrence = None
-                            event.save(update_fields=['isRecurrence', 'recurrence'])
-                        recurrence_instance.dtstart = datetime.combine(request_dtstart, request_start_time, request_tz_info)
-                        recurrence_instance.save(update_fields=['dtstart'])
-                    if request_until < instance_until:
-                        recurrence_instance.recurrenceEvents.filter(start__gte=datetime.combine(request_until + timedelta(days=1), request_start_time, request_tz_info)).delete()
-                        recurrence_instance.until = datetime.combine(request_until, request_end_time, request_tz_info)
-                        recurrence_instance.save(update_fields=['until'])
-                    if request_until > instance_until:
-                        recurrence_dates += [dt.date() for dt in rrule(dtstart=instance_until + timedelta(days=1), freq=FREQNAMES.index(instance_freq),
-                                                                       interval=instance_interval, until=request_until)]
-                        recurrence_instance.until = datetime.combine(request_until, request_end_time, request_tz_info)
-                        recurrence_instance.save(update_fields=['until'])
-
-                    for dt in recurrence_dates:
-                        start = datetime.combine(dt, request_start_time, request_tz_info)
-                        end = datetime.combine(dt, request_end_time, request_tz_info)
-                        request.data['start'] = start
-                        request.data['end'] = end
-                        data_to_serialize.append(copy.deepcopy(request.data))
-
-                    # Original code for create with 'many' set as True
-                    serializer = self.get_serializer(data=data_to_serialize, many=True)
-                    serializer.is_valid(raise_exception=True)
-                    self.perform_create(serializer)
-                    headers = self.get_success_headers(serializer.data)
-                    return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
             else:
                 request.data.pop('isRecurrence')
                 request.data.pop('recurrence')
