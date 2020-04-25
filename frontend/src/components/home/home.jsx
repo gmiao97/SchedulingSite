@@ -49,7 +49,7 @@ class Home extends Component {
         <div>
           <Navbar color='dark' dark expand='sm'>
             <NavbarBrand className='text-warning' href='/'>
-              <span className='m-2'><FontAwesomeIcon icon='school' size='md'/></span>
+              <span className='m-2'><FontAwesomeIcon icon='school' size='1x'/></span>
               Success Academy
             </NavbarBrand>
             <NavbarToggler onClick={this.toggle}/>
@@ -75,9 +75,9 @@ class Home extends Component {
                     <NavLink className='text-muted' tag={Link} to='/edit-profile/'>Edit Profile</NavLink>
                     </DropdownItem>
                     <DropdownItem divider />
-                    <DropdownItem>
+                    <div className='text-center'>
                       <Button outline color='danger' onClick={this.handleLogout}>Logout</Button>
-                    </DropdownItem>
+                    </div>
                   </DropdownMenu>
                 </UncontrolledDropdown>
               </Nav>

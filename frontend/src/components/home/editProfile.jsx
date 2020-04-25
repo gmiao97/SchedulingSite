@@ -103,7 +103,7 @@ class EditProfile extends Signup {
                 }}/>
               </Col>
               <Col md='6'>
-                <AvField type='date' label='Date of Birth' name='birthday' value={this.state.birthday} onChange={this.handleChange} validate={{
+                <AvField type='date' label='Date of Birth' name='birthday' value={this.state.birthday} onChange={this.handleChange} validate={{ // TODO Safari not supported
                   required: {value: true, errorMessage: 'Please enter birth date'},
                   date: {format: 'MM/DD/YYYY'},
                 }}/>

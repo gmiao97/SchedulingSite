@@ -1,7 +1,7 @@
 import pytz
 from rest_framework import serializers
 
-from .models import StudentProfile, TeacherProfile, Event, Subject, MyUser
+from .models import StudentProfile, TeacherProfile, Recurrence, Event, Subject, MyUser
 
 
 class StudentProfileSerializer(serializers.ModelSerializer):
@@ -52,7 +52,7 @@ class MyUserSerializer(serializers.ModelSerializer):
 
         return user
 
-    def update(self, instance, validated_data):  # TODO update student/teacher profile
+    def update(self, instance, validated_data):
         student_data = validated_data.pop('student_profile')
         teacher_data = validated_data.pop('teacher_profile')
         student_instance = validated_data.pop('student_id')
@@ -78,21 +78,29 @@ class MyUserSerializer(serializers.ModelSerializer):
         return instance
 
 
+class RecurrenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recurrence
+        fields = ['id', 'freq', 'dtstart', 'until', 'interval']
+
+
 class EventSerializer(serializers.ModelSerializer):
     teacher_user = serializers.PrimaryKeyRelatedField(queryset=MyUser.objects.all())
     student_user = serializers.PrimaryKeyRelatedField(many=True, queryset=MyUser.objects.all())
+    recurrence = serializers.PrimaryKeyRelatedField(allow_null=True, queryset=Recurrence.objects.all())
 
     class Meta:
         model = Event
-        fields = ['id', 'title', 'start', 'end', 'teacher_user', 'student_user']
+        fields = ['id', 'title', 'start', 'end', 'teacher_user', 'student_user', 'isRecurrence', 'recurrence']
 
 
 class EventReadSerializer(EventSerializer):
     teacher_user = MyUserSerializer()
     student_user = MyUserSerializer(many=True)
+    recurrence = RecurrenceSerializer()
 
 
 class SubjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subject
-        fields = ['subject_name']
+        fields = ['id', 'subject_name']
