@@ -149,7 +149,7 @@ class EventViewSet(viewsets.ModelViewSet):
                 instance_until = recurrence_instance.until.date()
                 instance_freq = instance_recurrence_data.get('freq')
 
-                if request_freq != instance_freq: # recreate recurrence from dtstart if frequency changes
+                if request_freq != instance_freq:  # recreate recurrence from dtstart if frequency changes
                     request.data['delete_from'] = datetime.combine(max(request_dtstart, now_datetime.date()), time(), request_tz_info)
                     self.destroy_recurrence(request, pk=recurrence_instance.id)
                     request.data.pop('delete_from')

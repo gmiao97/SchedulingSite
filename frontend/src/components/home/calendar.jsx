@@ -463,6 +463,13 @@ function EditEventForm(props) {
           <h5>Students</h5>
           {props.state.studentList.filter(user => props.state.student_user.includes(+user.split(' ')[2].slice(1, -1))).map(student => <p>{student}</p>)}
           <hr/>
+          Date
+          <DateTimePicker
+            value={new Date(props.state.start)}
+            disabled
+            time={false}
+            inputProps={{readOnly: true}}
+          />
           Start
           <DateTimePicker
             value={new Date(props.state.start)}
@@ -513,6 +520,16 @@ function EditEventForm(props) {
               defaultValue={props.state.studentList.filter(user => props.state.student_user.includes(+user.split(' ')[2].slice(1, -1)))}
             />
             <FormGroup>
+              Date
+              <DateTimePicker
+                value={new Date(props.state.start)}
+                onChange={value => {
+                    props.onWidgetChange('start', moment(value).format())
+                    props.onWidgetChange('end', moment(value).format())
+                }}
+                time={false}
+                inputProps={{readOnly: true}}
+              />
               Start
               <DateTimePicker
                 value={new Date(props.state.start)}
