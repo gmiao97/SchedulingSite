@@ -48,6 +48,7 @@ class Calendar extends Component {
         interval: 1,
         until: '',
       },
+      comment: '',
 
       selectedEvent: '',
       studentList: [],
@@ -128,6 +129,7 @@ class Calendar extends Component {
       student_user: info.event.extendedProps.student_user.map(user => user.id),
       isRecurrence: info.event.extendedProps.isRecurrence,
       recurrence: info.event.extendedProps.recurrence,
+      comment: info.event.extendedProps.comment,
       selectedEvent: info.event.id,
       teacherName: `${info.event.extendedProps.teacher_user.last_name}, ${info.event.extendedProps.teacher_user.first_name}`
     });
@@ -463,6 +465,9 @@ function EditEventForm(props) {
           <h5>Students</h5>
           {props.state.studentList.filter(user => props.state.student_user.includes(+user.split(' ')[2].slice(1, -1))).map(student => <p>{student}</p>)}
           <hr/>
+          <h5>Comments</h5>
+          <p class='multi-line'>{props.state.comment}</p>
+          <hr/>
           Date
           <DateTimePicker
             value={new Date(props.state.start)}
@@ -483,7 +488,7 @@ function EditEventForm(props) {
             disabled
             date={false}
             inputProps={{readOnly: true}}
-          />       
+          />
         </Container>
       </ModalBody>
       <ModalFooter>
@@ -519,6 +524,10 @@ function EditEventForm(props) {
               onChange={value => props.onWidgetChange('student_user', value.map(student => +student.split(' ')[2].slice(1, -1)))}
               defaultValue={props.state.studentList.filter(user => props.state.student_user.includes(+user.split(' ')[2].slice(1, -1)))}
             />
+            <AvField type='textarea' label='Comments' name='comment' value={props.state.comment} onChange={props.onChange} validate={{
+              maxLength: {value: 1000},
+            }}/>
+            <hr/>
             <FormGroup>
               Date
               <DateTimePicker
@@ -548,6 +557,7 @@ function EditEventForm(props) {
                 inputProps={{readOnly: true}}
               />
             </FormGroup>
+            <hr/>
             {seriesEditOpen === true ? 
               // <RecurEventForm 
               //   onChange={props.onRecurrenceChange} 

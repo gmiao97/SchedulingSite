@@ -82,7 +82,7 @@ class Profile extends Component {
             <Container className='mx-5' fluid>
               <h1>{this.state.first_name + ' ' + this.state.last_name}</h1>
               <h4>{this.state.user_type.toLowerCase()}</h4>
-              <p className='text-muted'>{this.state.description}</p>
+              <p className='text-muted' class='multi-line'>{this.state.description}</p>
             </Container>
           </Jumbotron>
           <Container>

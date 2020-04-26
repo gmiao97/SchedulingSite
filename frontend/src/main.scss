@@ -13,6 +13,10 @@ $img-path: '~react-widgets/lib/img';
   background: #fdfdea;
 }
 
+.multi-line {
+  white-space: pre-wrap;
+}
+
 #landing {
   // background-color: #ffcccc;
   height: 100%;
