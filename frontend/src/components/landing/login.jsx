@@ -49,7 +49,7 @@ class Login extends Component {
           <AvField type='password' label='Password' name='password' value={this.state.password} onChange={this.handleChange} validate={{
             required: {value: true, errorMessage: 'Please enter a password'},
           }}/>
-          <Button outline color='info'>Submit</Button>
+          <Button color='warning'>Submit</Button>
         </AvForm>
       </Container>
     );

@@ -1,5 +1,6 @@
 import pytz
 from rest_framework import serializers
+from rest_framework.fields import FileField
 
 from .models import StudentProfile, TeacherProfile, Recurrence, Event, Subject, MyUser
 
@@ -88,16 +89,25 @@ class EventSerializer(serializers.ModelSerializer):
     teacher_user = serializers.PrimaryKeyRelatedField(queryset=MyUser.objects.all())
     student_user = serializers.PrimaryKeyRelatedField(many=True, queryset=MyUser.objects.all())
     recurrence = serializers.PrimaryKeyRelatedField(allow_null=True, queryset=Recurrence.objects.all())
+    file = FileField(allow_null=True, required=False)
 
     class Meta:
         model = Event
-        fields = ['id', 'title', 'start', 'end', 'teacher_user', 'student_user', 'isRecurrence', 'recurrence', 'comment']
+        fields = ['id', 'title', 'start', 'end', 'teacher_user', 'student_user', 'isRecurrence', 'recurrence', 'comment', 'file']
 
 
 class EventReadSerializer(EventSerializer):
     teacher_user = MyUserSerializer()
     student_user = MyUserSerializer(many=True)
     recurrence = RecurrenceSerializer()
+    file = serializers.SerializerMethodField()
+
+    def get_file(self, obj):
+        if obj.file:
+            request = self.context.get('request')
+            return request.build_absolute_uri(obj.file.url)
+        else:
+            return None
 
 
 class SubjectSerializer(serializers.ModelSerializer):

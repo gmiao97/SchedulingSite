@@ -26,6 +26,7 @@ import {
   DropdownItem,
   ListGroup,
   ListGroupItem,
+  FormText,
 } from 'reactstrap';
 
 import { getUserIdFromToken, getUserTypeFromToken } from '../../util';
@@ -49,6 +50,7 @@ class Calendar extends Component {
         until: '',
       },
       comment: '',
+      file: null,
 
       selectedEvent: '',
       studentList: [],
@@ -63,6 +65,8 @@ class Calendar extends Component {
     this.handleEventClick = this.handleEventClick.bind(this);
     this.handleSelect = this.handleSelect.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.handleFileChange = this.handleFileChange.bind(this);
+    this.handleFileDelete = this.handleFileDelete.bind(this);
     this.handleRecurrenceChange = this.handleRecurrenceChange.bind(this);
     this.handleWidgetChange = this.handleWidgetChange.bind(this);
     this.handleRecurrenceWidgetChange = this.handleRecurrenceWidgetChange.bind(this);
@@ -130,6 +134,7 @@ class Calendar extends Component {
       isRecurrence: info.event.extendedProps.isRecurrence,
       recurrence: info.event.extendedProps.recurrence,
       comment: info.event.extendedProps.comment,
+      file: info.event.extendedProps.file,
       selectedEvent: info.event.id,
       teacherName: `${info.event.extendedProps.teacher_user.last_name}, ${info.event.extendedProps.teacher_user.first_name}`
     });
@@ -157,6 +162,26 @@ class Calendar extends Component {
         [event.target.name]: event.target.value,
       }
     });
+  }
+
+  handleFileChange(event) {
+    if (!event) {
+      this.setState({
+        file: null,
+      });
+    } else {
+      this.setState({
+        file: event.target.files[0],
+      });
+    }
+  }
+
+  async handleFileDelete() {
+    if (window.confirm('File will be deleted')) {
+      await axiosInstance.delete(`/yoyaku/events/${this.state.selectedEvent}/destroy_file/`);
+      this.toggleForm('edit');
+      this.forceUpdate();
+    }
   }
 
   async handleWidgetChange(name, value) {
@@ -189,13 +214,12 @@ class Calendar extends Component {
 
   async handleNewEventSubmit(event) {
     event.preventDefault();
+    const {selectedEvent, studentList, displayNewEventForm, displayEditEventForm, teacherName, comment, file, ...payload} = this.state;
     try {
-      if (!this.state.isRecurrence) {
-        this.setState({
-          recurrence: null,
-        });
+      if (!payload.isRecurrence) {
+        payload.recurrence = null;
       }
-      const response = await axiosInstance.post('/yoyaku/events/', this.state);
+      const response = await axiosInstance.post('/yoyaku/events/', payload);
       this.forceUpdate();
       return response;
     } catch(error) {
@@ -208,9 +232,14 @@ class Calendar extends Component {
   async handleEditEventSubmit(event, editSeries) {
     event.preventDefault();
     try {
-      const {selectedEvent, studentList, displayNewEventForm, displayEditEventForm, ...payload} = this.state;
+      const {selectedEvent, studentList, displayNewEventForm, displayEditEventForm, teacherName, file, ...payload} = this.state;
       payload.editSeries = editSeries;
       const response = await axiosInstance.put(`/yoyaku/events/${this.state.selectedEvent}/`, payload);
+      if (file && !editSeries) {
+        const data = new FormData();
+        data.append('file', file);
+        await axiosInstance.put(`/yoyaku/events/${this.state.selectedEvent}/update_file/`, data)
+      }
       this.forceUpdate();
       return response;
     } catch (error) {
@@ -305,25 +334,10 @@ class Calendar extends Component {
                   failureCallback(err);
                 });
               }
-
-              // [
-              //   {
-              //     title: 'recurring event',
-              //     rrule: {
-              //       freq: 'daily',
-              //       interval: 1,
-              //       // byweekday: [RRule.MO.nth(2)],
-              //       // bymonthday: 15,
-              //       dtstart: '2020-04-09T10:30:00',
-              //       until: '2020-04-09T10:30:00'
-              //     },
-              //     duration: '02:00'
-              //   }
-              // ]
             }
+            eventColor='orange'
           />
           {getUserTypeFromToken() === 'TEACHER' ? 
-            <div>
               <NewEventForm 
                 state={this.state} 
                 toggle={this.toggleForm} 
@@ -331,21 +345,23 @@ class Calendar extends Component {
                 onRecurrenceChange={this.handleRecurrenceChange}
                 onWidgetChange={this.handleWidgetChange}
                 onRecurrenceWidgetChange={this.handleRecurrenceWidgetChange}
-                onSubmit={this.handleNewEventSubmit}/>
-              <EditEventForm 
-                state={this.state} 
-                toggle={this.toggleForm} 
-                onDelete={this.handleDelete}
-                onChange={this.handleChange} 
-                onWidgetChange={this.handleWidgetChange}
-                onRecurrenceChange={this.handleRecurrenceChange}
-                onRecurrenceWidgetChange={this.handleRecurrenceWidgetChange}
-                onSubmit={this.handleEditEventSubmit}
+                onSubmit={this.handleNewEventSubmit}
               />
-            </div> 
           :
             null
           }
+          <EditEventForm 
+            state={this.state} 
+            toggle={this.toggleForm} 
+            onDelete={this.handleDelete}
+            onChange={this.handleChange} 
+            onFileChange={this.handleFileChange}
+            onFileDelete={this.handleFileDelete}
+            onWidgetChange={this.handleWidgetChange}
+            onRecurrenceChange={this.handleRecurrenceChange}
+            onRecurrenceWidgetChange={this.handleRecurrenceWidgetChange}
+            onSubmit={this.handleEditEventSubmit}
+          />
         </Container>
       </div>
     );
@@ -409,7 +425,7 @@ function NewEventForm(props) {
                 state={props.state.recurrence}
               /> 
               : null}
-            <Button className='my-2' outline color='info'>Submit</Button>
+            <Button className='my-2' color='warning'>Submit</Button>
           </AvForm>
         </Container>
       </ModalBody>
@@ -465,6 +481,17 @@ function EditEventForm(props) {
           <h5>Students</h5>
           {props.state.studentList.filter(user => props.state.student_user.includes(+user.split(' ')[2].slice(1, -1))).map(student => <p>{student}</p>)}
           <hr/>
+          <h5>File</h5>
+          {props.state.file ? 
+            <div>
+              {/* <a href={props.state.file}>{props.state.file.split('/').pop()}</a> */}
+              <a href={props.state.file}>click to download</a>
+              {getUserTypeFromToken() === 'TEACHER' ? <Button color='danger' size='sm' className='m-2' onClick={props.onFileDelete}>X</Button> : null}
+            </div>
+          :
+            <p>No file uploaded</p>
+          }
+          <hr/>
           <h5>Comments</h5>
           <p class='multi-line'>{props.state.comment}</p>
           <hr/>
@@ -491,22 +518,26 @@ function EditEventForm(props) {
           />
         </Container>
       </ModalBody>
-      <ModalFooter>
-        {props.state.isRecurrence ?
-          <UncontrolledButtonDropdown>
-            <DropdownToggle caret outline color='primary'>
-              Edit
-            </DropdownToggle>
-            <DropdownMenu>
-              <DropdownItem header>Edit Event</DropdownItem>
-              <DropdownItem onClick={() => setEditOpen(true)}>Edit Single Event</DropdownItem>
-              <DropdownItem onClick={() => {setEditOpen(true); setSeriesEditOpen(true);}}>Edit Series</DropdownItem>
-            </DropdownMenu>
-          </UncontrolledButtonDropdown>
-        : 
-          <Button outline color='primary' onClick={() => setEditOpen(true)}>Edit</Button>}
-        <Button outline color='danger' onClick={props.onDelete}>Delete</Button>
-      </ModalFooter>
+      {getUserTypeFromToken() === 'TEACHER' ?
+        <ModalFooter>
+          {props.state.isRecurrence ?
+            <UncontrolledButtonDropdown>
+              <DropdownToggle caret color='warning'>
+                Edit
+              </DropdownToggle>
+              <DropdownMenu>
+                <DropdownItem header>Edit Event</DropdownItem>
+                <DropdownItem onClick={() => {setEditOpen(true); props.onFileChange(null)}}>Edit Single Event</DropdownItem>
+                <DropdownItem onClick={() => {setEditOpen(true); setSeriesEditOpen(true);}}>Edit Series</DropdownItem>
+              </DropdownMenu>
+            </UncontrolledButtonDropdown>
+          : 
+            <Button color='warning' onClick={() => setEditOpen(true)}>Edit</Button>}
+          <Button color='danger' onClick={props.onDelete}>Delete</Button>
+        </ModalFooter>
+      :
+        null
+      }
     </div>;
 
   const editEvent = 
@@ -524,21 +555,40 @@ function EditEventForm(props) {
               onChange={value => props.onWidgetChange('student_user', value.map(student => +student.split(' ')[2].slice(1, -1)))}
               defaultValue={props.state.studentList.filter(user => props.state.student_user.includes(+user.split(' ')[2].slice(1, -1)))}
             />
-            <AvField type='textarea' label='Comments' name='comment' value={props.state.comment} onChange={props.onChange} validate={{
-              maxLength: {value: 1000},
-            }}/>
             <hr/>
+            {!seriesEditOpen ? 
+              <FormGroup>
+                <AvField type='textarea' label='Comments' name='comment' value={props.state.comment} onChange={props.onChange} validate={{
+                  maxLength: {value: 1000},
+                }}/>
+                <Label>
+                  File
+                  <Input type="file" name="file" id="exampleFile" onChange={props.onFileChange}/>
+                </Label>
+                <FormText color="muted">
+                  Lesson Material
+                </FormText>
+              </FormGroup>
+            :
+              null
+            }
             <FormGroup>
-              Date
-              <DateTimePicker
-                value={new Date(props.state.start)}
-                onChange={value => {
-                    props.onWidgetChange('start', moment(value).format())
-                    props.onWidgetChange('end', moment(value).format())
-                }}
-                time={false}
-                inputProps={{readOnly: true}}
-              />
+              {!seriesEditOpen ? 
+                <div>
+                  Date
+                  <DateTimePicker
+                    value={new Date(props.state.start)}
+                    onChange={value => {
+                        props.onWidgetChange('start', moment(value).format())
+                        props.onWidgetChange('end', moment(value).format())
+                    }}
+                    time={false}
+                    inputProps={{readOnly: true}}
+                  />
+                </div>
+              :
+                null
+              }
               Start
               <DateTimePicker
                 value={new Date(props.state.start)}
@@ -558,12 +608,7 @@ function EditEventForm(props) {
               />
             </FormGroup>
             <hr/>
-            {seriesEditOpen === true ? 
-              // <RecurEventForm 
-              //   onChange={props.onRecurrenceChange} 
-              //   onWidgetChange={props.onRecurrenceWidgetChange}
-              //   state={props.state.recurrence}
-              // /> 
+            {seriesEditOpen ? 
               <div>
                 <FormGroup>
                   <Label>
@@ -596,7 +641,7 @@ function EditEventForm(props) {
                 </FormGroup>
               </div>
             : null}
-            <Button outline color='info'>Submit</Button>
+            <Button color='warning'>Submit</Button>
           </AvForm>
         </Container>
       </ModalBody>

@@ -76,7 +76,7 @@ class Home extends Component {
                     </DropdownItem>
                     <DropdownItem divider />
                     <div className='text-center'>
-                      <Button outline color='danger' onClick={this.handleLogout}>Logout</Button>
+                      <Button color='danger' onClick={this.handleLogout}>Logout</Button>
                     </div>
                   </DropdownMenu>
                 </UncontrolledDropdown>

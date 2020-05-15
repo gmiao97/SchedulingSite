@@ -124,5 +124,6 @@ class Event(models.Model):
     isRecurrence = models.BooleanField(default=False)
     recurrence = models.ForeignKey(Recurrence, null=True, on_delete=models.CASCADE, related_name='recurrenceEvents',
                                    related_query_name='recurrenceEvent')
-    comment = models.CharField(_('comment'), max_length=1000)
+    comment = models.CharField(_('comment'), max_length=1000, null=True, blank=True)
+    file = models.FileField(upload_to='eventFiles/', null=True)
 

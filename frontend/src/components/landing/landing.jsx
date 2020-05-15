@@ -37,7 +37,7 @@ function Landing(props) {
           <Nav className='ml-auto' navbar>
             <NavItem>
               <div>
-                <Button className='m-1' outline color='warning' onClick={modalToggle1}>Signup</Button>
+                <Button className='m-1' color='warning' onClick={modalToggle1}>Signup</Button>
                 <Modal isOpen={modal1} toggle={modalToggle1}>
                   <ModalHeader toggle={modalToggle1}>Signup</ModalHeader>
                   <ModalBody>
@@ -48,7 +48,7 @@ function Landing(props) {
             </NavItem>
             <NavItem>
               <div>
-                <Button className='m-1' outline color='warning' onClick={modalToggle2}>Login</Button>
+                <Button className='m-1' color='warning' onClick={modalToggle2}>Login</Button>
                 <Modal isOpen={modal2} toggle={modalToggle2}>
                   <ModalHeader toggle={modalToggle2}>Login</ModalHeader>
                   <ModalBody>

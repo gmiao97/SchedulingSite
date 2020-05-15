@@ -4,7 +4,9 @@ from django.utils.dateparse import parse_datetime
 from rest_framework import status, viewsets
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, action
+from rest_framework.parsers import FileUploadParser
+from rest_framework.exceptions import ParseError
+from rest_framework.decorators import api_view, action, parser_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -58,7 +60,7 @@ class UserViewSet(viewsets.ModelViewSet):
             events = user.teacherEvents.filter(start__gte=active_start).filter(end__lte=active_end)
         elif user.user_type == 'STUDENT':
             events = user.studentEvents.filter(start__gte=active_start).filter(end__lte=active_end)
-        serializer = EventReadSerializer(events, many=True)
+        serializer = EventReadSerializer(events, many=True, context={'request': request})
         return Response(serializer.data)
 
 
@@ -68,7 +70,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         permission_classes = []
-        if self.action in ('retrieve', 'create', 'update', 'partial_update', 'destroy'):
+        if self.action in ('retrieve', 'create', 'update', 'partial_update', 'destroy', 'update_file', 'destroy_file'):
             permission_classes = [IsLoggedInUserAndEventOwner]
         elif self.action == 'list':
             permission_classes = [IsAdminUser]
@@ -127,6 +129,7 @@ class EventViewSet(viewsets.ModelViewSet):
             is_edit_series = request.data.get('editSeries')
 
             if is_edit_series:
+                request.data.pop('comment')
                 now_datetime = datetime.now(tz=timezone.utc)
 
                 event_instance = self.get_object()
@@ -231,6 +234,21 @@ class EventViewSet(viewsets.ModelViewSet):
             event.recurrence = None
             event.save(update_fields=['isRecurrence', 'recurrence'])
         recurrence.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['put'])
+    def update_file(self, request, pk=None):
+        event_instance = self.get_object()
+        file = request.data.get('file')
+        event_instance.file = file
+        event_instance.save(update_fields=['file'])
+        return Response(status=status.HTTP_202_ACCEPTED)
+
+    @action(detail=True, methods=['delete'])
+    def destroy_file(self, request, pk=None):
+        event_instance = self.get_object()
+        event_instance.file = None
+        event_instance.save(update_fields=['file'])
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

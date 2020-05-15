@@ -111,7 +111,7 @@ class Signup extends Component {
               onChange={this.handleChangeTeacherProfile}
             />
           }
-          <Button outline color='info'>Submit</Button>
+          <Button color='warning'>Submit</Button>
         </AvForm>
       </Container>
     )

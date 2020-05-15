@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rest_framework',
     # 'corsheaders',
     'rest_framework_simplejwt.token_blacklist',
+    'django_cleanup.apps.CleanupConfig',
 ]
 
 MIDDLEWARE = [
@@ -162,5 +163,8 @@ REACT_APP_DIR = os.path.join(BASE_DIR, 'frontend')
 STATICFILES_DIRS = [
     os.path.join(REACT_APP_DIR, 'build', 'static'),
 ]
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 # django_heroku.settings(locals())
