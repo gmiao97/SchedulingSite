@@ -1,2 +1,2 @@
 release: python manage.py migrate
-web: gunicorn yoyakusite.wsgi
+web: gunicorn yoyakusite.wsgi --log-file -
