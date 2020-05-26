@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
-# import django_heroku
 import dj_database_url
 import dotenv
 from datetime import timedelta
@@ -47,14 +46,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'yoyaku.apps.YoyakuConfig',
     'rest_framework',
-    # 'corsheaders',
     'rest_framework_simplejwt.token_blacklist',
     'django_cleanup.apps.CleanupConfig',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    # 'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -114,11 +111,6 @@ SIMPLE_JWT = {
     'TOKEN_TYPE_CLAIM': 'token_type',
 }
 
-# CORS_ORIGIN_WHITELIST = (
-#     'http://localhost:3000',
-#     'http://localhost:8000',
-# )
-
 AUTH_USER_MODEL = 'yoyaku.MyUser'
 
 # Password validation
@@ -166,5 +158,3 @@ STATICFILES_DIRS = [
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
-
-# django_heroku.settings(locals())
