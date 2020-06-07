@@ -108,7 +108,10 @@ class Calendar extends Component {
     const teachers = [];
     const response = await axiosInstance.get('/yoyaku/users/teacher_list/');
     for (let user of response.data) {
-      teachers.push(`${user.last_name}, ${user.first_name} (${user.id})`);
+      teachers.push({
+        name: `${user.last_name}, ${user.first_name} (${user.id})`,
+        id: user.id,
+      });
     }
     teachers.sort();
     this.setState({
@@ -120,7 +123,10 @@ class Calendar extends Component {
     const students = [];
     const response = await axiosInstance.get('/yoyaku/users/student_list/');
     for (let user of response.data) {
-      students.push(`${user.last_name}, ${user.first_name} (${user.id})`);
+      students.push({
+        name: `${user.last_name}, ${user.first_name} (${user.id})`,
+        id: user.id,
+      });
     }
     students.sort();
     this.setState({
@@ -132,13 +138,11 @@ class Calendar extends Component {
     const users = [];
     const response = await axiosInstance.get('/yoyaku/users/');
     for (let user of response.data) {
-      users.push(
-        {
-          name: `${user.last_name}, ${user.first_name} (${user.id})`,
-          id: user.id,
-          type: user.user_type,
-        }
-      );
+      users.push({
+        name: `${user.last_name}, ${user.first_name} (${user.id})`,
+        id: user.id,
+        type: user.user_type,
+      });
     }
     users.sort();
     this.setState({
@@ -477,7 +481,8 @@ function NewEventForm(props) {
             <Multiselect
               name='student_user'
               data={props.state.studentList}
-              onChange={value => props.onWidgetChange('student_user', value.map(student => +student.split(' ')[2].slice(1, -1)))}
+              textField='name'
+              onChange={value => props.onWidgetChange('student_user', value.map(student => student.id))}
             />
             <FormGroup>
               Start
@@ -574,7 +579,7 @@ function EditEventForm(props) {
           <h5>Teacher</h5>
           <p>{props.state.teacherName}</p>
           <h5>Students</h5>
-          {props.state.studentList.filter(user => props.state.student_user.includes(+user.split(' ')[2].slice(1, -1))).map(student => <p>{student}</p>)}
+          {props.state.studentList.filter(user => props.state.student_user.includes(user.id)).map(student => <p>{student.name}</p>)}
           <hr/>
           <h5>File</h5>
           {props.state.file ? 
@@ -651,8 +656,9 @@ function EditEventForm(props) {
             <Multiselect
               name='student_user'
               data={props.state.studentList}
-              onChange={value => props.onWidgetChange('student_user', value.map(student => +student.split(' ')[2].slice(1, -1)))}
-              defaultValue={props.state.studentList.filter(user => props.state.student_user.includes(+user.split(' ')[2].slice(1, -1)))}
+              textField='name'
+              onChange={value => props.onWidgetChange('student_user', value.map(student => student.id))}
+              defaultValue={props.state.studentList.filter(user => props.state.student_user.includes(user.id))}
             />
             <hr/>
             {!seriesEditOpen ? 
