@@ -31,7 +31,7 @@ import {
   Col,
 } from 'reactstrap';
 
-import { getUserIdFromToken, getUserTypeFromToken } from '../../util';
+import { getUserIdFromToken, isAdmin, isTeacher, isStudent } from '../../util';
 import axiosInstance from '../../axiosApi';
 
 const colors = ['blue', 'purple', 'grey', 'red', 'orange', 'green', 'pink']
@@ -58,6 +58,7 @@ class Calendar extends Component {
       color: 'blue',
 
       selectedEvent: '',
+      teacherList: [],
       studentList: [],
       userList: [],
       selectedUsers: [],
@@ -67,6 +68,7 @@ class Calendar extends Component {
     };
 
     this.calendarRef = React.createRef();
+    this.getTeacherList = this.getTeacherList.bind(this);
     this.getStudentList = this.getStudentList.bind(this);
     this.getUserList = this.getUserList.bind(this);
     this.handleDateClick = this.handleDateClick.bind(this);
@@ -86,19 +88,32 @@ class Calendar extends Component {
 
   componentDidMount() {
     try {
-      if (getUserTypeFromToken() === 'TEACHER') {
+      if (isTeacher()) {
         this.getStudentList();
         this.setState({
           teacher_user: getUserIdFromToken(),
         });
       }
-      if (getUserTypeFromToken() === 'ADMIN') {
+      if (isAdmin()) {
         this.getStudentList();
         this.getUserList();
+        this.getTeacherList();
       }
     } catch (error) {
       throw error;
     }
+  }
+
+  async getTeacherList() {
+    const teachers = [];
+    const response = await axiosInstance.get('/yoyaku/users/teacher_list/');
+    for (let user of response.data) {
+      teachers.push(`${user.last_name}, ${user.first_name} (${user.id})`);
+    }
+    teachers.sort();
+    this.setState({
+      teacherList: teachers,
+    });
   }
 
   async getStudentList() {
@@ -117,7 +132,13 @@ class Calendar extends Component {
     const users = [];
     const response = await axiosInstance.get('/yoyaku/users/');
     for (let user of response.data) {
-      users.push(`${user.last_name}, ${user.first_name} (${user.id})`);
+      users.push(
+        {
+          name: `${user.last_name}, ${user.first_name} (${user.id})`,
+          id: user.id,
+          type: user.user_type,
+        }
+      );
     }
     users.sort();
     this.setState({
@@ -152,11 +173,11 @@ class Calendar extends Component {
   }
 
   handleEventClick(info) {
-    // alert(info.event.extendedProps.student_user[0].first_name);
     this.setState({
       title: info.event.title,
       start: moment(info.event.start).format(),
       end: moment(info.event.end || info.event.start).format(),
+      teacher_user: info.event.extendedProps.teacher_user.id,
       student_user: info.event.extendedProps.student_user.map(user => user.id),
       isRecurrence: info.event.extendedProps.isRecurrence,
       recurrence: info.event.extendedProps.recurrence,
@@ -263,7 +284,7 @@ class Calendar extends Component {
       const {selectedEvent, studentList, displayNewEventForm, displayEditEventForm, teacherName, file, ...payload} = this.state;
       payload.editSeries = editSeries;
       const response = await axiosInstance.put(`/yoyaku/events/${this.state.selectedEvent}/`, payload);
-      if (file && !editSeries) {
+      if (typeof file !== 'string' && !editSeries) {
         const data = new FormData();
         data.append('file', file);
         await axiosInstance.put(`/yoyaku/events/${this.state.selectedEvent}/update_file/`, data)
@@ -330,22 +351,24 @@ class Calendar extends Component {
     return(
       <div className='m-3'>
         <Row>
-          {getUserTypeFromToken() === 'ADMIN' ? 
+          {isAdmin() ? 
             <Col xs="2">
               Select user schedules to view
               <div>
                 <Button className="m-2" size="sm" color='success' onClick={
-                  () => {this.setState({selectedUsers: this.state.userList.map(user => +user.split(' ')[2].slice(1, -1))});}
+                  () => {this.setState({selectedUsers: this.state.userList.map(user => user.id)});}
                 }>Select All</Button>
                 <Button className="m-2" size="sm" color='danger' onClick={
                   () => {this.setState({selectedUsers: []});}
                 }>Clear</Button>
                 <SelectList
-                  value={this.state.userList.filter(user => this.state.selectedUsers.includes(+user.split(' ')[2].slice(1, -1)))}
+                  value={this.state.userList.filter(user => this.state.selectedUsers.includes(user.id))}
                   multiple={true}
+                  textField='name'
+                  groupBy={user => user.type}
                   name='selectedUsers'
                   data={this.state.userList}
-                  onChange={value => this.handleWidgetChange('selectedUsers', value.map(user => +user.split(' ')[2].slice(1, -1)))}
+                  onChange={value => this.handleWidgetChange('selectedUsers', value.map(user => user.id))}
                 />
               </div>
             </Col>
@@ -372,7 +395,7 @@ class Calendar extends Component {
                   right: 'timeGridDay,timeGridWeek,dayGridMonth',
                 }}
                 events={
-                  getUserTypeFromToken() === 'ADMIN' ?
+                  isAdmin() ?
                     (info, successCallback, failureCallback) => {
                       axiosInstance.post(`/yoyaku/events/multiple_user_events/`, {
                         selectedUsers: this.state.selectedUsers,
@@ -403,7 +426,7 @@ class Calendar extends Component {
                     }
                 }
               />
-              {getUserTypeFromToken() === 'TEACHER' ? 
+              {isTeacher() ? 
                   <NewEventForm 
                     state={this.state} 
                     toggle={this.toggleForm} 
@@ -558,7 +581,7 @@ function EditEventForm(props) {
             <div>
               {/* <a href={props.state.file}>{props.state.file.split('/').pop()}</a> */}
               <a href={props.state.file}>click to download</a>
-              {getUserTypeFromToken() === 'TEACHER' ? <Button color='danger' size='sm' className='m-2' onClick={props.onFileDelete}>X</Button> : null}
+              {isTeacher() || isAdmin() ? <Button color='danger' size='sm' className='m-2' onClick={props.onFileDelete}>X</Button> : null}
             </div>
           :
             <p>No file uploaded</p>
@@ -590,7 +613,7 @@ function EditEventForm(props) {
           />
         </Container>
       </ModalBody>
-      {getUserTypeFromToken() === 'TEACHER' ?
+      {isTeacher() || isAdmin() ?
         <ModalFooter>
           {props.state.isRecurrence ?
             <UncontrolledButtonDropdown>

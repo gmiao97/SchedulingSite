@@ -34,9 +34,15 @@ class UserViewSet(viewsets.ModelViewSet):
             permission_classes = [IsLoggedInUserOrAdmin]
         elif self.action == 'list' or self.action == 'destroy':
             permission_classes = [IsAdminUser]
-        elif self.action == 'student_list':
+        elif self.action in ('student_list', 'teacher_list'):
             permission_classes = [IsLoggedInTeacherUser | IsAdminUser]
         return [permission() for permission in permission_classes]
+
+    @action(detail=False)
+    def teacher_list(self, request):
+        teachers = self.queryset.filter(user_type='TEACHER')
+        serializer = MyUserSerializer(teachers, many=True)
+        return Response(serializer.data)
 
     @action(detail=False)
     def student_list(self, request):
@@ -72,11 +78,11 @@ class EventViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         permission_classes = []
         if self.action in ('retrieve', 'create', 'update', 'partial_update', 'destroy', 'update_file', 'destroy_file'):
-            permission_classes = [IsLoggedInUserAndEventOwner]
+            permission_classes = [IsLoggedInUserAndEventOwner | IsAdminUser]
         elif self.action in ('list', 'multiple_user_events'):
             permission_classes = [IsAdminUser]
         elif self.action == 'destroy_recurrence':
-            permission_classes = [IsLoggedInTeacherUser]
+            permission_classes = [IsLoggedInTeacherUser | IsAdminUser]
 
         return [permission() for permission in permission_classes]
 
