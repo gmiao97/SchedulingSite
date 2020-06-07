@@ -34,6 +34,8 @@ import {
 import { getUserIdFromToken, getUserTypeFromToken } from '../../util';
 import axiosInstance from '../../axiosApi';
 
+const colors = ['blue', 'purple', 'grey', 'red', 'orange', 'green', 'pink']
+
 class Calendar extends Component {
   constructor(props) {
     super(props);
@@ -53,6 +55,7 @@ class Calendar extends Component {
       },
       comment: '',
       file: null,
+      color: 'blue',
 
       selectedEvent: '',
       studentList: [],
@@ -140,6 +143,9 @@ class Calendar extends Component {
           dtstart: info.dateStr,
           until: info.dateStr,
         },
+        comment: '',
+        file: null,
+        color: 'blue',
       });
       this.toggleForm('new');
     }
@@ -155,6 +161,7 @@ class Calendar extends Component {
       isRecurrence: info.event.extendedProps.isRecurrence,
       recurrence: info.event.extendedProps.recurrence,
       comment: info.event.extendedProps.comment,
+      color: info.event.backgroundColor,
       file: info.event.extendedProps.file,
       selectedEvent: info.event.id,
       teacherName: `${info.event.extendedProps.teacher_user.last_name}, ${info.event.extendedProps.teacher_user.first_name}`
@@ -395,7 +402,6 @@ class Calendar extends Component {
                       });
                     }
                 }
-                eventColor='orange'
               />
               {getUserTypeFromToken() === 'TEACHER' ? 
                   <NewEventForm 
@@ -440,6 +446,10 @@ function NewEventForm(props) {
             <AvField type='text' label='Event Name' name='title' value={props.state.title} onChange={props.onChange} validate={{
               required: {value: true, errorMessage: 'Please enter event name'},
             }}/>
+            Color
+            <Input type="select" name="color" value={props.state.color} onChange={props.onChange}>
+              {colors.map(color => <option>{color}</option>)}
+            </Input>
             Select Students
             <Multiselect
               name='student_user'
@@ -610,6 +620,10 @@ function EditEventForm(props) {
             <AvField type='text' label='Event Name' name='title' value={props.state.title} onChange={props.onChange} validate={{
               required: {value: true, errorMessage: 'Please enter event name'},
             }}/>
+            Color
+            <Input type="select" name="color" value={props.state.color} onChange={props.onChange}>
+              {colors.map(color => <option>{color}</option>)}
+            </Input>
             Select Students
             <Multiselect
               name='student_user'
