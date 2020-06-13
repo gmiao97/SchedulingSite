@@ -3,11 +3,11 @@ import FullCalendar from '@fullcalendar/react';
 import rrulePlugin from '@fullcalendar/rrule';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from "@fullcalendar/interaction";
+import interactionPlugin from '@fullcalendar/interaction';
 import bootstrapPlugin from '@fullcalendar/bootstrap';
 import moment from 'moment-timezone';
 import { confirmAlert } from 'react-confirm-alert';
-import { DateTimePicker, Multiselect } from 'react-widgets';
+import { DateTimePicker, Multiselect, SelectList, DropdownList } from 'react-widgets';
 import { AvForm, AvField } from 'availity-reactstrap-validation';
 import {
   Container,
@@ -27,10 +27,14 @@ import {
   ListGroup,
   ListGroupItem,
   FormText,
+  Row,
+  Col,
 } from 'reactstrap';
 
-import { getUserIdFromToken, getUserTypeFromToken } from '../../util';
+import { getUserIdFromToken, isAdmin, isTeacher, isStudent } from '../../util';
 import axiosInstance from '../../axiosApi';
+
+const colors = ['blue', 'purple', 'grey', 'red', 'orange', 'green', 'pink']
 
 class Calendar extends Component {
   constructor(props) {
@@ -51,16 +55,22 @@ class Calendar extends Component {
       },
       comment: '',
       file: null,
+      color: 'blue',
 
       selectedEvent: '',
+      teacherList: [],
       studentList: [],
+      userList: [],
+      selectedUsers: [],
       teacherName: '',
       displayNewEventForm: false,
       displayEditEventForm: false,
     };
 
     this.calendarRef = React.createRef();
+    this.getTeacherList = this.getTeacherList.bind(this);
     this.getStudentList = this.getStudentList.bind(this);
+    this.getUserList = this.getUserList.bind(this);
     this.handleDateClick = this.handleDateClick.bind(this);
     this.handleEventClick = this.handleEventClick.bind(this);
     this.handleSelect = this.handleSelect.bind(this);
@@ -78,26 +88,65 @@ class Calendar extends Component {
 
   componentDidMount() {
     try {
-      if (getUserTypeFromToken() === 'TEACHER') {
+      if (isTeacher()) {
         this.getStudentList();
         this.setState({
           teacher_user: getUserIdFromToken(),
         });
+      }
+      if (isAdmin()) {
+        this.getStudentList();
+        this.getTeacherList();
+        this.getUserList();
       }
     } catch (error) {
       throw error;
     }
   }
 
+  async getTeacherList() {
+    const teachers = [];
+    const response = await axiosInstance.get('/yoyaku/users/teacher_list/');
+    for (let user of response.data) {
+      teachers.push({
+        name: `${user.last_name}, ${user.first_name} (${user.id})`,
+        id: user.id,
+      });
+    }
+    teachers.sort((a, b) => (a.name > b.name) ? 1: ((b.name > a.name) ? -1 : 0));
+    this.setState({
+      teacherList: teachers,
+    });
+  }
+
   async getStudentList() {
     const students = [];
     const response = await axiosInstance.get('/yoyaku/users/student_list/');
     for (let user of response.data) {
-      students.push(`${user.last_name}, ${user.first_name} (${user.id})`);
+      students.push({
+        name: `${user.last_name}, ${user.first_name} (${user.id})`,
+        id: user.id,
+      });
     }
-    students.sort();
+    students.sort((a, b) => (a.name > b.name) ? 1: ((b.name > a.name) ? -1 : 0));
     this.setState({
       studentList: students,
+    });
+  }
+
+  async getUserList() {
+    const users = [];
+    const response = await axiosInstance.get('/yoyaku/users/');
+    for (let user of response.data) {
+      users.push({
+        name: `${user.last_name}, ${user.first_name} (${user.id})`,
+        id: user.id,
+        type: user.user_type,
+      });
+    }
+    users.sort((a, b) => (a.name > b.name) ? 1: ((b.name > a.name) ? -1 : 0));
+    this.setState({
+      userList: users.filter(user => user.type !== 'ADMIN'),
     });
   }
 
@@ -110,6 +159,7 @@ class Calendar extends Component {
         title: '',
         start: info.dateStr,
         end: info.dateStr,
+        teacher_user: isTeacher() ? getUserIdFromToken() : this.state.teacherList[0].id,
         student_user: [],
         selectedEvent: '',
         isRecurrence: false,
@@ -119,21 +169,25 @@ class Calendar extends Component {
           dtstart: info.dateStr,
           until: info.dateStr,
         },
+        comment: '',
+        file: null,
+        color: 'blue',
       });
       this.toggleForm('new');
     }
   }
 
   handleEventClick(info) {
-    // alert(info.event.extendedProps.student_user[0].first_name);
     this.setState({
       title: info.event.title,
       start: moment(info.event.start).format(),
       end: moment(info.event.end || info.event.start).format(),
+      teacher_user: info.event.extendedProps.teacher_user.id,
       student_user: info.event.extendedProps.student_user.map(user => user.id),
       isRecurrence: info.event.extendedProps.isRecurrence,
       recurrence: info.event.extendedProps.recurrence,
       comment: info.event.extendedProps.comment,
+      color: info.event.backgroundColor,
       file: info.event.extendedProps.file,
       selectedEvent: info.event.id,
       teacherName: `${info.event.extendedProps.teacher_user.last_name}, ${info.event.extendedProps.teacher_user.first_name}`
@@ -235,7 +289,7 @@ class Calendar extends Component {
       const {selectedEvent, studentList, displayNewEventForm, displayEditEventForm, teacherName, file, ...payload} = this.state;
       payload.editSeries = editSeries;
       const response = await axiosInstance.put(`/yoyaku/events/${this.state.selectedEvent}/`, payload);
-      if (file && !editSeries) {
+      if (typeof file !== 'string' && !editSeries) {
         const data = new FormData();
         data.append('file', file);
         await axiosInstance.put(`/yoyaku/events/${this.state.selectedEvent}/update_file/`, data)
@@ -301,68 +355,110 @@ class Calendar extends Component {
   render() {
     return(
       <div className='m-3'>
-        <Container>
-          <FullCalendar
-            ref={this.calendarRef}
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, bootstrapPlugin, rrulePlugin]} 
-            defaultView='dayGridMonth'
-            themeSystem='bootstrap'
-            slotDuration='00:15:00'
-            slotEventOverlap={false}
-            selectable='true'
-            // selectMinDistance='50'
-            dateClick={this.handleDateClick}
-            eventClick={this.handleEventClick}
-            select={this.handleSelect}
-            header={{
-              left: 'prev,next, today',
-              center: 'title',
-              right: 'timeGridDay,timeGridWeek,dayGridMonth',
-            }}
-            events={
-              (info, successCallback, failureCallback) => {
-                axiosInstance.get(`/yoyaku/users/${getUserIdFromToken()}/events/`, {
-                  params: {
-                    start: info.startStr,
-                    end: info.endStr,
-                  }
-                })
-                .then(result => {
-                  successCallback(result.data);
-                })
-                .catch(err => {
-                  failureCallback(err);
-                });
-              }
-            }
-            eventColor='orange'
-          />
-          {getUserTypeFromToken() === 'TEACHER' ? 
-              <NewEventForm 
-                state={this.state} 
-                toggle={this.toggleForm} 
-                onChange={this.handleChange} 
-                onRecurrenceChange={this.handleRecurrenceChange}
-                onWidgetChange={this.handleWidgetChange}
-                onRecurrenceWidgetChange={this.handleRecurrenceWidgetChange}
-                onSubmit={this.handleNewEventSubmit}
-              />
+        <Row>
+          {isAdmin() ? 
+            <Col xs='2'>
+              Select user schedules to view
+              <div>
+                <Button className='m-2' size='sm' color='success' onClick={
+                  () => {this.setState({selectedUsers: this.state.userList.map(user => user.id)});}
+                }>Select All</Button>
+                <Button className='m-2' size='sm' color='danger' onClick={
+                  () => {this.setState({selectedUsers: []});}
+                }>Clear</Button>
+                <SelectList
+                  value={this.state.userList.filter(user => this.state.selectedUsers.includes(user.id))}
+                  multiple={true}
+                  textField='name'
+                  groupBy={user => user.type}
+                  name='selectedUsers'
+                  data={this.state.userList}
+                  onChange={value => this.handleWidgetChange('selectedUsers', value.map(user => user.id))}
+                />
+              </div>
+            </Col>
           :
             null
           }
-          <EditEventForm 
-            state={this.state} 
-            toggle={this.toggleForm} 
-            onDelete={this.handleDelete}
-            onChange={this.handleChange} 
-            onFileChange={this.handleFileChange}
-            onFileDelete={this.handleFileDelete}
-            onWidgetChange={this.handleWidgetChange}
-            onRecurrenceChange={this.handleRecurrenceChange}
-            onRecurrenceWidgetChange={this.handleRecurrenceWidgetChange}
-            onSubmit={this.handleEditEventSubmit}
-          />
-        </Container>
+          <Col>
+            <Container>
+              <FullCalendar
+                ref={this.calendarRef}
+                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, bootstrapPlugin, rrulePlugin]} 
+                defaultView='dayGridMonth'
+                themeSystem='bootstrap'
+                slotDuration='00:15:00'
+                slotEventOverlap={false}
+                selectable='true'
+                // selectMinDistance='50'
+                dateClick={this.handleDateClick}
+                eventClick={this.handleEventClick}
+                select={this.handleSelect}
+                header={{
+                  left: 'prev,next, today',
+                  center: 'title',
+                  right: 'timeGridDay,timeGridWeek,dayGridMonth',
+                }}
+                events={
+                  isAdmin() ?
+                    (info, successCallback, failureCallback) => {
+                      axiosInstance.post(`/yoyaku/events/multiple_user_events/`, {
+                        selectedUsers: this.state.selectedUsers,
+                        start: info.startStr,
+                        end: info.endStr,
+                      })
+                      .then(result => {
+                        successCallback(result.data);
+                      })
+                      .catch(err => {
+                        failureCallback(err);
+                      });
+                    }
+                  :
+                    (info, successCallback, failureCallback) => {
+                      axiosInstance.get(`/yoyaku/users/${getUserIdFromToken()}/events/`, {
+                        params: {
+                          start: info.startStr,
+                          end: info.endStr,
+                        }
+                      })
+                      .then(result => {
+                        successCallback(result.data);
+                      })
+                      .catch(err => {
+                        failureCallback(err);
+                      });
+                    }
+                }
+              />
+              {isTeacher() || isAdmin() ? 
+                  <NewEventForm 
+                    state={this.state} 
+                    toggle={this.toggleForm} 
+                    onChange={this.handleChange} 
+                    onRecurrenceChange={this.handleRecurrenceChange}
+                    onWidgetChange={this.handleWidgetChange}
+                    onRecurrenceWidgetChange={this.handleRecurrenceWidgetChange}
+                    onSubmit={this.handleNewEventSubmit}
+                  />
+              :
+                null
+              }
+              <EditEventForm 
+                state={this.state} 
+                toggle={this.toggleForm} 
+                onDelete={this.handleDelete}
+                onChange={this.handleChange} 
+                onFileChange={this.handleFileChange}
+                onFileDelete={this.handleFileDelete}
+                onWidgetChange={this.handleWidgetChange}
+                onRecurrenceChange={this.handleRecurrenceChange}
+                onRecurrenceWidgetChange={this.handleRecurrenceWidgetChange}
+                onSubmit={this.handleEditEventSubmit}
+              />
+            </Container>
+          </Col>
+        </Row>
       </div>
     );
   }
@@ -378,11 +474,30 @@ function NewEventForm(props) {
             <AvField type='text' label='Event Name' name='title' value={props.state.title} onChange={props.onChange} validate={{
               required: {value: true, errorMessage: 'Please enter event name'},
             }}/>
+            Color
+            <Input type='select' name='color' value={props.state.color} onChange={props.onChange}>
+              {colors.map(color => <option>{color}</option>)}
+            </Input>
+            {isAdmin() ? 
+              <div>
+                Select Teacher
+                <DropdownList
+                  name='teacher_user'
+                  data={props.state.teacherList}
+                  textField='name'
+                  defaultValue={props.state.teacherList[0]}
+                  onChange={value => props.onWidgetChange('teacher_user', value.id)}
+                />
+              </div>
+            :
+              null
+            }
             Select Students
             <Multiselect
               name='student_user'
               data={props.state.studentList}
-              onChange={value => props.onWidgetChange('student_user', value.map(student => +student.split(' ')[2].slice(1, -1)))}
+              textField='name'
+              onChange={value => props.onWidgetChange('student_user', value.map(student => student.id))}
             />
             <FormGroup>
               Start
@@ -439,7 +554,7 @@ function RecurEventForm(props) {
       <FormGroup>
         <Label>
           Frequency
-          <Input type="select" name="freq" value={props.state.freq} onChange={props.onChange}>
+          <Input type='select' name='freq' value={props.state.freq} onChange={props.onChange}>
             <option value='DAILY'>Daily</option>
             <option value='WEEKLY'>Weekly</option>
             <option value='MONTHLY'>Monthly</option>
@@ -479,14 +594,14 @@ function EditEventForm(props) {
           <h5>Teacher</h5>
           <p>{props.state.teacherName}</p>
           <h5>Students</h5>
-          {props.state.studentList.filter(user => props.state.student_user.includes(+user.split(' ')[2].slice(1, -1))).map(student => <p>{student}</p>)}
+          {props.state.studentList.filter(user => props.state.student_user.includes(user.id)).map(student => <p>{student.name}</p>)}
           <hr/>
           <h5>File</h5>
           {props.state.file ? 
             <div>
               {/* <a href={props.state.file}>{props.state.file.split('/').pop()}</a> */}
               <a href={props.state.file}>click to download</a>
-              {getUserTypeFromToken() === 'TEACHER' ? <Button color='danger' size='sm' className='m-2' onClick={props.onFileDelete}>X</Button> : null}
+              {isTeacher() || isAdmin() ? <Button color='danger' size='sm' className='m-2' onClick={props.onFileDelete}>X</Button> : null}
             </div>
           :
             <p>No file uploaded</p>
@@ -518,7 +633,7 @@ function EditEventForm(props) {
           />
         </Container>
       </ModalBody>
-      {getUserTypeFromToken() === 'TEACHER' ?
+      {isTeacher() || isAdmin() ?
         <ModalFooter>
           {props.state.isRecurrence ?
             <UncontrolledButtonDropdown>
@@ -548,12 +663,17 @@ function EditEventForm(props) {
             <AvField type='text' label='Event Name' name='title' value={props.state.title} onChange={props.onChange} validate={{
               required: {value: true, errorMessage: 'Please enter event name'},
             }}/>
+            Color
+            <Input type='select' name='color' value={props.state.color} onChange={props.onChange}>
+              {colors.map(color => <option>{color}</option>)}
+            </Input>
             Select Students
             <Multiselect
               name='student_user'
               data={props.state.studentList}
-              onChange={value => props.onWidgetChange('student_user', value.map(student => +student.split(' ')[2].slice(1, -1)))}
-              defaultValue={props.state.studentList.filter(user => props.state.student_user.includes(+user.split(' ')[2].slice(1, -1)))}
+              textField='name'
+              onChange={value => props.onWidgetChange('student_user', value.map(student => student.id))}
+              defaultValue={props.state.studentList.filter(user => props.state.student_user.includes(user.id))}
             />
             <hr/>
             {!seriesEditOpen ? 
@@ -563,9 +683,9 @@ function EditEventForm(props) {
                 }}/>
                 <Label>
                   File
-                  <Input type="file" name="file" id="exampleFile" onChange={props.onFileChange}/>
+                  <Input type='file' name='file' id='exampleFile' onChange={props.onFileChange}/>
                 </Label>
-                <FormText color="muted">
+                <FormText color='muted'>
                   Lesson Material
                 </FormText>
               </FormGroup>
@@ -613,7 +733,7 @@ function EditEventForm(props) {
                 <FormGroup>
                   <Label>
                     Frequency
-                    <Input type="select" name="freq" value={props.state.recurrence.freq} onChange={props.onRecurrenceChange}>
+                    <Input type='select' name='freq' value={props.state.recurrence.freq} onChange={props.onRecurrenceChange}>
                       <option value='DAILY'>Daily</option>
                       <option value='WEEKLY'>Weekly</option>
                       <option value='MONTHLY'>Monthly</option>

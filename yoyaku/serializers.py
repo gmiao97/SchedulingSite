@@ -93,7 +93,7 @@ class EventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ['id', 'title', 'start', 'end', 'teacher_user', 'student_user', 'isRecurrence', 'recurrence', 'comment', 'file']
+        fields = ['id', 'title', 'start', 'end', 'teacher_user', 'student_user', 'isRecurrence', 'recurrence', 'comment', 'file', 'color']
 
 
 class EventReadSerializer(EventSerializer):

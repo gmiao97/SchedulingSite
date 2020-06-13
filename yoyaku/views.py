@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, Http404
 from django.utils.dateparse import parse_datetime
+from django.db.models import Q
 from rest_framework import status, viewsets
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
@@ -33,9 +34,15 @@ class UserViewSet(viewsets.ModelViewSet):
             permission_classes = [IsLoggedInUserOrAdmin]
         elif self.action == 'list' or self.action == 'destroy':
             permission_classes = [IsAdminUser]
-        elif self.action == 'student_list':
+        elif self.action in ('student_list', 'teacher_list'):
             permission_classes = [IsLoggedInTeacherUser | IsAdminUser]
         return [permission() for permission in permission_classes]
+
+    @action(detail=False)
+    def teacher_list(self, request):
+        teachers = self.queryset.filter(user_type='TEACHER')
+        serializer = MyUserSerializer(teachers, many=True)
+        return Response(serializer.data)
 
     @action(detail=False)
     def student_list(self, request):
@@ -57,9 +64,9 @@ class UserViewSet(viewsets.ModelViewSet):
         active_start = parse_datetime(request.query_params.get('start', None))
         active_end = parse_datetime(request.query_params.get('end', None))
         if user.user_type == 'TEACHER':
-            events = user.teacherEvents.filter(start__gte=active_start).filter(end__lte=active_end)
+            events = user.teacherEvents.filter(start__gte=active_start, end__lte=active_end)
         elif user.user_type == 'STUDENT':
-            events = user.studentEvents.filter(start__gte=active_start).filter(end__lte=active_end)
+            events = user.studentEvents.filter(start__gte=active_start, end__lte=active_end)
         serializer = EventReadSerializer(events, many=True, context={'request': request})
         return Response(serializer.data)
 
@@ -71,11 +78,11 @@ class EventViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         permission_classes = []
         if self.action in ('retrieve', 'create', 'update', 'partial_update', 'destroy', 'update_file', 'destroy_file'):
-            permission_classes = [IsLoggedInUserAndEventOwner]
-        elif self.action == 'list':
+            permission_classes = [IsLoggedInUserAndEventOwner | IsAdminUser]
+        elif self.action in ('list', 'multiple_user_events'):
             permission_classes = [IsAdminUser]
         elif self.action == 'destroy_recurrence':
-            permission_classes = [IsLoggedInTeacherUser]
+            permission_classes = [IsLoggedInTeacherUser | IsAdminUser]
 
         return [permission() for permission in permission_classes]
 
@@ -223,6 +230,16 @@ class EventViewSet(viewsets.ModelViewSet):
         if recurrence_instance and recurrence_instance.recurrenceEvents.count() == 0:
             recurrence_instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['post'])
+    def multiple_user_events(self, request):
+        user_list = request.data.get('selectedUsers')
+        active_start = parse_datetime(request.data.get('start', None))
+        active_end = parse_datetime(request.data.get('end', None))
+        events = Event.objects.filter(
+            Q(start__gte=active_start, end__lte=active_end) & (Q(teacher_user__in=user_list) | Q(student_user__in=user_list))).distinct()
+        serializer = EventReadSerializer(events, many=True, context={'request': request})
+        return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
     def destroy_recurrence(self, request, pk=None):

@@ -28,12 +28,24 @@ export function getUserIdFromToken() {
   return userId;
 }
 
-export function getUserTypeFromToken() {
+function getUserTypeFromToken() {
   const token = localStorage.getItem('refresh_token');
   const encodedPayLoad = token.split('.')[1];
   const payloadObject = JSON.parse(atob(encodedPayLoad));
   const userType = payloadObject.user_type;
   return userType;
+}
+
+export function isTeacher() {
+  return getUserTypeFromToken() === 'TEACHER';
+}
+
+export function isStudent() {
+  return getUserTypeFromToken() === 'STUDENT';
+}
+
+export function isAdmin() {
+  return getUserTypeFromToken() === 'ADMIN';
 }
 
 //export function getDateFromISODateTime(dateTime) {
