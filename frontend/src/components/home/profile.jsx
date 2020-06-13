@@ -103,12 +103,12 @@ class Profile extends Component {
               </NavItem>
             </Nav>
             <TabContent activeTab={this.state.activeTab}>
-              <TabPane className='m-3' tabId="1">
+              <TabPane className='m-3' tabId='1'>
                 <Row>
-                  <Col sm="1">
+                  <Col sm='1'>
                     <span className='m-1'><FontAwesomeIcon icon='user' size='3x' color='green'/></span>
                   </Col>
-                  <Col sm="11">
+                  <Col sm='11'>
                     <h4>Basic Info</h4>
                     <h6>
                       Email
@@ -148,16 +148,16 @@ class Profile extends Component {
                   </Col>
                 </Row>
               </TabPane>
-              <TabPane className='m-3' tabId="2">
+              <TabPane className='m-3' tabId='2'>
                 <Row>
-                  <Col sm="6">
+                  <Col sm='6'>
                     <Card body>
                       <CardTitle>Special Title Treatment</CardTitle>
                       <CardText>With supporting text below as a natural lead-in to additional content.</CardText>
                       <Button>Go somewhere</Button>
                     </Card>
                   </Col>
-                  <Col sm="6">
+                  <Col sm='6'>
                     <Card body>
                       <CardTitle>Special Title Treatment</CardTitle>
                       <CardText>With supporting text below as a natural lead-in to additional content.</CardText>

@@ -3,11 +3,11 @@ import FullCalendar from '@fullcalendar/react';
 import rrulePlugin from '@fullcalendar/rrule';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from "@fullcalendar/interaction";
+import interactionPlugin from '@fullcalendar/interaction';
 import bootstrapPlugin from '@fullcalendar/bootstrap';
 import moment from 'moment-timezone';
 import { confirmAlert } from 'react-confirm-alert';
-import { DateTimePicker, Multiselect, SelectList } from 'react-widgets';
+import { DateTimePicker, Multiselect, SelectList, DropdownList } from 'react-widgets';
 import { AvForm, AvField } from 'availity-reactstrap-validation';
 import {
   Container,
@@ -96,8 +96,8 @@ class Calendar extends Component {
       }
       if (isAdmin()) {
         this.getStudentList();
-        this.getUserList();
         this.getTeacherList();
+        this.getUserList();
       }
     } catch (error) {
       throw error;
@@ -113,7 +113,7 @@ class Calendar extends Component {
         id: user.id,
       });
     }
-    teachers.sort();
+    teachers.sort((a, b) => (a.name > b.name) ? 1: ((b.name > a.name) ? -1 : 0));
     this.setState({
       teacherList: teachers,
     });
@@ -128,7 +128,7 @@ class Calendar extends Component {
         id: user.id,
       });
     }
-    students.sort();
+    students.sort((a, b) => (a.name > b.name) ? 1: ((b.name > a.name) ? -1 : 0));
     this.setState({
       studentList: students,
     });
@@ -144,9 +144,9 @@ class Calendar extends Component {
         type: user.user_type,
       });
     }
-    users.sort();
+    users.sort((a, b) => (a.name > b.name) ? 1: ((b.name > a.name) ? -1 : 0));
     this.setState({
-      userList: users,
+      userList: users.filter(user => user.type !== 'ADMIN'),
     });
   }
 
@@ -159,6 +159,7 @@ class Calendar extends Component {
         title: '',
         start: info.dateStr,
         end: info.dateStr,
+        teacher_user: isTeacher() ? getUserIdFromToken() : this.state.teacherList[0].id,
         student_user: [],
         selectedEvent: '',
         isRecurrence: false,
@@ -356,13 +357,13 @@ class Calendar extends Component {
       <div className='m-3'>
         <Row>
           {isAdmin() ? 
-            <Col xs="2">
+            <Col xs='2'>
               Select user schedules to view
               <div>
-                <Button className="m-2" size="sm" color='success' onClick={
+                <Button className='m-2' size='sm' color='success' onClick={
                   () => {this.setState({selectedUsers: this.state.userList.map(user => user.id)});}
                 }>Select All</Button>
-                <Button className="m-2" size="sm" color='danger' onClick={
+                <Button className='m-2' size='sm' color='danger' onClick={
                   () => {this.setState({selectedUsers: []});}
                 }>Clear</Button>
                 <SelectList
@@ -430,7 +431,7 @@ class Calendar extends Component {
                     }
                 }
               />
-              {isTeacher() ? 
+              {isTeacher() || isAdmin() ? 
                   <NewEventForm 
                     state={this.state} 
                     toggle={this.toggleForm} 
@@ -474,9 +475,23 @@ function NewEventForm(props) {
               required: {value: true, errorMessage: 'Please enter event name'},
             }}/>
             Color
-            <Input type="select" name="color" value={props.state.color} onChange={props.onChange}>
+            <Input type='select' name='color' value={props.state.color} onChange={props.onChange}>
               {colors.map(color => <option>{color}</option>)}
             </Input>
+            {isAdmin() ? 
+              <div>
+                Select Teacher
+                <DropdownList
+                  name='teacher_user'
+                  data={props.state.teacherList}
+                  textField='name'
+                  defaultValue={props.state.teacherList[0]}
+                  onChange={value => props.onWidgetChange('teacher_user', value.id)}
+                />
+              </div>
+            :
+              null
+            }
             Select Students
             <Multiselect
               name='student_user'
@@ -539,7 +554,7 @@ function RecurEventForm(props) {
       <FormGroup>
         <Label>
           Frequency
-          <Input type="select" name="freq" value={props.state.freq} onChange={props.onChange}>
+          <Input type='select' name='freq' value={props.state.freq} onChange={props.onChange}>
             <option value='DAILY'>Daily</option>
             <option value='WEEKLY'>Weekly</option>
             <option value='MONTHLY'>Monthly</option>
@@ -649,7 +664,7 @@ function EditEventForm(props) {
               required: {value: true, errorMessage: 'Please enter event name'},
             }}/>
             Color
-            <Input type="select" name="color" value={props.state.color} onChange={props.onChange}>
+            <Input type='select' name='color' value={props.state.color} onChange={props.onChange}>
               {colors.map(color => <option>{color}</option>)}
             </Input>
             Select Students
@@ -668,9 +683,9 @@ function EditEventForm(props) {
                 }}/>
                 <Label>
                   File
-                  <Input type="file" name="file" id="exampleFile" onChange={props.onFileChange}/>
+                  <Input type='file' name='file' id='exampleFile' onChange={props.onFileChange}/>
                 </Label>
-                <FormText color="muted">
+                <FormText color='muted'>
                   Lesson Material
                 </FormText>
               </FormGroup>
@@ -718,7 +733,7 @@ function EditEventForm(props) {
                 <FormGroup>
                   <Label>
                     Frequency
-                    <Input type="select" name="freq" value={props.state.recurrence.freq} onChange={props.onRecurrenceChange}>
+                    <Input type='select' name='freq' value={props.state.recurrence.freq} onChange={props.onRecurrenceChange}>
                       <option value='DAILY'>Daily</option>
                       <option value='WEEKLY'>Weekly</option>
                       <option value='MONTHLY'>Monthly</option>
