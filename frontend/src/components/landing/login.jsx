@@ -1,59 +1,91 @@
-import React, { Component } from 'react';
-import { AvForm, AvField } from 'availity-reactstrap-validation';
+import React, { useState } from 'react';
+import { styled, makeStyles } from '@material-ui/core/styles';
 import {
-  Container,
-  Button, 
-} from 'reactstrap';
+  Box,
+  Grid,
+  Paper,
+  Typography,
+  Divider,
+  Button,
+  TextField,
+  Snackbar,
+} from '@material-ui/core';
+import Alert from '@material-ui/lab/Alert';
 
 import axiosInstance from '../../axiosApi';
 
-class Login extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { email: '', password: '' };
 
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleLogin = props.handleLogin;
-  }
+const useStyles = makeStyles(theme => ({
+  sectionEnd: {
+    marginBottom: theme.spacing(3),
+  },
+}));
 
-  handleChange(event) {
-    this.setState( {[event.target.name]: event.target.value} );
-  }
+export default function Login(props) {
+  const [state, setState] = useState({
+    username: "",
+    password: "",
+    errorSnackbarOpen: false,
+  });
+  const handleLogin = props.handleLogin;
 
-  async handleSubmit(event) {
+  const handleChange = event => {
+    setState({
+      ...state,
+      [event.target.name]: event.target.value
+    });
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    setState({
+      ...state,
+      successSnackbarOpen: false,
+      errorSnackbarOpen: false,
+    });
+  };
+
+  const handleSubmit = async event => {
     event.preventDefault();
     try {
       const response = await axiosInstance.post('/api/auth/token/obtain/', {
-        email: this.state.email,
-        password: this.state.password,
+        username: state.username,
+        password: state.password,
       });
       axiosInstance.defaults.headers['Authorization'] = 'Bearer ' + response.data.access;
       localStorage.setItem('access_token', response.data.access);
       localStorage.setItem('refresh_token', response.data.refresh);
-      this.handleLogin();
+      handleLogin();
       return response;
     } catch (error) {
-      alert(error);
+      console.log(error.stack);
+      setState({
+        ...state,
+        errorSnackbarOpen: true,
+      });
     }
-  }
+  };
 
-  render() {
-    return (
-      <Container>
-        <AvForm onValidSubmit={this.handleSubmit}>
-          <AvField type='email' label='Email' name='email' value={this.state.email} onChange={this.handleChange} validate={{
-            required: {value: true, errorMessage: 'Please enter an email'},
-            email: {value: true, errorMessage: 'Please enter a valid email address (e.g. example@website.com)'},
-          }}/>
-          <AvField type='password' label='Password' name='password' value={this.state.password} onChange={this.handleChange} validate={{
-            required: {value: true, errorMessage: 'Please enter a password'},
-          }}/>
-          <Button color='warning'>Submit</Button>
-        </AvForm>
-      </Container>
-    );
-  }
+  const classes = useStyles();
+  return (
+    <Paper elevation={24}>
+      <Box p={3}>
+        <form onSubmit={handleSubmit}>
+          <Grid container spacing={3}>
+            <Grid item xs="12">
+              <TextField id='username' name='username' type='text' label='User Id' value={state.username} onChange={handleChange} required fullWidth />
+            </Grid>
+            <Grid item xs="12">
+              <TextField id='password' name='password' className={classes.sectionEnd} type='password' label='Password' value={state.password} onChange={handleChange} required fullWidth />
+            </Grid>
+          </Grid>
+          <Button type="submit" variant="contained" color="primary">Login</Button>
+        </form>
+      </Box>
+      <Snackbar open={state.errorSnackbarOpen} onClose={handleSnackbarClose}>
+        <Alert severity="error" variant="filled" elevation={24} onClose={handleSnackbarClose}>
+          Incorrect User Id or Password
+        </Alert>
+      </Snackbar>
+    </Paper>
+  );
 }
-
-export default Login;

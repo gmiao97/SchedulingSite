@@ -48,16 +48,16 @@ class MyUser(AbstractUser):
         (STUDENT, _('Student')),
         (ADMIN, _('Admin')),
     ]
-    username = None
-    email = models.EmailField(_('email address'), unique=True)
+    # username = None
+    email = models.EmailField(_('email address'))
     user_type = models.CharField(_('user type'), choices=USER_TYPE_CHOICES, max_length=10)
     time_zone = TimeZoneField(default='UTC', choices=[(tz, tz) for tz in pytz.all_timezones])
     phone_number = models.CharField(_('phone number'), max_length=15)
     birthday = models.DateField(_('birthday'))
     description = models.CharField(_('personal description'), max_length=300, blank=True)
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['user_type', 'time_zone', 'phone_number', 'birthday', 'description']
+    # USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['email', 'user_type', 'time_zone', 'phone_number', 'birthday', 'description']
 
     objects = MyUserManager()
 

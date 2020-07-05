@@ -323,7 +323,7 @@ class Calendar extends Component {
             onClick: async () => {
               if (window.confirm('All future events in this series will be deleted?')) {
                 await axiosInstance.post(`/yoyaku/events/${this.state.recurrence.id}/destroy_recurrence/`, {
-                  delete_from: new Date(Date.now()).toISOString(),
+                  delete_from: moment().format(),
                 });
                 this.forceUpdate();
               }

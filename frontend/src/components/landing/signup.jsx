@@ -1,33 +1,56 @@
 import React, { Component } from 'react';
 import moment from 'moment-timezone';
-import { AvForm, AvField } from 'availity-reactstrap-validation';
+import { styled, makeStyles } from '@material-ui/core/styles';
+import MomentUtils from "@date-io/moment";
 import {
-  Container,
-  Button,  
-  FormGroup, 
-  Label, 
-  Input, 
-  Col,
-  Row,
-} from 'reactstrap';
+  MuiPickersUtilsProvider,
+  DatePicker,
+} from '@material-ui/pickers';
+import {
+  Box,
+  Grid,
+  Paper,
+  Typography,
+  Divider,
+  Button,
+  Tabs,
+  Tab,
+  TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  Snackbar,
+} from '@material-ui/core';
+import Alert from '@material-ui/lab/Alert';
 
 import axiosInstance from '../../axiosApi';
-import { gradeMappings } from '../../util';
+import { gradeMappings, timeZoneNames } from '../../util';
+
+
+const MyGrid = styled(Grid)({
+  alignItems: "flex-end",
+});
+
+const useStyles = makeStyles(theme => ({
+  sectionEnd: {
+    marginBottom: theme.spacing(3),
+  },
+}));
 
 
 class Signup extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      username: '',
       email: '',
       password: '',
       first_name: '',
       last_name: '',
       user_type: 'STUDENT',
-      time_zone: 'Africa/Abidjan',
+      time_zone: 'America/New_York',
       phone_number: '',
-      birthday: '',
-      description: '',
+      birthday: moment().format('YYYY-MM-DD'),
       student_profile: {
         school_name: '',
         school_grade: '-1',
@@ -35,43 +58,63 @@ class Signup extends Component {
       teacher_profile: {
         association: '',
       },
+
+      activeTab: 0,
+      successSnackbarOpen: false,
+      errorSnackbarOpen: false,
     };
 
-    this.toggle = props.toggle;
-    this.handleChange = this.handleChange.bind(this);
-    this.handleChangeStudentProfile = this.handleChangeStudentProfile.bind(this);
-    this.handleChangeTeacherProfile = this.handleChangeTeacherProfile.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  handleChange(event) {
+  handleChange = event => {
     this.setState({
-      [event.target.name]: event.target.value
+      [event.target.name]: event.target.value,
     });
-  }
+  };
 
-  handleChangeStudentProfile(event) {
+  handleTabChange = (event, newValue) => {
+    this.setState({
+      activeTab: newValue,
+      user_type: newValue === 0 ? "STUDENT" : "TEACHER",
+    });
+  };
+
+  handleSnackbarClose = (event, reason) => {
+    this.setState({
+      successSnackbarOpen: false,
+      errorSnackbarOpen: false,
+    });
+  };
+
+  handleDateChange = (name, date) => {
+    this.setState({
+      [name]: moment(date).format('YYYY-MM-DD'),
+    })
+  };
+
+  handleChangeStudentProfile = event => {
     this.setState({
         student_profile: {
           ...this.state.student_profile,
           [event.target.name]: event.target.value,
         }
     });
-  }
+  };
 
-  handleChangeTeacherProfile(event) {
+  handleChangeTeacherProfile = event => {
     this.setState({
         teacher_profile: {
           ...this.state.teacher_profile,
           [event.target.name]: event.target.value,
         }
     });
-  }
+  };
 
   // TODO error handling and validation
   async handleSubmit(event) {
     event.preventDefault();
-    switch(this.state.user_type) {
+    switch (this.state.user_type) {
       case 'STUDENT':
         await Promise.resolve(this.setState({teacher_profile: null}));
         break;
@@ -80,148 +123,183 @@ class Signup extends Component {
         break;
       default:
     }
+    if (!this.state.password) {
+      delete this.state.password;
+    }
+    if (!this.state.username) {
+      delete this.state.username;
+    }
 
     try {
       const response = await axiosInstance.post('/yoyaku/users/', this.state);
+      this.setState({
+        successSnackbarOpen: true,
+      });
       return response;
     } catch(error) {
       console.log(error.stack);
+      this.setState({
+        errorSnackbarOpen: true,
+      });
     } finally {
-      this.toggle();
+      this.setState({
+        username: '',
+        email: '',
+        password: '',
+        first_name: '',
+        last_name: '',
+        time_zone: 'America/New_York',
+        phone_number: '',
+        birthday: moment().format('YYYY-MM-DD'),
+        student_profile: {
+          school_name: '',
+          school_grade: '-1',
+        },
+        teacher_profile: {
+          association: '',
+        },
+      });
     }
   }
 
   render() {
     return (
-      <Container>
-        <AvForm onValidSubmit={this.handleSubmit}>
-          <GeneralSignup 
-            profile={this.state}
-            onChange={this.handleChange}
-          />
-          {this.state.user_type === 'STUDENT' && 
-            <StudentProfileSignup
-              student_profile={this.state.student_profile} 
-              onChange={this.handleChangeStudentProfile}
-            />
-          }
-          {this.state.user_type === 'TEACHER' && 
-            <TeacherProfileSignup
-              teacher_profile={this.state.teacher_profile} 
-              onChange={this.handleChangeTeacherProfile}
-            />
-          }
-          <Button color='warning'>Submit</Button>
-        </AvForm>
-      </Container>
+      <Paper elevation={24}>
+        <Tabs
+          indicatorColor="primary"
+          textColor="primary"
+          variant="fullWidth"
+          value={this.state.activeTab}
+          onChange={this.handleTabChange}
+        >
+          <Tab label="Student" />
+          <Tab label="Teacher" />
+        </Tabs>
+
+        <Box p={3}>
+          <MuiPickersUtilsProvider utils={MomentUtils}>
+            <form onSubmit={this.handleSubmit}>
+              <GeneralSignup 
+                state={this.state}
+                onChange={this.handleChange}
+                onDateChange={this.handleDateChange}
+              />
+              {this.state.activeTab === 0 ? 
+                <StudentProfileSignup
+                  state={this.state.student_profile} 
+                  onChange={this.handleChangeStudentProfile}
+                /> :
+                <TeacherProfileSignup
+                  state={this.state.teacher_profile} 
+                  onChange={this.handleChangeTeacherProfile}
+                />
+              }
+              <Button type="submit" variant="contained" color="primary">Submit</Button>
+            </form>
+          </MuiPickersUtilsProvider>
+        </Box>
+        <Snackbar open={this.state.successSnackbarOpen} onClose={this.handleSnackbarClose}>
+          <Alert severity="success" variant="filled" elevation={24} onClose={this.handleSnackbarClose}>
+            Successfully submitted signup application!
+          </Alert>
+        </Snackbar>
+        <Snackbar open={this.state.errorSnackbarOpen} onClose={this.handleSnackbarClose}>
+          <Alert severity="error" variant="filled" elevation={24} onClose={this.handleSnackbarClose}>
+            There was an error in submitting your signup application.
+          </Alert>
+        </Snackbar>
+      </Paper>
     )
   }
 }
 
 export function GeneralSignup(props) {
   return(
-    <div>
-      <AvField type='email' label='Email' name='email' value={props.profile.email} onChange={props.onChange} validate={{
-        required: {value: true, errorMessage: 'Please enter an email'},
-        email: {value: true, errorMessage: 'Please enter a valid email address (e.g. example@website.com)'},
-      }}/>
-      <AvField type='password' label='Password' name='password' value={props.profile.password} onChange={props.onChange} validate={{
-        required: {value: true, errorMessage: 'Please enter a password'},
-        minLength: {value: 8, errorMessage: 'Password must have at least 8 characters'},
-      }}/>
-      <AvField type='password' label='Confirm Password' name='confirm_password' validate={{
-        required: {value: true, errorMessage: 'Please retype password'},
-        match:{value:'password', errorMessage: 'Passwords do not match'},
-      }}/>
-      <Row form>
-        <Col md='6'>
-          <AvField type='text' label='First Name' name='first_name' value={props.profile.first_name} onChange={props.onChange} validate={{
-            required: {value: true, errorMessage: 'Please enter first name'},
-          }}/>
-        </Col>
-        <Col md='6'>
-          <AvField type='text' label='Last Name' name='last_name' value={props.profile.last_name} onChange={props.onChange} validate={{
-            required: {value: true, errorMessage: 'Please enter last name'},
-          }}/>
-        </Col>
-      </Row>
-      <Row form>
-        <Col md='6'>
-          <AvField type='text' label='Phone Number' name='phone_number' value={props.profile.phone_number} onChange={props.onChange} validate={{
-            required: {value: true, errorMessage: 'Please enter phone number using only numbers'},
-            pattern: {value: '^[0-9]+$', errorMessage: 'Please enter only numbers'},
-          }}/>
-        </Col>
-        <Col md='6'>
-          <AvField type='date' label='Date of Birth' name='birthday' value={props.profile.birthday} onChange={props.onChange} validate={{ // TODO Safari not supported
-            required: {value: true, errorMessage: 'Please enter birth date'},
-            date: {format: 'MM/DD/YYYY'},
-          }}/>
-        </Col>
-      </Row>
-      <FormGroup tag='fieldset'>
-        <legend>User Type</legend>
-        <FormGroup check>
-          <Label check>
-            <Input type='radio' name='user_type' value='TEACHER' onChange={props.onChange}/>
-            Teacher
-          </Label>
-        </FormGroup>
-        <FormGroup check>
-          <Label check>
-            <Input type='radio' name='user_type' value='STUDENT' defaultChecked onChange={props.onChange}/>
-            Student
-          </Label>
-        </FormGroup>
-      </FormGroup>
-      <FormGroup>
-        <Label>
-          Select Time Zone
-          <Input type='select' name='time_zone' value={props.profile.time_zone} onChange={props.onChange}> 
-            {moment.tz.names().filter(tz => tz !== 'Asia/Qostanay').map((value, index) =>  // TODO Asia/Qostanay isn't in pytz timezones
-              <option key={index} value={value}>{value}</option>
-            )}
-          </Input>
-        </Label>
-      </FormGroup>
-    </div>
+      <MyGrid container spacing={3}>
+          <MyGrid item sm='12' md='6'>
+            <TextField id='first_name' name='first_name' type='text' label='First Name' value={props.state.first_name} onChange={props.onChange} required fullWidth />
+          </MyGrid>
+          <MyGrid item sm='12' md='6'>
+            <TextField id='last_name' name='last_name' type='text' label='Last Name' value={props.state.last_name} onChange={props.onChange} required fullWidth />
+          </MyGrid>
+          <MyGrid item sm='12' md='6'>
+            <TextField id='email' name='email' type='email' label='Email' value={props.state.email} onChange={props.onChange} required fullWidth />
+          </MyGrid>
+          <MyGrid item sm='12' md='6'>
+            <TextField id='phone_number' name='phone_number' type='text' label='Phone Number' value={props.state.phone_number} onChange={props.onChange} required fullWidth />
+          </MyGrid>
+          <MyGrid item sm='12' md='6'>
+            <DatePicker
+              id='birthday'
+              name='birthday'
+              label="Date of Birth"
+              value={props.state.birthday}
+              onChange={date => props.onDateChange('birthday', date)}
+              format='YYYY-MM-DD'
+            />
+          </MyGrid>
+          <MyGrid item sm='12' md='6'>
+            <InputLabel id="time-zone-label">
+              <Typography variant="caption">Time Zone</Typography>
+            </InputLabel>
+            <Select
+              id="time_zone"
+              name="time_zone"
+              labelId="time-zone-label"
+              value={props.state.time_zone}
+              onChange={props.onChange}
+            >
+              {timeZoneNames.map((value, index) => 
+                <MenuItem key={index} value={value}>{value}</MenuItem>
+              )}
+            </Select>
+          </MyGrid>
+      </MyGrid>
   );
 }
 
 
 export function StudentProfileSignup(props) {
+  const classes = useStyles();
   const schoolGrades = [];
   for (let grade of gradeMappings) {
     schoolGrades.push(grade);
   }
 
   return(
-    <div>
-      <AvField type='text' label='School Name' name='school_name' value={props.student_profile.school_name} onChange={props.onChange} validate={{
-        required: {value: true, errorMessage: 'Please enter a school name'}
-      }}/>
-      <FormGroup>
-        <Label>
-          School Grade
-          <Input type='select' name='school_grade' value={props.student_profile.school_grade} onChange={props.onChange}>
-            {schoolGrades.map((value, index) => 
-              <option key={index} value={value[0]}>{value[1]}</option>
-            )}
-          </Input>
-        </Label>
-      </FormGroup>
-    </div>
+    <MyGrid className={classes.sectionEnd} container spacing={3}>
+      <MyGrid item sm='12' md='6'>
+        <TextField id='school_name' name='school_name' type='text' label='School Name' value={props.state.school_name} onChange={props.onChange} required fullWidth />
+      </MyGrid>
+      <MyGrid item sm='12' md='6'>
+        <InputLabel id="school-grade-label">
+          <Typography variant="caption">School Grade</Typography>
+        </InputLabel>
+        <Select
+          id="school_grade"
+          name="school_grade"
+          labelId="school-grade-label"
+          value={props.state.school_grade}
+          onChange={props.onChange}
+        >
+          {schoolGrades.map((value, index) => 
+            <MenuItem key={index} value={value[0]}>{value[1]}</MenuItem>
+          )}
+        </Select>
+      </MyGrid>
+    </MyGrid>
   );
 }
 
 
 export function TeacherProfileSignup(props) {
+  const classes = useStyles();
   return(
-    <div>
-      <AvField type='text' label='Association' name='association' value={props.teacher_profile.association} onChange={props.onChange} validate={{
-        required: {value: true, errorMessage: 'Please enter an association'}
-      }}/>
-    </div>
+    <MyGrid className={classes.sectionEnd} container spacing={3}>
+      <MyGrid item sm='12' md='6'>
+        <TextField id='association' name='association' type='text' label='Association' value={props.state.association} onChange={props.onChange} required fullWidth />
+      </MyGrid>
+    </MyGrid>
   );
 }
 

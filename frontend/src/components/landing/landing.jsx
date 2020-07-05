@@ -1,65 +1,76 @@
 import React, { useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
+import { makeStyles } from '@material-ui/core/styles';
 import {
-  Collapse,
-  Navbar,
-  NavbarToggler,
-  NavbarBrand,
-  Nav,
-  NavItem,
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+} from "react-router-dom";
+import {  
+  Container, 
+  Grid,
+  AppBar,
+  Toolbar,
+  Typography,
   Button,
-  Modal, 
-  ModalHeader, 
-  ModalBody, 
-} from 'reactstrap';
+  IconButton,
+  Box,
+} from '@material-ui/core';
+import { 
+  School,
+} from '@material-ui/icons';
 
 import Login from './login';
 import Signup from './signup';
 
 
+const useStyles = makeStyles(theme => ({
+  root: {
+    flexGrow: 1,
+  },
+  menuButton: {
+    marginRight: theme.spacing(2),
+  },
+  title: {
+    flexGrow: 1,
+  },
+}));
+
 function Landing(props) {
-  const [isOpen, setIsOpen] = useState(false);
-  const navToggle = () => setIsOpen(!isOpen);
-  const [modal1, setModal1] = useState(false);
-  const modalToggle1 = () => setModal1(!modal1);
-  const [modal2, setModal2] = useState(false);
-  const modalToggle2 = () => setModal2(!modal2);
+  const classes = useStyles();
 
   return (
     <div id='landing'>
-      <Navbar color='dark' dark expand='sm'>
-        <NavbarBrand className='text-warning' href='/'>
-          <span className='m-2'><FontAwesomeIcon icon='school' size='1x'/></span>
-          Success Academy
-        </NavbarBrand>
-        <NavbarToggler onClick={navToggle} />
-        <Collapse isOpen={isOpen} navbar>
-          <Nav className='ml-auto' navbar>
-            <NavItem>
-              <div>
-                <Button className='m-1' color='warning' onClick={modalToggle1}>Signup</Button>
-                <Modal isOpen={modal1} toggle={modalToggle1}>
-                  <ModalHeader toggle={modalToggle1}>Signup</ModalHeader>
-                  <ModalBody>
-                    <Signup toggle={modalToggle1} />
-                  </ModalBody>
-                </Modal>
-              </div>
-            </NavItem>
-            <NavItem>
-              <div>
-                <Button className='m-1' color='warning' onClick={modalToggle2}>Login</Button>
-                <Modal isOpen={modal2} toggle={modalToggle2}>
-                  <ModalHeader toggle={modalToggle2}>Login</ModalHeader>
-                  <ModalBody>
-                    <Login handleLogin={props.handleLogin}/>
-                  </ModalBody>
-                </Modal>
-              </div>
-            </NavItem>
-          </Nav>
-        </Collapse>
-      </Navbar>
+      <Router>
+        <Box classname={classes.root} color="text.secondary" clone>
+          <AppBar position="static" color="transparent">
+            <Toolbar>
+              <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+                <School />
+              </IconButton>
+              <Typography variant="h6" className={classes.title}>
+                Success Academy
+              </Typography>
+              <Button color="inherit" component={Link} to="/">Signup</Button>
+              <Button color="inherit" component={Link} to="/login">Login</Button>
+            </Toolbar>
+          </AppBar>
+        </Box>
+
+        <Switch>
+          <Route exact path="/">
+            <Box mx='auto' my={5} width="50%" minWidth={200}>
+              <Signup />
+            </Box>
+          </Route>
+          <Route path="/login">
+            <Box mx='auto' my={5} width="40%" minWidth={200}>
+              <Login handleLogin={props.handleLogin}/>
+            </Box>
+          </Route>
+        </Switch>
+      </Router>
     </div>
   );
 }

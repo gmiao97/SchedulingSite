@@ -34,14 +34,25 @@ class MyUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MyUser
-        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'user_type', 'time_zone', 'phone_number',
+        fields = ['id', 'first_name', 'last_name', 'email', 'username', 'password', 'user_type', 'time_zone', 'phone_number',
                   'birthday', 'description', 'student_profile', 'teacher_profile', 'student_id', 'teacher_id']
-        extra_kwargs = {'password': {'write_only': True}}
+        extra_kwargs = {'password': {'write_only': True, 'required': False}, 'username': {'required': False}}
 
     def create(self, validated_data):
         student_profile = validated_data.pop('student_profile')
         teacher_profile = validated_data.pop('teacher_profile')
-        password = validated_data.pop('password')
+        username = validated_data.get('username', None)
+        if username is None:
+            username = validated_data.get('last_name') + '_' + validated_data.get('first_name')
+            counter = 1
+            while MyUser.objects.filter(username=username):
+                username = validated_data.get('last_name') + '_' + validated_data.get('first_name') + '_' + str(counter)
+                counter += 1
+            validated_data['username'] = username
+        password = validated_data.pop('password', None)
+        if password is None:
+            password = MyUser.objects.make_random_password(length=8)
+        print(username, password)
         user = self.Meta.model(**validated_data)
         user.set_password(password)
         user.save()

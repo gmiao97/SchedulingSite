@@ -1,6 +1,9 @@
 import { createBrowserHistory } from 'history';
+import moment from 'moment-timezone';
 
 export const history = createBrowserHistory({forceRefresh: true});
+
+export const timeZoneNames = moment.tz.names().filter(tz => tz !== 'Asia/Qostanay'); // TODO Asia/Qostanay isn't in pytz timezones
 
 export const gradeMappings = new Map([
   [-1, 'Preschool'],
@@ -48,10 +51,10 @@ export function isAdmin() {
   return getUserTypeFromToken() === 'ADMIN';
 }
 
-//export function getDateFromISODateTime(dateTime) {
+// export function getDateFromISODateTime(dateTime) {
 //  return dateTime.slice(0, 10);
-//}
-//
-//export function getTimeFromISODateTime(dateTime) {
+// }
+
+// export function getTimeFromISODateTime(dateTime) {
 //  return dateTime.slice(11);
-//}
+// }

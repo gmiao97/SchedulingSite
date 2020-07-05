@@ -1,12 +1,21 @@
 import React, { Component } from 'react';
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faLanguage, faUser, faSchool } from '@fortawesome/free-solid-svg-icons'
+import 'fontsource-roboto';
 
 import Landing from './landing/landing';
 import Home from './home/home';
 import axiosInstance from '../axiosApi';
 
+import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+
 library.add(faLanguage, faUser, faSchool);
+
+const theme = createMuiTheme({
+  palette: {
+    type: 'light',
+  },
+});
 
 class App extends Component {
   constructor(props) {
@@ -74,7 +83,9 @@ class App extends Component {
     }
     return (
       <div id='app'>
-        {renderComponent}
+        <ThemeProvider theme={theme}>
+          {renderComponent}
+        </ThemeProvider>
       </div>   
     );
   }
