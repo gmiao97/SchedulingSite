@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 
 import { makeStyles } from '@material-ui/core/styles';
 import {
-  BrowserRouter as Router,
   Switch,
   Route,
   Link,
@@ -29,7 +28,7 @@ const useStyles = makeStyles(theme => ({
   root: {
     flexGrow: 1,
   },
-  menuButton: {
+  iconButton: {
     marginRight: theme.spacing(2),
   },
   title: {
@@ -37,42 +36,38 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-function Landing(props) {
+export default function Landing(props) {
   const classes = useStyles();
 
   return (
     <div id='landing'>
-      <Router>
-        <Box classname={classes.root} color="text.secondary" clone>
-          <AppBar position="static" color="transparent">
-            <Toolbar>
-              <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-                <School />
-              </IconButton>
-              <Typography variant="h6" className={classes.title}>
-                Success Academy
-              </Typography>
-              <Button color="inherit" component={Link} to="/">Signup</Button>
-              <Button color="inherit" component={Link} to="/login">Login</Button>
-            </Toolbar>
-          </AppBar>
-        </Box>
+      <Box classname={classes.root} clone>
+        <AppBar position="static" color="transparent">
+          <Toolbar>
+            <IconButton edge="start" className={classes.iconButton} color="inherit" component={Link} to="/">
+              <School />
+            </IconButton>
+            <Typography variant="h6" className={classes.title}>
+              Success Academy
+            </Typography>
+            <Button color="inherit" component={Link} to="/signup">Signup</Button>
+            <Button color="inherit" component={Link} to="/">Login</Button>
+          </Toolbar>
+        </AppBar>
+      </Box>
 
-        <Switch>
-          <Route exact path="/">
-            <Box mx='auto' my={5} width="50%" minWidth={200}>
-              <Signup />
-            </Box>
-          </Route>
-          <Route path="/login">
-            <Box mx='auto' my={5} width="40%" minWidth={200}>
-              <Login handleLogin={props.handleLogin}/>
-            </Box>
-          </Route>
-        </Switch>
-      </Router>
+      <Switch>
+        <Route exact path="/">
+          <Box mx='auto' my={5} width="50%" minWidth={300}>
+            <Login handleLogin={props.handleLogin} />
+          </Box>
+        </Route>
+        <Route exact path="/signup">
+          <Box mx='auto' my={5} width="40%" minWidth={300}>
+            <Signup />
+          </Box>
+        </Route>
+      </Switch>
     </div>
   );
 }
-
-export default Landing;

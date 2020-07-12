@@ -71,27 +71,27 @@ class Signup extends Component {
     this.setState({
       [event.target.name]: event.target.value,
     });
-  };
+  }
 
   handleTabChange = (event, newValue) => {
     this.setState({
       activeTab: newValue,
       user_type: newValue === 0 ? "STUDENT" : "TEACHER",
     });
-  };
+  }
 
   handleSnackbarClose = (event, reason) => {
     this.setState({
       successSnackbarOpen: false,
       errorSnackbarOpen: false,
     });
-  };
+  }
 
   handleDateChange = (name, date) => {
     this.setState({
       [name]: moment(date).format('YYYY-MM-DD'),
     })
-  };
+  }
 
   handleChangeStudentProfile = event => {
     this.setState({
@@ -100,7 +100,7 @@ class Signup extends Component {
           [event.target.name]: event.target.value,
         }
     });
-  };
+  }
 
   handleChangeTeacherProfile = event => {
     this.setState({
@@ -109,7 +109,7 @@ class Signup extends Component {
           [event.target.name]: event.target.value,
         }
     });
-  };
+  }
 
   // TODO error handling and validation
   async handleSubmit(event) {
@@ -200,12 +200,12 @@ class Signup extends Component {
         </Box>
         <Snackbar open={this.state.successSnackbarOpen} onClose={this.handleSnackbarClose}>
           <Alert severity="success" variant="filled" elevation={24} onClose={this.handleSnackbarClose}>
-            Successfully submitted signup application!
+            Successfully submitted signup form!
           </Alert>
         </Snackbar>
         <Snackbar open={this.state.errorSnackbarOpen} onClose={this.handleSnackbarClose}>
           <Alert severity="error" variant="filled" elevation={24} onClose={this.handleSnackbarClose}>
-            There was an error in submitting your signup application.
+            There was an error in submitting your signup form.
           </Alert>
         </Snackbar>
       </Paper>

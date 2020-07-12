@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { styled, makeStyles } from '@material-ui/core/styles';
+import { useHistory, Link } from "react-router-dom"
 import {
   Box,
   Grid,
@@ -28,13 +29,14 @@ export default function Login(props) {
     errorSnackbarOpen: false,
   });
   const handleLogin = props.handleLogin;
+  const history = useHistory();
 
   const handleChange = event => {
     setState({
       ...state,
       [event.target.name]: event.target.value
     });
-  };
+  }
 
   const handleSnackbarClose = (event, reason) => {
     setState({
@@ -42,7 +44,7 @@ export default function Login(props) {
       successSnackbarOpen: false,
       errorSnackbarOpen: false,
     });
-  };
+  }
 
   const handleSubmit = async event => {
     event.preventDefault();
@@ -63,7 +65,7 @@ export default function Login(props) {
         errorSnackbarOpen: true,
       });
     }
-  };
+  }
 
   const classes = useStyles();
   return (
@@ -78,8 +80,17 @@ export default function Login(props) {
               <TextField id='password' name='password' className={classes.sectionEnd} type='password' label='Password' value={state.password} onChange={handleChange} required fullWidth />
             </Grid>
           </Grid>
-          <Button type="submit" variant="contained" color="primary">Login</Button>
+          <Grid container spacing={3} justify="space-between">
+            <Grid item>
+              <Button type="submit" variant="contained" color="primary">Login</Button>
+            </Grid>
+            <Grid item>
+              <Button type="submit" color="default" size="small" component={Link} to="/signup">New User? Sign up here</Button>
+            </Grid>
+          </Grid>
+          
         </form>
+        
       </Box>
       <Snackbar open={state.errorSnackbarOpen} onClose={handleSnackbarClose}>
         <Alert severity="error" variant="filled" elevation={24} onClose={handleSnackbarClose}>

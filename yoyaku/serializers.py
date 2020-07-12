@@ -1,4 +1,5 @@
 import pytz
+from django.core import mail
 from rest_framework import serializers
 from rest_framework.fields import FileField
 
@@ -52,6 +53,14 @@ class MyUserSerializer(serializers.ModelSerializer):
         password = validated_data.pop('password', None)
         if password is None:
             password = MyUser.objects.make_random_password(length=8)
+            mail.get_connection()
+            mail.send_mail(
+                'Yoyaku site login credentials for new user {}, {}'.format(validated_data.get('last_name'), validated_data.get('first_name')),
+                'username: {}\npassword: {}'.format(validated_data.get('username'), password),
+                'gmgm9797@gmail.com',
+                ['gmiao97@gmail.com'],
+                fail_silently=False,
+            )
         print(username, password)
         user = self.Meta.model(**validated_data)
         user.set_password(password)
