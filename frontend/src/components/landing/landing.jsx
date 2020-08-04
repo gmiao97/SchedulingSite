@@ -41,7 +41,7 @@ export default function Landing(props) {
 
   return (
     <div id='landing'>
-      <Box classname={classes.root} clone>
+      <Box className={classes.root} clone>
         <AppBar position="static" color="transparent">
           <Toolbar>
             <IconButton edge="start" className={classes.iconButton} color="inherit" component={Link} to="/">
@@ -63,7 +63,7 @@ export default function Landing(props) {
           </Box>
         </Route>
         <Route exact path="/signup">
-          <Box mx='auto' my={5} width="40%" minWidth={300}>
+          <Box mx='auto' my={5} width="50%" minWidth={500}>
             <Signup />
           </Box>
         </Route>

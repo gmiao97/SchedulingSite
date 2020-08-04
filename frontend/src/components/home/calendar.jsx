@@ -276,8 +276,8 @@ class Calendar extends Component {
       const response = await axiosInstance.post('/yoyaku/events/', payload);
       this.forceUpdate();
       return response;
-    } catch(error) {
-      console.log(error.stack);
+    } catch(err) {
+      console.error(err);
     } finally {
       this.toggleForm('new');
     }
@@ -296,8 +296,8 @@ class Calendar extends Component {
       }
       this.forceUpdate();
       return response;
-    } catch (error) {
-      console.log(error.stack);
+    } catch (err) {
+      console.error(err);
     } finally {
       this.toggleForm('edit');
     }

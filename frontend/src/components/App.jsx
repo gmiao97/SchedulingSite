@@ -37,8 +37,8 @@ export default function App(props) {
       });
       return response;
     }
-    catch(e) {
-      console.log(e);
+    catch(err) {
+      console.error(err);
     } finally {
       setAuthenticated(false);
       axiosInstance.defaults.headers['Authorization'] = null;

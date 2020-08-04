@@ -1,4 +1,5 @@
 import React, { Component, useState } from 'react';
+import { useHistory } from "react-router-dom"
 import moment from 'moment-timezone';
 import { styled, makeStyles } from '@material-ui/core/styles';
 import MomentUtils from "@date-io/moment";
@@ -13,8 +14,6 @@ import {
   Typography,
   Divider,
   Button,
-  Tabs,
-  Tab,
   TextField,
   Select,
   MenuItem,
@@ -25,6 +24,11 @@ import {
   Stepper,
   Step,
   StepLabel,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormControl,
+  FormLabel,
 } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 
@@ -39,21 +43,31 @@ const MyGrid = styled(Grid)({
 
 const useStyles = makeStyles(theme => ({
   sectionEnd: {
-    marginBottom: theme.spacing(3),
+    marginBottom: theme.spacing(2),
   },
   backdrop: {
     zIndex: theme.zIndex.drawer + 1,
     color: '#fff',
+  },
+  backButton: {
+    marginRight: theme.spacing(1),
+  },
+  stepContent: {
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
   },
 }));
 
 
 export default function Signup(props) {
   const classes = useStyles();
-  const [activeTab, setActiveTab] = useState(0);
+  const history = useHistory();
+  const [paidFor, setPaidFor] = useState(false);
   const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
   const [errorSnackbarOpen, setErrorSnackbarOpen] = useState(false);
   const [backdropOpen, setBackdropOpen] = React.useState(false);
+  const [activeStep, setActiveStep] = React.useState(0);
+  const steps = ['Select user type', 'Create profile', 'Subscription payment'];
   const [signupForm, setSignupForm] = useState({
     username: '',
     email: '',
@@ -72,6 +86,9 @@ export default function Signup(props) {
       association: '',
     },
   });
+  const [newUserInfo, setNewUserInfo] = useState({
+    email: "",
+  });
 
   const handleChange = event => {
     setSignupForm({
@@ -80,18 +97,23 @@ export default function Signup(props) {
     });
   }
 
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
-    setSignupForm({
-      ...signupForm,
-      user_type: newValue === 0 ? "STUDENT" : "TEACHER",
-    });
-  }
 
   const handleSnackbarClose = (event, reason) => {
     setSuccessSnackbarOpen(false);
     setErrorSnackbarOpen(false);
   }
+
+  const handleNextStep = () => {
+    setActiveStep(prevActiveStep => prevActiveStep + 1);
+  };
+
+  const handlePrevStep = () => {
+    setActiveStep(prevActiveStep => prevActiveStep - 1);
+  };
+
+  const handleStepReset = () => {
+    setActiveStep(0);
+  };
 
   const handleDateChange = (name, date) => {
     setSignupForm({
@@ -142,13 +164,19 @@ export default function Signup(props) {
     try {
       setBackdropOpen(true);
       const response = await axiosInstance.post('/yoyaku/users/', signupForm);
-      setBackdropOpen(false);
+      setNewUserInfo({
+        ...newUserInfo,
+        email: signupForm.email.slice(),
+      })
+      handleNextStep();
       setSuccessSnackbarOpen(true);
       return response;
-    } catch(error) {
-      console.log(error.stack);
+    } catch(err) {
+      console.error(err.stack);
+      handleStepReset();
       setErrorSnackbarOpen(true);
     } finally {
+      setBackdropOpen(false);
       setSignupForm({
         username: '',
         email: '',
@@ -169,29 +197,27 @@ export default function Signup(props) {
     }
   }
 
-  return(
-    <div>
-    <Paper elevation={24}>
-      <Tabs
-        indicatorColor="primary"
-        textColor="primary"
-        variant="fullWidth"
-        value={activeTab}
-        onChange={handleTabChange}
-      >
-        <Tab label="Student" />
-        <Tab label="Teacher" />
-      </Tabs>
-
-      <Box p={3}>
-        <MuiPickersUtilsProvider utils={MomentUtils}>
-          <form onSubmit={handleSubmit}>
+  const getStepContent = stepIndex => {
+    switch (stepIndex) {
+      case 0:
+        return(
+          <FormControl component="fieldset">
+            <FormLabel component="legend">I am registering as a</FormLabel>
+            <RadioGroup id="user_type" name="user_type" value={signupForm.user_type} onChange={handleChange}>
+              <FormControlLabel value="STUDENT" control={<Radio />} label="Student" />
+              <FormControlLabel value="TEACHER" control={<Radio />} label="Teacher" />
+            </RadioGroup>
+          </FormControl>
+        );
+      case 1:
+        return(
+          <form id="signupForm" onSubmit={handleNextStep}>
             <GeneralSignup 
               state={signupForm}
               onChange={handleChange}
               onDateChange={handleDateChange}
             />
-            {activeTab === 0 ? 
+            {signupForm.user_type === "STUDENT" ? 
               <StudentProfileSignup
                 state={signupForm.student_profile} 
                 onChange={handleChangeStudentProfile}
@@ -201,21 +227,67 @@ export default function Signup(props) {
                 onChange={handleChangeTeacherProfile}
               />
             }
-            <Button type="submit" variant="contained" color="primary">Submit</Button>
           </form>
-        </MuiPickersUtilsProvider>
-      </Box>
-      <Snackbar open={successSnackbarOpen} onClose={handleSnackbarClose}>
-        <Alert severity="success" variant="filled" elevation={24} onClose={handleSnackbarClose}>
-          Successfully submitted signup form!
-        </Alert>
-      </Snackbar>
-      <Snackbar open={errorSnackbarOpen} onClose={handleSnackbarClose}>
-        <Alert severity="error" variant="filled" elevation={24} onClose={handleSnackbarClose}>
-          There was an error in submitting your signup form.
-        </Alert>
-      </Snackbar>
-    </Paper>
+        );
+      case 2:
+        return(<PayPalButton />);
+      default:
+        return 'Unknown stepIndex';
+    }
+  }
+
+  return(
+    <div>
+      <Paper elevation={24}>
+        <Box p={3}>
+          <Stepper activeStep={activeStep} alternativeLabel>
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+          {activeStep === steps.length ?
+            <div>
+              <Typography className={classes.stepContent}>
+                Registration Complete! An confirmation email has been sent to <Typography display="inline" color="primary">{newUserInfo.email}</Typography>.
+                Welcome to Success Academy! 
+                </Typography>
+              <Button variant="contained" color="primary" onClick={() => history.push("/")}>Login</Button>
+            </div> :
+            <div>
+              <div>
+                {getStepContent(activeStep)}
+              </div>
+              <Button disabled={activeStep === 0} onClick={handlePrevStep} className={classes.backButton}>
+                Back
+              </Button>
+              {activeStep === 0 ?
+                <Button variant="contained" color="primary" type="button" onClick={handleNextStep}>
+                  Next
+                </Button> :
+                (activeStep === 1 ?
+                  <Button variant="contained" color="primary" type="submit" form="signupForm">
+                    Next
+                  </Button> :
+                  <Button variant="contained" color="primary" type="button" onClick={handleSubmit}>
+                    Register
+                  </Button>)             
+              }
+            </div>
+          }
+        </Box>
+        <Snackbar open={successSnackbarOpen} onClose={handleSnackbarClose}>
+          <Alert severity="success" variant="filled" elevation={24} onClose={handleSnackbarClose}>
+            Registration successful! Welcome to Success Academy! 
+          </Alert>
+        </Snackbar>
+        <Snackbar open={errorSnackbarOpen} onClose={handleSnackbarClose}>
+          <Alert severity="error" variant="filled" elevation={24} onClose={handleSnackbarClose}>
+            Registration failed. Please contact the administrator. 
+          </Alert>
+        </Snackbar>
+      </Paper>
       <Backdrop className={classes.backdrop} open={backdropOpen}>
         <CircularProgress color="inherit" />
       </Backdrop>
@@ -227,19 +299,19 @@ export default function Signup(props) {
 export function GeneralSignup(props) {
   return(
       <MyGrid container spacing={3}>
-          <MyGrid item sm='12' md='6'>
+          <MyGrid item sm={12} md={6}>
             <TextField id='first_name' name='first_name' type='text' label='First Name' value={props.state.first_name} onChange={props.onChange} required fullWidth />
           </MyGrid>
-          <MyGrid item sm='12' md='6'>
+          <MyGrid item sm={12} md={6}>
             <TextField id='last_name' name='last_name' type='text' label='Last Name' value={props.state.last_name} onChange={props.onChange} required fullWidth />
           </MyGrid>
-          <MyGrid item sm='12' md='6'>
+          <MyGrid item sm={12} md={6}>
             <TextField id='email' name='email' type='email' label='Email' value={props.state.email} onChange={props.onChange} required fullWidth />
           </MyGrid>
-          <MyGrid item sm='12' md='6'>
+          <MyGrid item sm={12} md={6}>
             <TextField id='phone_number' name='phone_number' type='text' label='Phone Number' value={props.state.phone_number} onChange={props.onChange} required fullWidth />
           </MyGrid>
-          <MyGrid item sm='12' md='6'>
+          <MyGrid item sm={12} md={6}>
             <DatePicker
               id='birthday'
               name='birthday'
@@ -249,7 +321,7 @@ export function GeneralSignup(props) {
               format='YYYY-MM-DD'
             />
           </MyGrid>
-          <MyGrid item sm='12' md='6'>
+          <MyGrid item sm={12} md={6}>
             <InputLabel id="time-zone-label">
               <Typography variant="caption">Time Zone</Typography>
             </InputLabel>
@@ -278,11 +350,11 @@ export function StudentProfileSignup(props) {
   }
 
   return(
-    <MyGrid container spacing={3}>
-      <MyGrid item sm='12' md='6'>
+    <MyGrid className={classes.sectionEnd} container spacing={3}>
+      <MyGrid item sm={12} md={6}>
         <TextField id='school_name' name='school_name' type='text' label='School Name' value={props.state.school_name} onChange={props.onChange} required fullWidth />
       </MyGrid>
-      <MyGrid item sm='12' md='6'>
+      <MyGrid item sm={12} md={6}>
         <InputLabel id="school-grade-label">
           <Typography variant="caption">School Grade</Typography>
         </InputLabel>
@@ -298,7 +370,7 @@ export function StudentProfileSignup(props) {
           )}
         </Select>
       </MyGrid>
-      <MyGrid item xs="12">
+      <MyGrid item xs={12}>
         {/* <PayPalButton /> */}
       </MyGrid>
     </MyGrid>
@@ -310,7 +382,7 @@ export function TeacherProfileSignup(props) {
   const classes = useStyles();
   return(
     <MyGrid className={classes.sectionEnd} container spacing={3}>
-      <MyGrid item sm='12' md='6'>
+      <MyGrid item sm={12} md={6}>
         <TextField id='association' name='association' type='text' label='Association' value={props.state.association} onChange={props.onChange} required fullWidth />
       </MyGrid>
     </MyGrid>

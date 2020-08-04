@@ -66,8 +66,8 @@ class EditProfile extends Signup {
     try {
       const response = await axiosInstance.patch(`/yoyaku/users/${getUserIdFromToken()}/`, this.state);
       return response;
-    } catch(error) {
-      console.log(error.stack);
+    } catch(err) {
+      console.error(err);
     } finally {
       history.push('/profile/');
     }

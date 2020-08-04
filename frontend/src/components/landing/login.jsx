@@ -58,8 +58,8 @@ export default function Login(props) {
       localStorage.setItem('refresh_token', response.data.refresh);
       handleLogin();
       return response;
-    } catch (error) {
-      console.log(error.stack);
+    } catch (err) {
+      console.error(err.stack);
       setState({
         ...state,
         errorSnackbarOpen: true,
@@ -73,10 +73,10 @@ export default function Login(props) {
       <Box p={3}>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
-            <Grid item xs="12">
+            <Grid item xs={12}>
               <TextField id='username' name='username' type='text' label='User Id' value={state.username} onChange={handleChange} required fullWidth />
             </Grid>
-            <Grid item xs="12">
+            <Grid item xs={12}>
               <TextField id='password' name='password' className={classes.sectionEnd} type='password' label='Password' value={state.password} onChange={handleChange} required fullWidth />
             </Grid>
           </Grid>

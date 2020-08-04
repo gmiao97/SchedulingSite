@@ -174,7 +174,7 @@ export default function Home(props) {
     !currentUser ? 
       null :
       <div id='home'>
-        <Box classname={classes.root} clone>
+        <Box className={classes.root} clone>
           <AppBar position="static" color="transparent">
             <Toolbar>
               <IconButton edge="start" className={classes.iconMargin} color="inherit" component={Link} to="/calendar">
