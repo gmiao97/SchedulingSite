@@ -20,11 +20,15 @@ import {
   MenuItem,
   InputLabel,
   Snackbar,
+  Stepper,
+  Step,
+  StepLabel,
 } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 
 import axiosInstance from '../../axiosApi';
 import { gradeMappings, timeZoneNames } from '../../util';
+import PayPalButton from "../payPalButton";
 
 
 const MyGrid = styled(Grid)({
@@ -267,7 +271,7 @@ export function StudentProfileSignup(props) {
   }
 
   return(
-    <MyGrid className={classes.sectionEnd} container spacing={3}>
+    <MyGrid container spacing={3}>
       <MyGrid item sm='12' md='6'>
         <TextField id='school_name' name='school_name' type='text' label='School Name' value={props.state.school_name} onChange={props.onChange} required fullWidth />
       </MyGrid>
@@ -286,6 +290,9 @@ export function StudentProfileSignup(props) {
             <MenuItem key={index} value={value[0]}>{value[1]}</MenuItem>
           )}
         </Select>
+      </MyGrid>
+      <MyGrid item xs="12">
+        <PayPalButton />
       </MyGrid>
     </MyGrid>
   );

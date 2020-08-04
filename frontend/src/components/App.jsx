@@ -48,11 +48,11 @@ export default function App(props) {
   }
 
 
-    if (authenticated == null) {
-      return null;
-    } else {
-      return (authenticated) ? 
-      <Home handleLogout={handleLogout} /> : 
-      <Landing handleLogin={handleLogin} />
-    }
+  if (authenticated == null) {
+    return null;
+  } else {
+    return (authenticated) ? 
+    <Home handleLogout={handleLogout} /> : 
+    <Landing handleLogin={handleLogin} />
+  }
 }
