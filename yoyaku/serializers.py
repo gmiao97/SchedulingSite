@@ -40,8 +40,8 @@ class MyUserSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True, 'required': False}, 'username': {'required': False}}
 
     def create(self, validated_data):
-        student_profile = validated_data.pop('student_profile')
-        teacher_profile = validated_data.pop('teacher_profile')
+        student_profile = validated_data.pop('student_profile', None)
+        teacher_profile = validated_data.pop('teacher_profile', None)
         username = validated_data.get('username', None)
         if username is None:
             username = validated_data.get('last_name') + '_' + validated_data.get('first_name')
@@ -61,7 +61,6 @@ class MyUserSerializer(serializers.ModelSerializer):
                 ['gmiao97@gmail.com'],
                 fail_silently=False,
             )
-        print(username, password)
         user = self.Meta.model(**validated_data)
         user.set_password(password)
         user.save()

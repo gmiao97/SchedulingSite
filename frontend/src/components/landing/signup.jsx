@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import moment from 'moment-timezone';
 import { styled, makeStyles } from '@material-ui/core/styles';
 import MomentUtils from "@date-io/moment";
@@ -20,6 +20,8 @@ import {
   MenuItem,
   InputLabel,
   Snackbar,
+  Backdrop,
+  CircularProgress,
   Stepper,
   Step,
   StepLabel,
@@ -39,114 +41,115 @@ const useStyles = makeStyles(theme => ({
   sectionEnd: {
     marginBottom: theme.spacing(3),
   },
+  backdrop: {
+    zIndex: theme.zIndex.drawer + 1,
+    color: '#fff',
+  },
 }));
 
 
-class Signup extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      username: '',
-      email: '',
-      password: '',
-      first_name: '',
-      last_name: '',
-      user_type: 'STUDENT',
-      time_zone: 'America/New_York',
-      phone_number: '',
-      birthday: moment().format('YYYY-MM-DD'),
-      student_profile: {
-        school_name: '',
-        school_grade: '-1',
-      },
-      teacher_profile: {
-        association: '',
-      },
+export default function Signup(props) {
+  const classes = useStyles();
+  const [activeTab, setActiveTab] = useState(0);
+  const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
+  const [errorSnackbarOpen, setErrorSnackbarOpen] = useState(false);
+  const [backdropOpen, setBackdropOpen] = React.useState(false);
+  const [signupForm, setSignupForm] = useState({
+    username: '',
+    email: '',
+    password: '',
+    first_name: '',
+    last_name: '',
+    user_type: 'STUDENT',
+    time_zone: 'America/New_York',
+    phone_number: '',
+    birthday: moment().format('YYYY-MM-DD'),
+    student_profile: {
+      school_name: '',
+      school_grade: '-1',
+    },
+    teacher_profile: {
+      association: '',
+    },
+  });
 
-      activeTab: 0,
-      successSnackbarOpen: false,
-      errorSnackbarOpen: false,
-    };
-
-    this.handleSubmit = this.handleSubmit.bind(this);
-  }
-
-  handleChange = event => {
-    this.setState({
+  const handleChange = event => {
+    setSignupForm({
+      ...signupForm,
       [event.target.name]: event.target.value,
     });
   }
 
-  handleTabChange = (event, newValue) => {
-    this.setState({
-      activeTab: newValue,
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+    setSignupForm({
+      ...signupForm,
       user_type: newValue === 0 ? "STUDENT" : "TEACHER",
     });
   }
 
-  handleSnackbarClose = (event, reason) => {
-    this.setState({
-      successSnackbarOpen: false,
-      errorSnackbarOpen: false,
-    });
+  const handleSnackbarClose = (event, reason) => {
+    setSuccessSnackbarOpen(false);
+    setErrorSnackbarOpen(false);
   }
 
-  handleDateChange = (name, date) => {
-    this.setState({
+  const handleDateChange = (name, date) => {
+    setSignupForm({
+      ...signupForm,
       [name]: moment(date).format('YYYY-MM-DD'),
-    })
-  }
-
-  handleChangeStudentProfile = event => {
-    this.setState({
-        student_profile: {
-          ...this.state.student_profile,
-          [event.target.name]: event.target.value,
-        }
     });
   }
 
-  handleChangeTeacherProfile = event => {
-    this.setState({
-        teacher_profile: {
-          ...this.state.teacher_profile,
-          [event.target.name]: event.target.value,
-        }
+  const handleChangeStudentProfile = event => {
+    setSignupForm({
+      ...signupForm,
+      student_profile: {
+        ...signupForm.student_profile,
+        [event.target.name]: event.target.value,
+      },
+    });
+  }
+
+  const handleChangeTeacherProfile = event => {
+    setSignupForm({
+      ...signupForm,
+      teacher_profile: {
+        ...signupForm.teacher_profile,
+        [event.target.name]: event.target.value,
+      },
     });
   }
 
   // TODO error handling and validation
-  async handleSubmit(event) {
+  const handleSubmit = async event => {
     event.preventDefault();
-    switch (this.state.user_type) {
+    switch (signupForm.user_type) {
       case 'STUDENT':
-        await Promise.resolve(this.setState({teacher_profile: null}));
+        delete signupForm.teacher_profile;
         break;
       case 'TEACHER':
-        await Promise.resolve(this.setState({student_profile: null}));
+        delete signupForm.student_profile;
         break;
       default:
     }
-    if (!this.state.password) {
-      delete this.state.password;
+    if (!signupForm.password) {
+      delete signupForm.password;
     }
-    if (!this.state.username) {
-      delete this.state.username;
+    if (!signupForm.username) {
+      delete signupForm.username;
     }
 
     try {
-      const response = await axiosInstance.post('/yoyaku/users/', this.state);
-      this.setState({
-        successSnackbarOpen: true,
-      });
+      setBackdropOpen(true);
+      const response = await axiosInstance.post('/yoyaku/users/', signupForm);
+      setBackdropOpen(false);
+      setSuccessSnackbarOpen(true);
       return response;
     } catch(error) {
       console.log(error.stack);
-      this.setState({
-        errorSnackbarOpen: true,
-      });
+      setErrorSnackbarOpen(true);
     } finally {
-      this.setState({
+      setSignupForm({
         username: '',
         email: '',
         password: '',
@@ -166,56 +169,60 @@ class Signup extends Component {
     }
   }
 
-  render() {
-    return (
-      <Paper elevation={24}>
-        <Tabs
-          indicatorColor="primary"
-          textColor="primary"
-          variant="fullWidth"
-          value={this.state.activeTab}
-          onChange={this.handleTabChange}
-        >
-          <Tab label="Student" />
-          <Tab label="Teacher" />
-        </Tabs>
+  return(
+    <div>
+    <Paper elevation={24}>
+      <Tabs
+        indicatorColor="primary"
+        textColor="primary"
+        variant="fullWidth"
+        value={activeTab}
+        onChange={handleTabChange}
+      >
+        <Tab label="Student" />
+        <Tab label="Teacher" />
+      </Tabs>
 
-        <Box p={3}>
-          <MuiPickersUtilsProvider utils={MomentUtils}>
-            <form onSubmit={this.handleSubmit}>
-              <GeneralSignup 
-                state={this.state}
-                onChange={this.handleChange}
-                onDateChange={this.handleDateChange}
+      <Box p={3}>
+        <MuiPickersUtilsProvider utils={MomentUtils}>
+          <form onSubmit={handleSubmit}>
+            <GeneralSignup 
+              state={signupForm}
+              onChange={handleChange}
+              onDateChange={handleDateChange}
+            />
+            {activeTab === 0 ? 
+              <StudentProfileSignup
+                state={signupForm.student_profile} 
+                onChange={handleChangeStudentProfile}
+              /> :
+              <TeacherProfileSignup
+                state={signupForm.teacher_profile} 
+                onChange={handleChangeTeacherProfile}
               />
-              {this.state.activeTab === 0 ? 
-                <StudentProfileSignup
-                  state={this.state.student_profile} 
-                  onChange={this.handleChangeStudentProfile}
-                /> :
-                <TeacherProfileSignup
-                  state={this.state.teacher_profile} 
-                  onChange={this.handleChangeTeacherProfile}
-                />
-              }
-              <Button type="submit" variant="contained" color="primary">Submit</Button>
-            </form>
-          </MuiPickersUtilsProvider>
-        </Box>
-        <Snackbar open={this.state.successSnackbarOpen} onClose={this.handleSnackbarClose}>
-          <Alert severity="success" variant="filled" elevation={24} onClose={this.handleSnackbarClose}>
-            Successfully submitted signup form!
-          </Alert>
-        </Snackbar>
-        <Snackbar open={this.state.errorSnackbarOpen} onClose={this.handleSnackbarClose}>
-          <Alert severity="error" variant="filled" elevation={24} onClose={this.handleSnackbarClose}>
-            There was an error in submitting your signup form.
-          </Alert>
-        </Snackbar>
-      </Paper>
-    )
-  }
-}
+            }
+            <Button type="submit" variant="contained" color="primary">Submit</Button>
+          </form>
+        </MuiPickersUtilsProvider>
+      </Box>
+      <Snackbar open={successSnackbarOpen} onClose={handleSnackbarClose}>
+        <Alert severity="success" variant="filled" elevation={24} onClose={handleSnackbarClose}>
+          Successfully submitted signup form!
+        </Alert>
+      </Snackbar>
+      <Snackbar open={errorSnackbarOpen} onClose={handleSnackbarClose}>
+        <Alert severity="error" variant="filled" elevation={24} onClose={handleSnackbarClose}>
+          There was an error in submitting your signup form.
+        </Alert>
+      </Snackbar>
+    </Paper>
+      <Backdrop className={classes.backdrop} open={backdropOpen}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    </div>
+  );
+}       
+
 
 export function GeneralSignup(props) {
   return(
@@ -292,7 +299,7 @@ export function StudentProfileSignup(props) {
         </Select>
       </MyGrid>
       <MyGrid item xs="12">
-        <PayPalButton />
+        {/* <PayPalButton /> */}
       </MyGrid>
     </MyGrid>
   );
@@ -309,6 +316,3 @@ export function TeacherProfileSignup(props) {
     </MyGrid>
   );
 }
-
-
-export default Signup;
