@@ -1,10 +1,8 @@
 import React, { Component, useState } from 'react';
-import { useHistory } from "react-router-dom"
+import { useHistory, Prompt } from "react-router-dom"
 import moment from 'moment-timezone';
 import { styled, makeStyles } from '@material-ui/core/styles';
-import MomentUtils from "@date-io/moment";
 import {
-  MuiPickersUtilsProvider,
   DatePicker,
 } from '@material-ui/pickers';
 import {
@@ -29,6 +27,7 @@ import {
   FormControlLabel,
   FormControl,
   FormLabel,
+  Tooltip,
 } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 
@@ -67,7 +66,6 @@ export default function Signup(props) {
   const [errorSnackbarOpen, setErrorSnackbarOpen] = useState(false);
   const [backdropOpen, setBackdropOpen] = React.useState(false);
   const [activeStep, setActiveStep] = React.useState(0);
-  const steps = ['Select user type', 'Create profile', 'Subscription payment'];
   const [signupForm, setSignupForm] = useState({
     username: '',
     email: '',
@@ -89,6 +87,9 @@ export default function Signup(props) {
   const [newUserInfo, setNewUserInfo] = useState({
     email: "",
   });
+  const studentSteps = ['Select user type', 'Create profile', 'Subscription payment'];
+  const teacherSteps = ['Select user type', 'Create profile', 'Complete Registration'];
+  const steps = signupForm.user_type === "STUDENT" ? studentSteps : teacherSteps;
 
   const handleChange = event => {
     setSignupForm({
@@ -230,7 +231,54 @@ export default function Signup(props) {
           </form>
         );
       case 2:
-        return(<PayPalButton />);
+        return(
+          signupForm.user_type === "STUDENT" ?
+            <div>
+              <Typography className={classes.stepContent}>
+                Please confirm profile information and complete subscription payment.
+              </Typography>
+              <PayPalButton 
+                paidFor={paidFor} 
+                setPaidFor={setPaidFor}
+              />
+            </div> :
+            <Typography className={classes.stepContent}>
+              Please confirm profile information and complete <Typography display="inline" color="secondary">teacher</Typography> registration.
+            </Typography>
+        );
+      default:
+        return 'Unknown stepIndex';
+    }
+  }
+
+  const getStepButton = stepIndex => {
+    switch (stepIndex) {
+      case 0:
+        return(
+          <Button variant="contained" color="primary" type="button" onClick={handleNextStep}>
+            Next
+          </Button>
+        );
+      case 1:
+        return(
+          <Button variant="contained" color="primary" type="submit" form="signupForm">
+            Next
+          </Button>
+        );
+      case 2:
+        return(
+          paidFor || signupForm.user_type === "TEACHER" ? 
+            <Button variant="contained" color="primary" type="button" onClick={handleSubmit}>
+              Register
+            </Button> :
+            <Tooltip title="Please complete subscription payment">
+              <span>
+                <Button variant="contained" color="primary" type="button" onClick={handleSubmit} disabled={true}>
+                  Register
+                </Button>
+              </span>
+            </Tooltip>
+        );
       default:
         return 'Unknown stepIndex';
     }
@@ -259,21 +307,10 @@ export default function Signup(props) {
               <div>
                 {getStepContent(activeStep)}
               </div>
-              <Button disabled={activeStep === 0} onClick={handlePrevStep} className={classes.backButton}>
+              <Button disabled={activeStep === 0 || paidFor} onClick={handlePrevStep} className={classes.backButton}>
                 Back
               </Button>
-              {activeStep === 0 ?
-                <Button variant="contained" color="primary" type="button" onClick={handleNextStep}>
-                  Next
-                </Button> :
-                (activeStep === 1 ?
-                  <Button variant="contained" color="primary" type="submit" form="signupForm">
-                    Next
-                  </Button> :
-                  <Button variant="contained" color="primary" type="button" onClick={handleSubmit}>
-                    Register
-                  </Button>)             
-              }
+              {getStepButton(activeStep)}
             </div>
           }
         </Box>
@@ -291,6 +328,13 @@ export default function Signup(props) {
       <Backdrop className={classes.backdrop} open={backdropOpen}>
         <CircularProgress color="inherit" />
       </Backdrop>
+      <Prompt 
+        when={paidFor}
+        message="WARNING! You have already completed subscription payment.
+        If you leave now without completing registration, your subscription will not be tied to an account,
+        and you will be charged without access to your account.
+        Leave anyway?"
+      />
     </div>
   );
 }       
@@ -371,7 +415,6 @@ export function StudentProfileSignup(props) {
         </Select>
       </MyGrid>
       <MyGrid item xs={12}>
-        {/* <PayPalButton /> */}
       </MyGrid>
     </MyGrid>
   );

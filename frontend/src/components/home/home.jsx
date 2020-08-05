@@ -2,11 +2,7 @@ import React, { Component, useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { deepOrange, deepPurple } from '@material-ui/core/colors';
 import Panda from '../../static/avatars/panda.png';
-import {
-  Switch,
-  Route,
-  Link,
-} from "react-router-dom";
+import { Switch, Route, Link, } from "react-router-dom";
 import {  
   Container, 
   Grid,

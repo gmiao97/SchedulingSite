@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
-
 import { makeStyles } from '@material-ui/core/styles';
-import {
-  Switch,
-  Route,
-  Link,
-} from "react-router-dom";
+import { Switch, Route, Link, } from "react-router-dom";
 import {  
   Container, 
   Grid,
@@ -58,12 +53,12 @@ export default function Landing(props) {
 
       <Switch>
         <Route exact path="/">
-          <Box mx='auto' my={5} width="50%" minWidth={300}>
+          <Box mx='auto' my={5} width="40%" minWidth={300}>
             <Login handleLogin={props.handleLogin} />
           </Box>
         </Route>
         <Route exact path="/signup">
-          <Box mx='auto' my={5} width="50%" minWidth={500}>
+          <Box mx='auto' my={5} width="40%" minWidth={500}>
             <Signup />
           </Box>
         </Route>
