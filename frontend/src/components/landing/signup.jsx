@@ -2,15 +2,13 @@ import React, { Component, useState } from 'react';
 import { useHistory, Prompt } from "react-router-dom"
 import moment from 'moment-timezone';
 import { styled, makeStyles } from '@material-ui/core/styles';
-import {
-  DatePicker,
-} from '@material-ui/pickers';
+import { DatePicker } from '@material-ui/pickers';
+import Alert from '@material-ui/lab/Alert';
 import {
   Box,
   Grid,
   Paper,
   Typography,
-  Divider,
   Button,
   TextField,
   Select,
@@ -29,11 +27,10 @@ import {
   FormLabel,
   Tooltip,
 } from '@material-ui/core';
-import Alert from '@material-ui/lab/Alert';
 
 import axiosInstance from '../../axiosApi';
 import { gradeMappings, timeZoneNames } from '../../util';
-import PayPalButton from "../payPalButton";
+import SubscriptionPayment from "../subscriptionPayment";
 
 
 const MyGrid = styled(Grid)({
@@ -61,11 +58,11 @@ const useStyles = makeStyles(theme => ({
 export default function Signup(props) {
   const classes = useStyles();
   const history = useHistory();
-  const [paidFor, setPaidFor] = useState(false);
+  const [error, setError] = useState('Registration failed. Please contact the administrator.');
   const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
   const [errorSnackbarOpen, setErrorSnackbarOpen] = useState(false);
-  const [backdropOpen, setBackdropOpen] = React.useState(false);
-  const [activeStep, setActiveStep] = React.useState(0);
+  const [backdropOpen, setBackdropOpen] = useState(false);
+  const [activeStep, setActiveStep] = useState(0);
   const [signupForm, setSignupForm] = useState({
     username: '',
     email: '',
@@ -88,7 +85,7 @@ export default function Signup(props) {
     email: "",
   });
   const studentSteps = ['Select user type', 'Create profile', 'Subscription payment'];
-  const teacherSteps = ['Select user type', 'Create profile', 'Complete Registration'];
+  const teacherSteps = ['Select user type', 'Create profile', 'Complete registration'];
   const steps = signupForm.user_type === "STUDENT" ? studentSteps : teacherSteps;
 
   const handleChange = event => {
@@ -104,7 +101,8 @@ export default function Signup(props) {
     setErrorSnackbarOpen(false);
   }
 
-  const handleNextStep = () => {
+  const handleNextStep = (event) => {
+    event.preventDefault();
     setActiveStep(prevActiveStep => prevActiveStep + 1);
   };
 
@@ -144,8 +142,7 @@ export default function Signup(props) {
   }
 
   // TODO error handling and validation
-  const handleSubmit = async event => {
-    event.preventDefault();
+  const handleSubmit = async () => {
     switch (signupForm.user_type) {
       case 'STUDENT':
         delete signupForm.teacher_profile;
@@ -169,12 +166,13 @@ export default function Signup(props) {
         ...newUserInfo,
         email: signupForm.email.slice(),
       })
-      handleNextStep();
+      setActiveStep(prevActiveStep => prevActiveStep + 1);
       setSuccessSnackbarOpen(true);
       return response;
     } catch(err) {
       console.error(err.stack);
       handleStepReset();
+      setError('Registration failed. Please contact the administrator.');
       setErrorSnackbarOpen(true);
     } finally {
       setBackdropOpen(false);
@@ -234,16 +232,18 @@ export default function Signup(props) {
         return(
           signupForm.user_type === "STUDENT" ?
             <div>
-              <Typography className={classes.stepContent}>
-                Please confirm profile information and complete subscription payment.
+              <Typography className={classes.stepContent} color="primary" component='div'>
+                Please confirm<Typography display="inline" color="secondary"> student </Typography>profile information before continuing.
+                Completing payment will automatically submit registration. 
               </Typography>
-              <PayPalButton 
-                paidFor={paidFor} 
-                setPaidFor={setPaidFor}
+              <SubscriptionPayment 
+                onSubmit={handleSubmit}
+                setError={setError}
+                setErrorSnackbarOpen={setErrorSnackbarOpen}
               />
             </div> :
-            <Typography className={classes.stepContent}>
-              Please confirm profile information and complete <Typography display="inline" color="secondary">teacher</Typography> registration.
+            <Typography className={classes.stepContent} color="primary" component='div'>
+              Please confirm<Typography display="inline" color="secondary"> teacher </Typography>profile information and complete registration.
             </Typography>
         );
       default:
@@ -267,11 +267,11 @@ export default function Signup(props) {
         );
       case 2:
         return(
-          paidFor || signupForm.user_type === "TEACHER" ? 
+          signupForm.user_type === "TEACHER" ? 
             <Button variant="contained" color="primary" type="button" onClick={handleSubmit}>
               Register
             </Button> :
-            <Tooltip title="Please complete subscription payment">
+            <Tooltip title="Registration will be submitted after payment">
               <span>
                 <Button variant="contained" color="primary" type="button" onClick={handleSubmit} disabled={true}>
                   Register
@@ -297,7 +297,7 @@ export default function Signup(props) {
           </Stepper>
           {activeStep === steps.length ?
             <div>
-              <Typography className={classes.stepContent}>
+              <Typography className={classes.stepContent} component='div'>
                 Registration Complete! An confirmation email has been sent to <Typography display="inline" color="primary">{newUserInfo.email}</Typography>.
                 Welcome to Success Academy! 
                 </Typography>
@@ -307,7 +307,7 @@ export default function Signup(props) {
               <div>
                 {getStepContent(activeStep)}
               </div>
-              <Button disabled={activeStep === 0 || paidFor} onClick={handlePrevStep} className={classes.backButton}>
+              <Button disabled={activeStep === 0} onClick={handlePrevStep} className={classes.backButton}>
                 Back
               </Button>
               {getStepButton(activeStep)}
@@ -321,20 +321,13 @@ export default function Signup(props) {
         </Snackbar>
         <Snackbar open={errorSnackbarOpen} onClose={handleSnackbarClose}>
           <Alert severity="error" variant="filled" elevation={24} onClose={handleSnackbarClose}>
-            Registration failed. Please contact the administrator. 
+            {error}
           </Alert>
         </Snackbar>
       </Paper>
       <Backdrop className={classes.backdrop} open={backdropOpen}>
         <CircularProgress color="inherit" />
       </Backdrop>
-      <Prompt 
-        when={paidFor}
-        message="WARNING! You have already completed subscription payment.
-        If you leave now without completing registration, your subscription will not be tied to an account,
-        and you will be charged without access to your account.
-        Leave anyway?"
-      />
     </div>
   );
 }       

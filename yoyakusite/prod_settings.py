@@ -28,3 +28,6 @@ SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 django_heroku.settings(locals())
+
+#PayPal
+PAYPAL_API_BASE_URL = 'https://api.paypal.com'

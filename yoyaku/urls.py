@@ -3,7 +3,8 @@ from django.conf.urls import url, include
 from rest_framework import routers
 from rest_framework.urlpatterns import format_suffix_patterns
 
-from .views import UserViewSet, EventViewSet, SubjectListByTeacher, TeacherListBySubject, ValidateToken, LogoutAndBlacklistRefreshTokenForUserView
+from .views import UserViewSet, EventViewSet, SubjectListByTeacher, TeacherListBySubject, ValidateToken, \
+    SubscriptionPlan, LogoutAndBlacklistRefreshTokenForUserView
 
 
 router = routers.DefaultRouter()
@@ -15,5 +16,6 @@ urlpatterns = [
     path('subjects-by-teacher/', SubjectListByTeacher.as_view()),
     path('teachers-by-subject/', TeacherListBySubject.as_view()),
     path('validate-token/', ValidateToken.as_view()),
+    path('subscription-plan/', SubscriptionPlan.as_view()),
     path('blacklist/', LogoutAndBlacklistRefreshTokenForUserView.as_view(), name='blacklist'),
 ]

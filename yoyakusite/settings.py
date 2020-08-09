@@ -165,3 +165,8 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'gmgm9797@gmail.com'
 EMAIL_HOST_PASSWORD = '522socks'
+
+#PayPal
+PAYPAL_API_BASE_URL = 'https://api.sandbox.paypal.com'
+PAYPAL_CLIENT_ID = os.environ['PAYPAL_CLIENT_ID']
+PAYPAL_SECRET = os.environ['PAYPAL_SECRET']

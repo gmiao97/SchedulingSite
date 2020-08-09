@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, Http404
 from django.utils.dateparse import parse_datetime
 from django.db.models import Q
+from django.conf import settings
 from rest_framework import status, viewsets
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
@@ -16,6 +17,7 @@ from dateutil.rrule import rrule, FREQNAMES
 from dateutil.parser import parse
 from datetime import datetime, date, time, timezone, timedelta
 import copy
+import requests
 
 from .models import MyUser, Recurrence, Event, Subject
 from .serializers import MyUserSerializer, RecurrenceSerializer, EventSerializer, EventReadSerializer, SubjectSerializer
@@ -276,6 +278,18 @@ class ValidateToken(APIView):
         if request.user.is_authenticated:
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
+class SubscriptionPlan(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, format=None):
+        r = requests.get(settings.PAYPAL_API_BASE_URL + '/v1/billing/plans', auth=(settings.PAYPAL_CLIENT_ID, settings.PAYPAL_SECRET))
+        try:
+            r.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            return Response(status=status.HTTP_424_FAILED_DEPENDENCY)
+        return Response(r.json())
 
 
 class SubjectListByTeacher(APIView):

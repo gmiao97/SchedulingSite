@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
-import MomentUtils from "@date-io/moment";
+import MomentUtils from '@date-io/moment';
 import {
   MuiPickersUtilsProvider,
 } from '@material-ui/pickers';

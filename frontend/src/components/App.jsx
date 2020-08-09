@@ -1,5 +1,5 @@
 import React, { Component, useState, useEffect } from 'react';
-import { useHistory } from "react-router-dom"
+import { useHistory } from 'react-router-dom'
 
 import Landing from './landing/landing';
 import Home from './home/home';
@@ -26,7 +26,7 @@ export default function App(props) {
   }, []);
 
   const handleLogin = () => {
-    history.push("/calendar");
+    history.push('/calendar');
     setAuthenticated(true);
   }
 
@@ -48,11 +48,13 @@ export default function App(props) {
   }
 
 
-  if (authenticated == null) {
+  if (authenticated === null) {
     return null;
   } else {
-    return (authenticated) ? 
-    <Home handleLogout={handleLogout} /> : 
-    <Landing handleLogin={handleLogin} />
+    return(
+      authenticated ? 
+        <Home handleLogout={handleLogout} /> : 
+        <Landing handleLogin={handleLogin} />
+    )
   }
 }
