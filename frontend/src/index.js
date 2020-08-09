@@ -7,15 +7,11 @@ import {
   MuiPickersUtilsProvider,
 } from '@material-ui/pickers';
 import 'fontsource-roboto';
-// import Moment from 'moment';
-// import momentLocalizer from 'react-widgets-moment';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import './main.scss'; // webpack must be configured to do this
 import App from './components/App';
 
-// Moment.locale('en');
-// momentLocalizer();
 
 const theme = createMuiTheme({
   palette: {
