@@ -63,6 +63,7 @@ export default function Signup(props) {
   const [errorSnackbarOpen, setErrorSnackbarOpen] = useState(false);
   const [backdropOpen, setBackdropOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
+  const [passwordMatch, setPasswordMatch] = useState('');
   const [signupForm, setSignupForm] = useState({
     username: '',
     email: '',
@@ -213,6 +214,8 @@ export default function Signup(props) {
           <form id="signupForm" onSubmit={handleNextStep}>
             <GeneralSignup 
               state={signupForm}
+              passwordMatch={passwordMatch}
+              setPasswordMatch={setPasswordMatch}
               onChange={handleChange}
               onDateChange={handleDateChange}
             />
@@ -260,11 +263,33 @@ export default function Signup(props) {
           </Button>
         );
       case 1:
-        return(
-          <Button variant="contained" color="primary" type="submit" form="signupForm">
-            Next
-          </Button>
-        );
+        if (signupForm.password.length < 8) {
+          return(
+            <Tooltip title="Password must be at least 8 characters">
+              <span>
+                <Button variant="contained" color="primary" type="submit" form="signupForm" disabled>
+                  Next
+                </Button>
+              </span>
+            </Tooltip>
+          );
+        } else if (signupForm.password !== passwordMatch) {
+          return(
+            <Tooltip title="Passwords do not match">
+              <span>
+                <Button variant="contained" color="primary" type="submit" form="signupForm" disabled>
+                  Next
+                </Button>
+              </span>
+            </Tooltip>
+          );
+        } else {
+          return(
+            <Button variant="contained" color="primary" type="submit" form="signupForm">
+              Next
+            </Button>
+          );
+        }
       case 2:
         return(
           signupForm.user_type === "TEACHER" ? 
@@ -273,7 +298,7 @@ export default function Signup(props) {
             </Button> :
             <Tooltip title="Registration will be submitted after payment">
               <span>
-                <Button variant="contained" color="primary" type="button" onClick={handleSubmit} disabled={true}>
+                <Button variant="contained" color="primary" type="button" onClick={handleSubmit} disabled>
                   Register
                 </Button>
               </span>
@@ -336,19 +361,29 @@ export default function Signup(props) {
 export function GeneralSignup(props) {
   return(
       <MyGrid container spacing={3}>
-          <MyGrid item sm={12} md={6}>
+          <MyGrid item xs={12}>
+            <TextField id='username' name='username' type='text' label='Username' value={props.state.username} onChange={props.onChange} required fullWidth variant='filled' />
+          </MyGrid>
+          <MyGrid item xs={12} sm={6}>
+            <TextField id='password' name='password' type='password' label='Password' value={props.state.password} onChange={props.onChange} required fullWidth variant='filled' />
+          </MyGrid>
+          <MyGrid item xs={12} sm={6}>
+            <TextField id='confirmPassword' name='confirmPassword' type='password' label='Confirm Password' value={props.passwordMatch} 
+            onChange={e => props.setPasswordMatch(e.target.value)} required fullWidth variant='filled' error={props.passwordMatch !== props.state.password} />
+          </MyGrid>
+          <MyGrid item xs={12} sm={6}>
             <TextField id='first_name' name='first_name' type='text' label='First Name' value={props.state.first_name} onChange={props.onChange} required fullWidth />
           </MyGrid>
-          <MyGrid item sm={12} md={6}>
+          <MyGrid item xs={12} sm={6}>
             <TextField id='last_name' name='last_name' type='text' label='Last Name' value={props.state.last_name} onChange={props.onChange} required fullWidth />
           </MyGrid>
-          <MyGrid item sm={12} md={6}>
+          <MyGrid item xs={12} sm={6}>
             <TextField id='email' name='email' type='email' label='Email' value={props.state.email} onChange={props.onChange} required fullWidth />
           </MyGrid>
-          <MyGrid item sm={12} md={6}>
+          <MyGrid item xs={12} sm={6}>
             <TextField id='phone_number' name='phone_number' type='text' label='Phone Number' value={props.state.phone_number} onChange={props.onChange} required fullWidth />
           </MyGrid>
-          <MyGrid item sm={12} md={6}>
+          <MyGrid item xs={6}>
             <DatePicker
               id='birthday'
               name='birthday'
@@ -358,7 +393,7 @@ export function GeneralSignup(props) {
               format='YYYY-MM-DD'
             />
           </MyGrid>
-          <MyGrid item sm={12} md={6}>
+          <MyGrid item xs={6}>
             <InputLabel id="time-zone-label">
               <Typography variant="caption">Time Zone</Typography>
             </InputLabel>
@@ -388,10 +423,10 @@ export function StudentProfileSignup(props) {
 
   return(
     <MyGrid className={classes.sectionEnd} container spacing={3}>
-      <MyGrid item sm={12} md={6}>
+      <MyGrid item xs={12} sm={6}>
         <TextField id='school_name' name='school_name' type='text' label='School Name' value={props.state.school_name} onChange={props.onChange} required fullWidth />
       </MyGrid>
-      <MyGrid item sm={12} md={6}>
+      <MyGrid item xs={12} sm={6}>
         <InputLabel id="school-grade-label">
           <Typography variant="caption">School Grade</Typography>
         </InputLabel>
@@ -418,7 +453,7 @@ export function TeacherProfileSignup(props) {
   const classes = useStyles();
   return(
     <MyGrid className={classes.sectionEnd} container spacing={3}>
-      <MyGrid item sm={12} md={6}>
+      <MyGrid item xs={12} sm={6}>
         <TextField id='association' name='association' type='text' label='Association' value={props.state.association} onChange={props.onChange} required fullWidth />
       </MyGrid>
     </MyGrid>

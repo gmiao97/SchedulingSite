@@ -170,3 +170,7 @@ EMAIL_HOST_PASSWORD = '522socks'
 PAYPAL_API_BASE_URL = 'https://api.sandbox.paypal.com'
 PAYPAL_CLIENT_ID = os.environ['PAYPAL_CLIENT_ID']
 PAYPAL_SECRET = os.environ['PAYPAL_SECRET']
+
+#Stripe
+STRIPE_SECRET = os.environ['STRIPE_SECRET']
+STRIPE_WEBHOOK_SECRET = os.environ['STRIPE_WEBHOOK_SECRET']

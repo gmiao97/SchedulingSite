@@ -18,6 +18,8 @@ from dateutil.parser import parse
 from datetime import datetime, date, time, timezone, timedelta
 import copy
 import requests
+import stripe
+import json
 
 from .models import MyUser, Recurrence, Event, Subject
 from .serializers import MyUserSerializer, RecurrenceSerializer, EventSerializer, EventReadSerializer, SubjectSerializer
@@ -290,6 +292,36 @@ class SubscriptionPlan(APIView):
         except requests.exceptions.HTTPError as e:
             return Response(status=status.HTTP_424_FAILED_DEPENDENCY)
         return Response(r.json())
+
+
+class StripeWebhook(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, format=None):
+        payload = request.body
+        stripe.api_key = settings.STRIPE_SECRET
+        sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+        webhook_secret = settings.STRIPE_WEBHOOK_SECRET
+        event = None
+
+        try:
+            # event = stripe.Event.construct_from(payload, stripe.api_key)
+            event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+        except ValueError as e:
+            # Invalid payload
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except stripe.error.SignatureVerificationError as e:
+            # Invalid signature
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        # Handle the event
+        if event.type == 'invoice.payment_failed':
+            payment_fail = event.data.object
+        else:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        # ... handle other event types
+
+        return Response(status=status.HTTP_200_OK)
 
 
 class SubjectListByTeacher(APIView):

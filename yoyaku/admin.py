@@ -3,6 +3,7 @@ from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.utils.translation import ugettext_lazy as _
 
 from .models import MyUser, StudentProfile, TeacherProfile, Recurrence, Event, Subject
+# from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 
 
 @admin.register(MyUser)

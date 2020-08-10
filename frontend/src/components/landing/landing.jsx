@@ -58,7 +58,7 @@ export default function Landing(props) {
           </Box>
         </Route>
         <Route exact path="/signup">
-          <Box mx='auto' my={5} width="40%" minWidth={500}>
+          <Box mx='auto' my={5} width="40%" minWidth={400}>
             <Signup />
           </Box>
         </Route>

@@ -12,18 +12,18 @@ const axiosInstance = axios.create({
   }
 });
 
-axiosInstance.interceptors.request.use(
-  config => {
-    // remove Authorization header on request to create new user
-    if (config.url === '/yoyaku/users/' && config.method === 'post') {
-      delete config.headers['Authorization'];
-    }
-    return config;
-  },
-  error => {
-    return Promise.reject(error);
-  }
-);
+// axiosInstance.interceptors.request.use(
+//   config => {
+//     // remove Authorization header on request to create new user
+//     if (config.url === '/yoyaku/users/' && config.method === 'post') {
+//       delete config.headers['Authorization'];
+//     }
+//     return config;
+//   },
+//   error => {
+//     return Promise.reject(error);
+//   }
+// );
 
 axiosInstance.interceptors.response.use(
   response => response,
