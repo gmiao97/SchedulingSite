@@ -26,6 +26,9 @@ from .serializers import MyUserSerializer, RecurrenceSerializer, EventSerializer
 from .permissions import IsAdminUser, IsLoggedInUserOrAdmin, IsLoggedInTeacherUser, IsLoggedInUserAndEventOwner
 
 
+stripe.api_key = settings.STRIPE_SECRET
+
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = MyUser.objects.all()
     serializer_class = MyUserSerializer
@@ -41,6 +44,23 @@ class UserViewSet(viewsets.ModelViewSet):
         elif self.action in ('student_list', 'teacher_list'):
             permission_classes = [IsLoggedInTeacherUser | IsAdminUser]
         return [permission() for permission in permission_classes]
+
+    # Override
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        if request.data['user_type'] == 'STUDENT':
+            try:
+                # Create a new customer object
+                customer = stripe.Customer.create(email=request.data['email'],
+                                                  name='{}, {}'.format(request.data['last_name'], request.data['first_name']))
+            except Exception as e:
+                return Response(status=status.HTTP_403_FORBIDDEN)
+            serializer.save(stripeCustomerId=customer.id)
+        else:
+            self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=False)
     def teacher_list(self, request):
@@ -299,7 +319,6 @@ class StripeWebhook(APIView):
 
     def post(self, request, format=None):
         payload = request.body
-        stripe.api_key = settings.STRIPE_SECRET
         sig_header = request.META['HTTP_STRIPE_SIGNATURE']
         webhook_secret = settings.STRIPE_WEBHOOK_SECRET
         event = None

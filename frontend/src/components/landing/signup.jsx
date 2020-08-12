@@ -234,17 +234,20 @@ export default function Signup(props) {
       case 2:
         return(
           signupForm.user_type === "STUDENT" ?
-            <div>
-              <Typography className={classes.stepContent} color="primary" component='div'>
-                Please confirm<Typography display="inline" color="secondary"> student </Typography>profile information before continuing.
-                Completing payment will automatically submit registration. 
-              </Typography>
-              <SubscriptionPayment 
-                onSubmit={handleSubmit}
-                setError={setError}
-                setErrorSnackbarOpen={setErrorSnackbarOpen}
-              />
-            </div> :
+            // <div>
+            //   <Typography className={classes.stepContent} color="primary" component='div'>
+            //     Please confirm<Typography display="inline" color="secondary"> student </Typography>profile information before continuing.
+            //     Completing payment will automatically submit registration. 
+            //   </Typography>
+            //   <SubscriptionPayment 
+            //     onSubmit={handleSubmit}
+            //     setError={setError}
+            //     setErrorSnackbarOpen={setErrorSnackbarOpen}
+            //   />
+            // </div> :
+            <Typography className={classes.stepContent} color="primary" component='div'>
+              Please confirm<Typography display="inline" color="secondary"> student </Typography>profile information and complete registration.
+            </Typography> :
             <Typography className={classes.stepContent} color="primary" component='div'>
               Please confirm<Typography display="inline" color="secondary"> teacher </Typography>profile information and complete registration.
             </Typography>
@@ -296,13 +299,16 @@ export default function Signup(props) {
             <Button variant="contained" color="primary" type="button" onClick={handleSubmit}>
               Register
             </Button> :
-            <Tooltip title="Registration will be submitted after payment">
-              <span>
-                <Button variant="contained" color="primary" type="button" onClick={handleSubmit} disabled>
-                  Register
-                </Button>
-              </span>
-            </Tooltip>
+            <Button variant="contained" color="primary" type="button" onClick={handleSubmit}>
+              Register
+            </Button>
+            // <Tooltip title="Registration will be submitted after payment">
+            //   <span>
+            //     <Button variant="contained" color="primary" type="button" disabled>
+            //       Register
+            //     </Button>
+            //   </span>
+            // </Tooltip>
         );
       default:
         return 'Unknown stepIndex';
