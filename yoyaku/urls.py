@@ -4,7 +4,7 @@ from rest_framework import routers
 from rest_framework.urlpatterns import format_suffix_patterns
 
 from .views import UserViewSet, EventViewSet, SubjectListByTeacher, TeacherListBySubject, ValidateToken, \
-    SubscriptionPlan, StripeWebhook, LogoutAndBlacklistRefreshTokenForUserView
+    SubscriptionPlan, StripePrice, StripeProduct, StripeSubscription, StripeWebhook, LogoutAndBlacklistRefreshTokenForUserView
 
 
 router = routers.DefaultRouter()
@@ -17,6 +17,9 @@ urlpatterns = [
     path('teachers-by-subject/', TeacherListBySubject.as_view()),
     path('validate-token/', ValidateToken.as_view()),
     path('subscription-plan/', SubscriptionPlan.as_view()),
+    path('stripe-prices/', StripePrice.as_view()),
+    path('stripe-products/', StripeProduct.as_view()),
+    path('stripe-subscription/', StripeSubscription.as_view()),
     path('stripe-webhook/', StripeWebhook.as_view()),
     path('blacklist/', LogoutAndBlacklistRefreshTokenForUserView.as_view(), name='blacklist'),
 ]

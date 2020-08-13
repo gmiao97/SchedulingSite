@@ -314,6 +314,55 @@ class SubscriptionPlan(APIView):
         return Response(r.json())
 
 
+class StripePrice(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, format=None):
+        r = stripe.Price.list(active=True, expand=['data.product'])
+        return Response(r)
+
+
+class StripeProduct(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, format=None):
+        r = stripe.Product.list(active=True)
+        return Response(r)
+
+
+class StripeSubscription(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, format=None):
+        try:
+            # Attach the payment method to the customer
+            stripe.PaymentMethod.attach(
+                request.data['paymentMethodId'],
+                customer=request.data['customerId'],
+            )
+            # Set the default payment method on the customer
+            stripe.Customer.modify(
+                request.data['customerId'],
+                invoice_settings={
+                    'default_payment_method': request.data['paymentMethodId'],
+                },
+            )
+
+            # Create the subscription
+            subscription = stripe.Subscription.create(
+                customer=request.data['customerId'],
+                items=[
+                    {
+                        'price': request.data['priceId']
+                    }
+                ],
+                expand=['latest_invoice.payment_intent'],
+            )
+            return Response(subscription)
+        except Exception as e:
+            return Response(status=status.HTTP_424_FAILED_DEPENDENCY)
+
+
 class StripeWebhook(APIView):
     permission_classes = [AllowAny]
 

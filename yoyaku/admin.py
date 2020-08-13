@@ -3,7 +3,6 @@ from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.utils.translation import ugettext_lazy as _
 
 from .models import MyUser, StudentProfile, TeacherProfile, Recurrence, Event, Subject
-# from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 
 
 @admin.register(MyUser)
@@ -22,8 +21,8 @@ class MyUserAdmin(DjangoUserAdmin):
             'fields': ('email', 'password1', 'password2'),
         }),
     )
-    list_display = ('email', 'first_name', 'last_name', 'is_staff')
-    search_fields = ('email', 'first_name', 'last_name')
+    list_display = ('username', 'first_name', 'last_name', 'is_staff')
+    search_fields = ('username', 'first_name', 'last_name')
     ordering = ('email',)
 
 

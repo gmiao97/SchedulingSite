@@ -4,6 +4,7 @@ import moment from 'moment-timezone';
 import { styled, makeStyles } from '@material-ui/core/styles';
 import { DatePicker } from '@material-ui/pickers';
 import Alert from '@material-ui/lab/Alert';
+import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import {
   Box,
   Grid,
@@ -30,7 +31,8 @@ import {
 
 import axiosInstance from '../../axiosApi';
 import { gradeMappings, timeZoneNames } from '../../util';
-import SubscriptionPayment from "../subscriptionPayment";
+import SubscriptionPayment from '../subscriptionPayment';
+import StripeSubscriptionCheckout from '../stripeSubscriptionCheckout';
 
 
 const MyGrid = styled(Grid)({
@@ -58,12 +60,16 @@ const useStyles = makeStyles(theme => ({
 export default function Signup(props) {
   const classes = useStyles();
   const history = useHistory();
+  const stripe = useStripe();
+  const elements = useElements();
+
   const [error, setError] = useState('Registration failed. Please contact the administrator.');
   const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
   const [errorSnackbarOpen, setErrorSnackbarOpen] = useState(false);
   const [backdropOpen, setBackdropOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [passwordMatch, setPasswordMatch] = useState('');
+  const [selectedPrice, setSelectedPrice] = useState(null);
   const [signupForm, setSignupForm] = useState({
     username: '',
     email: '',
@@ -144,34 +150,39 @@ export default function Signup(props) {
 
   // TODO error handling and validation
   const handleSubmit = async () => {
-    switch (signupForm.user_type) {
-      case 'STUDENT':
-        delete signupForm.teacher_profile;
-        break;
-      case 'TEACHER':
-        delete signupForm.student_profile;
-        break;
-      default:
+    if (!stripe || !elements) {
+      return;
     }
-    if (!signupForm.password) {
-      delete signupForm.password;
-    }
-    if (!signupForm.username) {
-      delete signupForm.username;
+    
+    if (signupForm.user_type === 'STUDENT') {
+      delete signupForm.teacher_profile;
+    } else {
+      delete signupForm.student_profile;
     }
 
+    if (!signupForm.password) { 
+      delete signupForm.password; 
+    }
+    if (!signupForm.username) { 
+      delete signupForm.username; 
+    }
+
+    setBackdropOpen(true);
     try {
-      setBackdropOpen(true);
       const response = await axiosInstance.post('/yoyaku/users/', signupForm);
       setNewUserInfo({
         ...newUserInfo,
         email: signupForm.email.slice(),
-      })
+      });
+
+      if (signupForm.user_type === 'STUDENT') {
+        await handleStripeSubmit(response.data.stripeCustomerId);
+      }
+
       setActiveStep(prevActiveStep => prevActiveStep + 1);
       setSuccessSnackbarOpen(true);
-      return response;
     } catch(err) {
-      console.error(err.stack);
+      console.error('[registration error]', err.stack);
       handleStepReset();
       setError('Registration failed. Please contact the administrator.');
       setErrorSnackbarOpen(true);
@@ -194,8 +205,62 @@ export default function Signup(props) {
           association: '',
         },
       });
+      setPasswordMatch('');
     }
   }
+
+  const handleStripeSubmit = async (customerId) => {
+    // Get a reference to a mounted CardElement. Elements knows how
+    // to find your CardElement because there can only ever be one of
+    // each type of element.
+    const cardElement = elements.getElement(CardElement);
+
+    // // If a previous payment was attempted, get the latest invoice
+    // const latestInvoicePaymentIntentStatus = localStorage.getItem(
+    //   'latestInvoicePaymentIntentStatus'
+    // );
+
+    const { error, paymentMethod } = await stripe.createPaymentMethod({
+      type: 'card',
+      card: cardElement,
+    });
+
+    if (error) {
+      console.error('[createPaymentMethod error]', error);
+    } else {
+      console.log('[PaymentMethod]', paymentMethod);
+      const paymentMethodId = paymentMethod.id;
+      console.log(paymentMethodId);
+      // if (latestInvoicePaymentIntentStatus === 'requires_payment_method') {
+      //   // Update the payment method and retry invoice payment
+      //   const invoiceId = localStorage.getItem('latestInvoiceId');
+      //   retryInvoiceWithNewPaymentMethod({
+      //     customerId,
+      //     paymentMethodId,
+      //     invoiceId,
+      //     selectedPrice,
+      //   });
+      // } else {
+      //   // Create the subscription
+      //   createSubscription({ customerId, paymentMethodId, selectedPrice });
+      // }
+      await createSubscription(customerId, paymentMethodId, selectedPrice);
+    }
+  };
+
+  const createSubscription = async (customerId, paymentMethodId, priceId) => {
+    try {
+      const response = await axiosInstance.post('/yoyaku/stripe-subscription/', {
+        customerId: customerId,
+        paymentMethodId: paymentMethodId,
+        priceId: priceId,
+      });
+      console.log(response.data);
+    } catch(err) {
+      throw err;
+    }
+  }
+  
 
   const getStepContent = stepIndex => {
     switch (stepIndex) {
@@ -245,9 +310,15 @@ export default function Signup(props) {
             //     setErrorSnackbarOpen={setErrorSnackbarOpen}
             //   />
             // </div> :
-            <Typography className={classes.stepContent} color="primary" component='div'>
-              Please confirm<Typography display="inline" color="secondary"> student </Typography>profile information and complete registration.
-            </Typography> :
+            <StripeSubscriptionCheckout 
+              selectedPrice={selectedPrice}
+              setSelectedPrice={setSelectedPrice}
+              setError={setError}
+              setErrorSnackbarOpen={setErrorSnackbarOpen}
+            /> :
+            // <Typography className={classes.stepContent} color="primary" component='div'>
+            //   Please confirm<Typography display="inline" color="secondary"> student </Typography>profile information and complete registration.
+            // </Typography> :
             <Typography className={classes.stepContent} color="primary" component='div'>
               Please confirm<Typography display="inline" color="secondary"> teacher </Typography>profile information and complete registration.
             </Typography>
