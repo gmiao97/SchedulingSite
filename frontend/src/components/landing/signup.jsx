@@ -78,6 +78,7 @@ export default function Signup(props) {
   const [activeStep, setActiveStep] = useState(0);
   const [passwordMatch, setPasswordMatch] = useState('');
   const [selectedPrice, setSelectedPrice] = useState(null);
+  const [cardEntered, setCardEntered] = useState(false);
   const [signupForm, setSignupForm] = useState({
     username: '',
     email: '',
@@ -324,26 +325,13 @@ export default function Signup(props) {
       case 2:
         return(
           signupForm.user_type === "STUDENT" ?
-            // <div>
-            //   <Typography className={classes.stepContent} color="primary" component='div'>
-            //     Please confirm<Typography display="inline" color="secondary"> student </Typography>profile information before continuing.
-            //     Completing payment will automatically submit registration. 
-            //   </Typography>
-            //   <SubscriptionPayment 
-            //     onSubmit={handleSubmit}
-            //     setError={setError}
-            //     setErrorSnackbarOpen={setErrorSnackbarOpen}
-            //   />
-            // </div> :
             <StripeSubscriptionCheckout 
               selectedPrice={selectedPrice}
               setSelectedPrice={setSelectedPrice}
               setError={setError}
               setErrorSnackbarOpen={setErrorSnackbarOpen}
+              setCardEntered={setCardEntered}
             /> :
-            // <Typography className={classes.stepContent} color="primary" component='div'>
-            //   Please confirm<Typography display="inline" color="secondary"> student </Typography>profile information and complete registration.
-            // </Typography> :
             <Typography className={classes.stepContent} color="primary" component='div'>
               Please confirm<Typography display="inline" color="secondary"> teacher </Typography>profile information and complete registration.
             </Typography>
@@ -362,49 +350,30 @@ export default function Signup(props) {
           </Button>
         );
       case 1:
-        if (signupForm.password.length < 8) {
-          return(
-            <Tooltip title="Password must be at least 8 characters">
-              <span>
-                <Button variant="contained" color="primary" type="submit" form="signupForm" disabled>
-                  Next
-                </Button>
-              </span>
-            </Tooltip>
-          );
-        } else if (signupForm.password !== passwordMatch) {
-          return(
-            <Tooltip title="Passwords do not match">
-              <span>
-                <Button variant="contained" color="primary" type="submit" form="signupForm" disabled>
-                  Next
-                </Button>
-              </span>
-            </Tooltip>
-          );
-        } else {
-          return(
-            <Button variant="contained" color="primary" type="submit" form="signupForm">
-              Next
-            </Button>
-          );
+        let nextDisabled = false;
+        let tooltipMessage = '';
+        if (signupForm.password !== passwordMatch) {
+          nextDisabled = true;
+          tooltipMessage = 'Passwords do not match';
         }
+        if (signupForm.password.length < 8) {
+          nextDisabled = true;
+          tooltipMessage = 'Password must be at least 8 characters';
+        }
+        return(
+          <Tooltip title={tooltipMessage}>
+            <span>
+              <Button variant="contained" color="primary" type="submit" form="signupForm" disabled={nextDisabled}>
+                Next
+              </Button>
+            </span>
+          </Tooltip>
+        );
       case 2:
         return(
-          signupForm.user_type === "TEACHER" ? 
-            <Button variant="contained" color="primary" type="button" onClick={handleSubmit}>
-              Register
-            </Button> :
-            <Button variant="contained" color="primary" type="button" onClick={handleSubmit}>
-              Register
-            </Button>
-            // <Tooltip title="Registration will be submitted after payment">
-            //   <span>
-            //     <Button variant="contained" color="primary" type="button" disabled>
-            //       Register
-            //     </Button>
-            //   </span>
-            // </Tooltip>
+          <Button variant="contained" color="primary" type="button" onClick={handleSubmit} disabled={signupForm.user_type === 'STUDENT' && !cardEntered}>
+            Register
+          </Button>
         );
       default:
         return 'Unknown stepIndex';
