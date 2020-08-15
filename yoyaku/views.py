@@ -16,6 +16,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from dateutil.rrule import rrule, FREQNAMES
 from dateutil.parser import parse
 from datetime import datetime, date, time, timezone, timedelta
+from dateutil import relativedelta
 import copy
 import requests
 import stripe
@@ -48,14 +49,16 @@ class UserViewSet(viewsets.ModelViewSet):
     # Override
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_200_OK, data={'error': str(serializer.errors)})
         if request.data['user_type'] == 'STUDENT':
             try:
                 # Create a new customer object
                 customer = stripe.Customer.create(email=request.data['email'],
                                                   name='{}, {}'.format(request.data['last_name'], request.data['first_name']))
             except Exception as e:
-                return Response(status=status.HTTP_403_FORBIDDEN)
+                return Response(status=status.HTTP_200_OK,
+                                data={'error': 'Failed to register payment account. Please try again later or contact administrator'})
             serializer.save(stripeCustomerId=customer.id)
         else:
             self.perform_create(serializer)
@@ -348,6 +351,8 @@ class StripeSubscription(APIView):
                 },
             )
 
+            billing_cycle_anchor = (datetime.combine(date.today(), time(0, 0)).replace(day=1, tzinfo=timezone.utc) + relativedelta.relativedelta(months=1)).timestamp()
+
             # Create the subscription
             subscription = stripe.Subscription.create(
                 customer=request.data['customerId'],
@@ -356,11 +361,13 @@ class StripeSubscription(APIView):
                         'price': request.data['priceId']
                     }
                 ],
+                trial_period_days=7,
+                billing_cycle_anchor=billing_cycle_anchor,
                 expand=['latest_invoice.payment_intent'],
             )
-            return Response(subscription)
+            return Response(subscription, status=status.HTTP_201_CREATED)
         except Exception as e:
-            return Response(status=status.HTTP_424_FAILED_DEPENDENCY)
+            return Response(status=status.HTTP_200_OK, data={'error': str(e)})
 
 
 class StripeWebhook(APIView):

@@ -51,6 +51,27 @@ export function isAdmin() {
   return getUserTypeFromToken() === 'ADMIN';
 }
 
+export class AccountRegistrationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'AccountRegistrationError';
+  }
+}
+
+export class CreatePaymentMethodError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'CreatePaymentMethodError';
+  }
+}
+
+export class CreateSubscriptionError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'CreateSubscriptionError';
+  }
+}
+
 // export function getDateFromISODateTime(dateTime) {
 //  return dateTime.slice(0, 10);
 // }

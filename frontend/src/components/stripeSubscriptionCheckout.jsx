@@ -56,8 +56,8 @@ export default function StripeSubscriptionCheckout(props) {
       setPriceList(priceResponse.data.data);
       props.setSelectedPrice(priceResponse.data.data[0].id);
     } catch(err) {
-      props.setError('Unable to load subscription plans.');
       console.error(err.stack);
+      props.setError('Unable to load subscription plans.');
       props.setErrorSnackbarOpen(true);
     }
   }

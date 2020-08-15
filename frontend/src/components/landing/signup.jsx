@@ -30,9 +30,15 @@ import {
 } from '@material-ui/core';
 
 import axiosInstance from '../../axiosApi';
-import { gradeMappings, timeZoneNames } from '../../util';
 import SubscriptionPayment from '../subscriptionPayment';
 import StripeSubscriptionCheckout from '../stripeSubscriptionCheckout';
+import { 
+  gradeMappings, 
+  timeZoneNames, 
+  AccountRegistrationError, 
+  CreatePaymentMethodError,
+  CreateSubscriptionError,
+} from '../../util';
 
 
 const MyGrid = styled(Grid)({
@@ -63,9 +69,11 @@ export default function Signup(props) {
   const stripe = useStripe();
   const elements = useElements();
 
-  const [error, setError] = useState('Registration failed. Please contact the administrator.');
+  const [error, setError] = useState('');
+  const [warning, setWarning] = useState('');
   const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
   const [errorSnackbarOpen, setErrorSnackbarOpen] = useState(false);
+  const [warningSnackbarOpen, setWarningSnackbarOpen] = useState(false);
   const [backdropOpen, setBackdropOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [passwordMatch, setPasswordMatch] = useState('');
@@ -106,6 +114,7 @@ export default function Signup(props) {
   const handleSnackbarClose = (event, reason) => {
     setSuccessSnackbarOpen(false);
     setErrorSnackbarOpen(false);
+    setWarningSnackbarOpen(false);
   }
 
   const handleNextStep = (event) => {
@@ -170,6 +179,9 @@ export default function Signup(props) {
     setBackdropOpen(true);
     try {
       const response = await axiosInstance.post('/yoyaku/users/', signupForm);
+      if (response.data.error) {
+        throw new AccountRegistrationError(response.data.error);
+      }
       setNewUserInfo({
         ...newUserInfo,
         email: signupForm.email.slice(),
@@ -182,10 +194,26 @@ export default function Signup(props) {
       setActiveStep(prevActiveStep => prevActiveStep + 1);
       setSuccessSnackbarOpen(true);
     } catch(err) {
-      console.error('[registration error]', err.stack);
-      handleStepReset();
-      setError('Registration failed. Please contact the administrator.');
-      setErrorSnackbarOpen(true);
+      if (err instanceof AccountRegistrationError) {
+        console.error('[accountRegistration error]', err);
+        handleStepReset();
+        setError(err.message);
+        setErrorSnackbarOpen(true);
+      } else if (err instanceof CreatePaymentMethodError) {
+        console.error('[createPaymentMethod error]', err);
+        setActiveStep(prevActiveStep => prevActiveStep + 1);
+        setWarning(err.message);
+        setWarningSnackbarOpen(true);
+      } else if (err instanceof CreateSubscriptionError) {
+        console.error('[createSubscriptionError error]', err);
+        setActiveStep(prevActiveStep => prevActiveStep + 1);
+        setWarning(err.message);
+        setWarningSnackbarOpen(true);
+      } else {
+        handleStepReset();
+        setError("Registration failed. Please contact administrator.");
+        setErrorSnackbarOpen(true);
+      }
     } finally {
       setBackdropOpen(false);
       setSignupForm({
@@ -194,6 +222,7 @@ export default function Signup(props) {
         password: '',
         first_name: '',
         last_name: '',
+        user_type: 'STUDENT',
         time_zone: 'America/New_York',
         phone_number: '',
         birthday: moment().format('YYYY-MM-DD'),
@@ -210,9 +239,6 @@ export default function Signup(props) {
   }
 
   const handleStripeSubmit = async (customerId) => {
-    // Get a reference to a mounted CardElement. Elements knows how
-    // to find your CardElement because there can only ever be one of
-    // each type of element.
     const cardElement = elements.getElement(CardElement);
 
     // // If a previous payment was attempted, get the latest invoice
@@ -226,11 +252,10 @@ export default function Signup(props) {
     });
 
     if (error) {
-      console.error('[createPaymentMethod error]', error);
+      throw new CreatePaymentMethodError('Account created successfully but payment method failed. Please try again after logging in.');
     } else {
       console.log('[PaymentMethod]', paymentMethod);
       const paymentMethodId = paymentMethod.id;
-      console.log(paymentMethodId);
       // if (latestInvoicePaymentIntentStatus === 'requires_payment_method') {
       //   // Update the payment method and retry invoice payment
       //   const invoiceId = localStorage.getItem('latestInvoiceId');
@@ -249,16 +274,16 @@ export default function Signup(props) {
   };
 
   const createSubscription = async (customerId, paymentMethodId, priceId) => {
-    try {
-      const response = await axiosInstance.post('/yoyaku/stripe-subscription/', {
-        customerId: customerId,
-        paymentMethodId: paymentMethodId,
-        priceId: priceId,
-      });
-      console.log(response.data);
-    } catch(err) {
-      throw err;
+    const response = await axiosInstance.post('/yoyaku/stripe-subscription/', {
+      customerId: customerId,
+      paymentMethodId: paymentMethodId,
+      priceId: priceId,
+    });
+
+    if (response.data.error) {
+      throw new CreateSubscriptionError('Account created successfully but subscription failed with error: ' + response.data.error);
     }
+    console.log(response.data);
   }
   
 
@@ -424,6 +449,11 @@ export default function Signup(props) {
         <Snackbar open={errorSnackbarOpen} onClose={handleSnackbarClose}>
           <Alert severity="error" variant="filled" elevation={24} onClose={handleSnackbarClose}>
             {error}
+          </Alert>
+        </Snackbar>
+        <Snackbar open={warningSnackbarOpen} onClose={handleSnackbarClose}>
+          <Alert severity="warning" variant="filled" elevation={24} onClose={handleSnackbarClose}>
+            {warning}
           </Alert>
         </Snackbar>
       </Paper>
