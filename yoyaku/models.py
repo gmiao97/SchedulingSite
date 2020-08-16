@@ -55,7 +55,11 @@ class MyUser(AbstractUser):
     phone_number = models.CharField(_('phone number'), max_length=15)
     birthday = models.DateField(_('birthday'))
     description = models.CharField(_('personal description'), max_length=300, blank=True)
+
     stripeCustomerId = models.CharField(_('stripe customer id'), max_length=300, null=True)
+    stripeProductId = models.CharField(_('stripe product id'), max_length=300, null=True)
+    stripeSubscriptionId = models.CharField(_('stripe subscription id'), max_length=300, null=True)
+    stripeSubscriptionProvision = models.BooleanField(default=False)
 
     # USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['email', 'user_type', 'time_zone', 'phone_number', 'birthday', 'description', 'first_name', 'last_name']

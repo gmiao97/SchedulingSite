@@ -382,21 +382,56 @@ class StripeWebhook(APIView):
         event = None
 
         try:
-            # event = stripe.Event.construct_from(payload, stripe.api_key)
             event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
         except ValueError as e:
-            # Invalid payload
             return Response(status=status.HTTP_400_BAD_REQUEST)
         except stripe.error.SignatureVerificationError as e:
-            # Invalid signature
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         # Handle the event
-        if event.type == 'invoice.payment_failed':
-            payment_fail = event.data.object
+        if event.type == 'invoice.paid':
+            print('invoice.paid')
+            invoice = event.data.object
+            user = MyUser.objects.get(stripeCustomerId=invoice['customer'])
+            user.stripeSubscriptionProvision = True
+            user.save()
+        elif event.type == 'invoice.payment_failed':
+            print('invoice.payment_failed')
+            invoice = event.data.object
+        elif event.type == 'invoice.payment_action_required':
+            print('invoice.payment_action_required')
+            invoice = event.data.object
+        elif event.type == 'customer.created':
+            print('customer.created')
+            customer = event.data.object
+        elif event.type == 'customer.subscription.created':
+            print('customer.subscription.created')
+            subscription = event.data.object
+            user = MyUser.objects.get(stripeCustomerId=subscription['customer'])
+            user.stripeSubscriptionId = subscription['id']
+            user.stripeProductId = subscription['items']['data'][0]['price']['product']
+            user.save()
+        elif event.type == 'customer.subscription.updated':
+            print('customer.subscription.updated')
+            subscription = event.data.object
+            user = MyUser.objects.get(stripeCustomerId=subscription['customer'])
+            if subscription['status'] in ('active', 'past_due', 'trialing'):
+                user.stripeSubscriptionProvision = True
+            else:
+                user.stripeSubscriptionProvision = False
+            user.stripeSubscriptionId = subscription['id']
+            user.stripeProductId = subscription['items']['data'][0]['price']['product']
+            user.save()
+        elif event.type == 'customer.subscription.deleted':
+            print('customer.subscription.deleted')
+            subscription = event.data.object
+            user = MyUser.objects.get(stripeCustomerId=subscription['customer'])
+            user.stripeSubscriptionId = None
+            user.stripeProductId = None
+            user.stripeSubscriptionProvision = False
+            user.save()
         else:
             return Response(status=status.HTTP_204_NO_CONTENT)
-        # ... handle other event types
 
         return Response(status=status.HTTP_200_OK)
 
