@@ -24,6 +24,7 @@ import {
   School,
 } from '@material-ui/icons';
 
+import Top from './top';
 import Profile from './profile';
 import EditProfile from './editProfile';
 import Calendar from './calendar';
@@ -124,9 +125,12 @@ export default function Home(props) {
       open={mobileMenuOpen}
       onClose={handleMobileMenuClose}
     >
-      <MenuItem onClick={handleMobileMenuClose} component={Link} to="/calendar">
-        Calendar
+      <MenuItem onClick={handleMobileMenuClose} component={Link} to="/top">
+        Top
       </MenuItem>
+      {/* <MenuItem onClick={handleMobileMenuClose} component={Link} to="/calendar">
+        Calendar
+      </MenuItem> */}
       <MenuItem onClick={handleMobileMenuClose} component={Link} to="/profile">
         Profile
       </MenuItem>
@@ -167,53 +171,58 @@ export default function Home(props) {
   );
 
   return(
-    <div id='home'>
-      <Box className={classes.root} clone>
-        <AppBar position="static" color="transparent">
-          <Toolbar>
-            <IconButton edge="start" className={classes.iconMargin} color="inherit" component={Link} to="/calendar">
-              <School />
-            </IconButton>
-            <Typography variant="h6" className={classes.title}>
-              Success Academy
-            </Typography>
-            <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/calendar">Calendar</Button>
-            <div className={`${classes.sectionDesktop} ${classes.menu}`}>
-              <IconButton
-                onClick={handleDesktopMenuOpen}
-                color="inherit"
-              >
-                {/* <Avatar className={classes.purple}>{`${currentUser.first_name[0]}${currentUser.last_name[0]}`}</Avatar> */}
-                <Avatar className={classes.avatar}> </Avatar>
+    currentUser === null ? 
+      null :
+      <div id='home'>
+        <Box className={classes.root} clone>
+          <AppBar position="static" color="transparent">
+            <Toolbar>
+              <IconButton edge="start" className={classes.iconMargin} color="inherit" component={Link} to="/calendar">
+                <School />
               </IconButton>
-            </div>
-            {desktopMenu}
-            <div className={`${classes.sectionMobile} ${classes.menu}`}>
-              <IconButton onClick={handleMobileMenuOpen} color="inherit">
-                <MenuIcon />
-              </IconButton>
-            </div>
-            {mobileMenu}
-          </Toolbar>
-        </AppBar>
-      </Box>
+              <Typography variant="h6" className={classes.title}>
+                Success Academy
+              </Typography>
+              <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/top">Top</Button>
+              {/* <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/calendar">Calendar</Button> */}
+              <div className={`${classes.sectionDesktop} ${classes.menu}`}>
+                <IconButton
+                  onClick={handleDesktopMenuOpen}
+                  color="inherit"
+                >
+                  <Avatar className={classes.purple}>{`${currentUser.first_name[0]}${currentUser.last_name[0]}`}</Avatar>
+                  {/* <Avatar className={classes.avatar}> </Avatar> */}
+                </IconButton>
+              </div>
+              {desktopMenu}
+              <div className={`${classes.sectionMobile} ${classes.menu}`}>
+                <IconButton onClick={handleMobileMenuOpen} color="inherit">
+                  <MenuIcon />
+                </IconButton>
+              </div>
+              {mobileMenu}
+            </Toolbar>
+          </AppBar>
+        </Box>
 
-      <Switch>
-        <Route exact path="/profile">
-          <Box mx='auto' minWidth={700}>
-            {currentUser === null ? 
-              null :
+        <Switch>
+          <Route exact path="/top">
+            <Box mx='auto' width='60%' my={5} minWidth={700}>
+              <Top currentUser={currentUser} />
+            </Box>
+          </Route>
+          <Route exact path="/profile">
+            <Box mx='auto' minWidth={700}>
               <Profile currentUser={currentUser} />
-            }
-          </Box>
-        </Route>
-        <Route exact path="/calendar">
-          <Box mx='auto' my={5} minWidth={700}>
-            <Calendar />
-          </Box>
-        </Route>
-      </Switch>
-    </div>
+            </Box>
+          </Route>
+          <Route exact path="/calendar">
+            <Box mx='auto' my={5} minWidth={700}>
+              <Calendar />
+            </Box>
+          </Route>
+        </Switch>
+      </div>
   );
 }
 
