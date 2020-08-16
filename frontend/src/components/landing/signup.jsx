@@ -38,6 +38,8 @@ import {
   AccountRegistrationError, 
   CreatePaymentMethodError,
   CreateSubscriptionError,
+  RequiresActionError,
+  RequiresPaymentMethodError,
 } from '../../util';
 
 
@@ -196,17 +198,27 @@ export default function Signup(props) {
       setSuccessSnackbarOpen(true);
     } catch(err) {
       if (err instanceof AccountRegistrationError) {
-        console.error('[accountRegistration error]', err);
+        console.error('[AccountRegistrationError]', err);
         handleStepReset();
         setError(err.message);
         setErrorSnackbarOpen(true);
       } else if (err instanceof CreatePaymentMethodError) {
-        console.error('[createPaymentMethod error]', err);
+        console.error('[CreatePaymentMethodError]', err);
         setActiveStep(prevActiveStep => prevActiveStep + 1);
         setWarning(err.message);
         setWarningSnackbarOpen(true);
       } else if (err instanceof CreateSubscriptionError) {
-        console.error('[createSubscriptionError error]', err);
+        console.error('[CreateSubscriptionError]', err);
+        setActiveStep(prevActiveStep => prevActiveStep + 1);
+        setWarning(err.message);
+        setWarningSnackbarOpen(true);
+      } else if (err instanceof RequiresActionError) {
+        console.error('[RequiresActionError]', err);
+        setActiveStep(prevActiveStep => prevActiveStep + 1);
+        setWarning(err.message);
+        setWarningSnackbarOpen(true);
+      } else if (err instanceof RequiresPaymentMethodError) {
+        console.error('[RequiresPaymentMethodError]', err);
         setActiveStep(prevActiveStep => prevActiveStep + 1);
         setWarning(err.message);
         setWarningSnackbarOpen(true);
@@ -242,11 +254,6 @@ export default function Signup(props) {
   const handleStripeSubmit = async (customerId) => {
     const cardElement = elements.getElement(CardElement);
 
-    // // If a previous payment was attempted, get the latest invoice
-    // const latestInvoicePaymentIntentStatus = localStorage.getItem(
-    //   'latestInvoicePaymentIntentStatus'
-    // );
-
     const { error, paymentMethod } = await stripe.createPaymentMethod({
       type: 'card',
       card: cardElement,
@@ -257,19 +264,6 @@ export default function Signup(props) {
     } else {
       console.log('[PaymentMethod]', paymentMethod);
       const paymentMethodId = paymentMethod.id;
-      // if (latestInvoicePaymentIntentStatus === 'requires_payment_method') {
-      //   // Update the payment method and retry invoice payment
-      //   const invoiceId = localStorage.getItem('latestInvoiceId');
-      //   retryInvoiceWithNewPaymentMethod({
-      //     customerId,
-      //     paymentMethodId,
-      //     invoiceId,
-      //     selectedPrice,
-      //   });
-      // } else {
-      //   // Create the subscription
-      //   createSubscription({ customerId, paymentMethodId, selectedPrice });
-      // }
       await createSubscription(customerId, paymentMethodId, selectedPrice);
     }
   };
@@ -284,9 +278,30 @@ export default function Signup(props) {
     if (response.data.error) {
       throw new CreateSubscriptionError('Account created successfully but subscription failed with error: ' + response.data.error);
     }
-    console.log(response.data);
+    const subscription = response.data;
+    
+    console.log(subscription);
+    
+    // handle requires_action and requires_payment_method
+    const {pending_setup_intent} = subscription;
+    if (pending_setup_intent) {
+      const {client_secret, status} = subscription.pending_setup_intent;
+      if (status === 'requires_action') {
+        const response = await stripe.confirmCardSetup(client_secret);
+          if (response.error) {
+            throw new RequiresActionError('Payment could not be authenticated. Please update payment method in account settings.');
+          } else {
+            console.log('requires_action succeeded');
+          }
+      } else if (status === 'requires_payment_method') {
+        throw new RequiresPaymentMethodError('Payment declined. Please update payment method in account settings.')
+      }
+    }
   }
-  
+
+  // const retryWithNewPayment = async (customerId, paymentMethodId, priceId) => {
+   
+  // }
 
   const getStepContent = stepIndex => {
     switch (stepIndex) {

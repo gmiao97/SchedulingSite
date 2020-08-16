@@ -351,7 +351,9 @@ class StripeSubscription(APIView):
                 },
             )
 
-            billing_cycle_anchor = (datetime.combine(date.today(), time(0, 0)).replace(day=1, tzinfo=timezone.utc) + relativedelta.relativedelta(months=1)).timestamp()
+            utc_now = datetime.now(timezone.utc)
+            datetime_next_month_first = datetime.combine(utc_now.date(), time(0, 0), utc_now.tzinfo).replace(day=1) + relativedelta.relativedelta(months=1)
+            billing_cycle_anchor = int(datetime_next_month_first.timestamp())
 
             # Create the subscription
             subscription = stripe.Subscription.create(
@@ -363,7 +365,7 @@ class StripeSubscription(APIView):
                 ],
                 trial_period_days=7,
                 billing_cycle_anchor=billing_cycle_anchor,
-                expand=['latest_invoice.payment_intent'],
+                expand=['latest_invoice.payment_intent', 'pending_setup_intent'],
             )
             return Response(subscription, status=status.HTTP_201_CREATED)
         except Exception as e:

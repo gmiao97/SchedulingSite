@@ -72,6 +72,20 @@ export class CreateSubscriptionError extends Error {
   }
 }
 
+export class RequiresActionError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'RequiresActionError';
+  }
+}
+
+export class RequiresPaymentMethodError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'RequiresPaymentMethodError';
+  }
+}
+
 // export function getDateFromISODateTime(dateTime) {
 //  return dateTime.slice(0, 10);
 // }
