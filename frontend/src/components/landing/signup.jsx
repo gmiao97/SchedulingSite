@@ -102,8 +102,8 @@ export default function Signup(props) {
   const [newUserInfo, setNewUserInfo] = useState({
     email: "",
   });
-  const studentSteps = ['Select user type', 'Create profile', 'Subscription payment'];
-  const teacherSteps = ['Select user type', 'Create profile', 'Complete registration'];
+  const studentSteps = ['ユーザータイプを選択', 'プロフィール設定', '支払い情報'];
+  const teacherSteps = ['ユーザータイプを選択', 'プロフィール設定', '確認'];
   const steps = signupForm.user_type === "STUDENT" ? studentSteps : teacherSteps;
 
   const handleChange = event => {
@@ -224,7 +224,7 @@ export default function Signup(props) {
         setWarningSnackbarOpen(true);
       } else {
         handleStepReset();
-        setError("Registration failed. Please contact administrator.");
+        setError("登録できませんでした。ウェブサイトのアドミンに連絡して下さい。");
         setErrorSnackbarOpen(true);
       }
     } finally {
@@ -308,10 +308,10 @@ export default function Signup(props) {
       case 0:
         return(
           <FormControl component="fieldset">
-            <FormLabel component="legend">I am registering as a</FormLabel>
+            <FormLabel component="legend">ユーザータイプを選択して下さい</FormLabel>
             <RadioGroup id="user_type" name="user_type" value={signupForm.user_type} onChange={handleChange}>
-              <FormControlLabel value="STUDENT" control={<Radio />} label="Student" />
-              <FormControlLabel value="TEACHER" control={<Radio />} label="Teacher" />
+              <FormControlLabel value="STUDENT" control={<Radio />} label="生徒" />
+              <FormControlLabel value="TEACHER" control={<Radio />} label="先生" />
             </RadioGroup>
           </FormControl>
         );
@@ -347,8 +347,8 @@ export default function Signup(props) {
               setErrorSnackbarOpen={setErrorSnackbarOpen}
               setCardEntered={setCardEntered}
             /> :
-            <Typography className={classes.stepContent} color="primary" component='div'>
-              Please confirm<Typography display="inline" color="secondary"> teacher </Typography>profile information and complete registration.
+            <Typography className={classes.stepContent} color="secondary" component='div'>
+              Please confirm<Typography display="inline" color="primary"> teacher </Typography>profile information and complete registration.
             </Typography>
         );
       default:
@@ -361,7 +361,7 @@ export default function Signup(props) {
       case 0:
         return(
           <Button variant="contained" color="primary" type="button" onClick={handleNextStep}>
-            Next
+            次へ
           </Button>
         );
       case 1:
@@ -379,7 +379,7 @@ export default function Signup(props) {
           <Tooltip title={tooltipMessage}>
             <span>
               <Button variant="contained" color="primary" type="submit" form="signupForm" disabled={nextDisabled}>
-                Next
+                次へ
               </Button>
             </span>
           </Tooltip>
@@ -387,7 +387,7 @@ export default function Signup(props) {
       case 2:
         return(
           <Button variant="contained" color="primary" type="button" onClick={handleSubmit} disabled={signupForm.user_type === 'STUDENT' && !cardEntered}>
-            Register
+            登録
           </Button>
         );
       default:
@@ -409,7 +409,7 @@ export default function Signup(props) {
           {activeStep === steps.length ?
             <div>
               <Typography className={classes.stepContent} component='div'>
-                Registration Complete! An confirmation email has been sent to <Typography display="inline" color="primary">{newUserInfo.email}</Typography>.
+                Registration Complete! An confirmation email has been sent to <Typography display="inline" color="secondary">{newUserInfo.email}</Typography>.
                 Welcome to Success Academy! 
                 </Typography>
               <Button variant="contained" color="primary" onClick={() => history.push("/")}>Login</Button>
@@ -419,7 +419,7 @@ export default function Signup(props) {
                 {getStepContent(activeStep)}
               </div>
               <Button disabled={activeStep === 0} onClick={handlePrevStep} className={classes.backButton}>
-                Back
+                戻る
               </Button>
               {getStepButton(activeStep)}
             </div>
@@ -427,7 +427,7 @@ export default function Signup(props) {
         </Box>
         <Snackbar open={successSnackbarOpen} onClose={handleSnackbarClose}>
           <Alert severity="success" variant="filled" elevation={24} onClose={handleSnackbarClose}>
-            Registration successful! Welcome to Success Academy! 
+            登録完了。Success Academyへようこそ！ 
           </Alert>
         </Snackbar>
         <Snackbar open={errorSnackbarOpen} onClose={handleSnackbarClose}>
@@ -453,32 +453,32 @@ export function GeneralSignup(props) {
   return(
       <MyGrid container spacing={3}>
           <MyGrid item xs={12}>
-            <TextField id='username' name='username' type='text' label='Username' value={props.state.username} onChange={props.onChange} required fullWidth variant='filled' />
+            <TextField id='username' name='username' type='text' label='ユーザーID' value={props.state.username} onChange={props.onChange} required fullWidth variant='filled' />
           </MyGrid>
           <MyGrid item xs={12} sm={6}>
-            <TextField id='password' name='password' type='password' label='Password' value={props.state.password} onChange={props.onChange} required fullWidth variant='filled' />
+            <TextField id='password' name='password' type='password' label='パスワード' value={props.state.password} onChange={props.onChange} required fullWidth variant='filled' />
           </MyGrid>
           <MyGrid item xs={12} sm={6}>
-            <TextField id='confirmPassword' name='confirmPassword' type='password' label='Confirm Password' value={props.passwordMatch} 
+            <TextField id='confirmPassword' name='confirmPassword' type='password' label='パスワード確認' value={props.passwordMatch} 
             onChange={e => props.setPasswordMatch(e.target.value)} required fullWidth variant='filled' error={props.passwordMatch !== props.state.password} />
           </MyGrid>
           <MyGrid item xs={12} sm={6}>
-            <TextField id='first_name' name='first_name' type='text' label='First Name' value={props.state.first_name} onChange={props.onChange} required fullWidth />
+            <TextField id='first_name' name='first_name' type='text' label='名' value={props.state.first_name} onChange={props.onChange} required fullWidth />
           </MyGrid>
           <MyGrid item xs={12} sm={6}>
-            <TextField id='last_name' name='last_name' type='text' label='Last Name' value={props.state.last_name} onChange={props.onChange} required fullWidth />
+            <TextField id='last_name' name='last_name' type='text' label='姓' value={props.state.last_name} onChange={props.onChange} required fullWidth />
           </MyGrid>
           <MyGrid item xs={12} sm={6}>
-            <TextField id='email' name='email' type='email' label='Email' value={props.state.email} onChange={props.onChange} required fullWidth />
+            <TextField id='email' name='email' type='email' label='メールアドレス' value={props.state.email} onChange={props.onChange} required fullWidth />
           </MyGrid>
           <MyGrid item xs={12} sm={6}>
-            <TextField id='phone_number' name='phone_number' type='text' label='Phone Number' value={props.state.phone_number} onChange={props.onChange} required fullWidth />
+            <TextField id='phone_number' name='phone_number' type='text' label='電話番号' value={props.state.phone_number} onChange={props.onChange} required fullWidth />
           </MyGrid>
           <MyGrid item xs={6}>
             <DatePicker
               id='birthday'
               name='birthday'
-              label="Date of Birth"
+              label="生年月日"
               value={props.state.birthday}
               onChange={date => props.onDateChange('birthday', date)}
               format='YYYY-MM-DD'
@@ -486,7 +486,7 @@ export function GeneralSignup(props) {
           </MyGrid>
           <MyGrid item xs={6}>
             <InputLabel id="time-zone-label">
-              <Typography variant="caption">Time Zone</Typography>
+              <Typography variant="caption">時間帯</Typography>
             </InputLabel>
             <Select
               id="time_zone"
@@ -515,11 +515,11 @@ export function StudentProfileSignup(props) {
   return(
     <MyGrid className={classes.sectionEnd} container spacing={3}>
       <MyGrid item xs={12} sm={6}>
-        <TextField id='school_name' name='school_name' type='text' label='School Name' value={props.state.school_name} onChange={props.onChange} required fullWidth />
+        <TextField id='school_name' name='school_name' type='text' label='学校名' value={props.state.school_name} onChange={props.onChange} required fullWidth />
       </MyGrid>
       <MyGrid item xs={12} sm={6}>
         <InputLabel id="school-grade-label">
-          <Typography variant="caption">School Grade</Typography>
+          <Typography variant="caption">学年</Typography>
         </InputLabel>
         <Select
           id="school_grade"
@@ -545,7 +545,7 @@ export function TeacherProfileSignup(props) {
   return(
     <MyGrid className={classes.sectionEnd} container spacing={3}>
       <MyGrid item xs={12} sm={6}>
-        <TextField id='association' name='association' type='text' label='Association' value={props.state.association} onChange={props.onChange} required fullWidth />
+        <TextField id='association' name='association' type='text' label='所属' value={props.state.association} onChange={props.onChange} required fullWidth />
       </MyGrid>
     </MyGrid>
   );

@@ -11,6 +11,7 @@ import {
   FormLabel,
   CircularProgress,
   Grid,
+  Box,
 } from '@material-ui/core';
 
 import axiosInstance from '../axiosApi';
@@ -22,6 +23,7 @@ const useStyles = makeStyles(theme => ({
   },
   cardSection: {
     maxWidth: 500,
+    margin: 'auto',
   },
 }));
 
@@ -29,7 +31,7 @@ const CARD_ELEMENT_OPTIONS = {
   style: {
     base: {
       color: "#32325d",
-      fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+      fontFamily: 'Meiryo, Hiragino Mincho',
       fontSmoothing: "antialiased",
       fontSize: "16px",
       "::placeholder": {
@@ -65,6 +67,7 @@ export default function StripeSubscriptionCheckout(props) {
   }, []);
 
   const handleChange = (event) => {
+    setCardInputError('');
     if (event.complete) {
       props.setCardEntered(true);
       setCardInputError('');
@@ -100,9 +103,13 @@ export default function StripeSubscriptionCheckout(props) {
               )}
             </RadioGroup>
           </FormControl> 
-          <Grid id='cardSection' container justify='center'>
+          <Grid id='cardSection' container justify='center' spacing={1}>
+            <Grid item xs={12}>
               <CardElement className={classes.cardSection} options={CARD_ELEMENT_OPTIONS} onChange={handleChange} />
-              <Typography variant='caption' color='textSecondary'>{cardInputError}</Typography>
+            </Grid>
+            <Grid item justify='center' xs={12}>
+              <Typography variant='caption' color='error' display='block' align='center'>{cardInputError}</Typography>
+            </Grid>
           </Grid>
         </div>
       }

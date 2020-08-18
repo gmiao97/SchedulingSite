@@ -10,6 +10,7 @@ import {
   Button,
   IconButton,
   Box,
+  Avatar,
 } from '@material-ui/core';
 import { 
   School,
@@ -17,6 +18,7 @@ import {
 
 import Login from './login';
 import Signup from './signup';
+import Logo from '../../static/success.academy.logo.png';
 
 
 const useStyles = makeStyles(theme => ({
@@ -29,6 +31,13 @@ const useStyles = makeStyles(theme => ({
   title: {
     flexGrow: 1,
   },
+  logo: {
+    width: theme.spacing(5),
+    height: theme.spacing(5),
+    backgroundColor: 'white',
+    backgroundImage: `url(${Logo})`,
+    backgroundSize: 'cover',
+  },
 }));
 
 export default function Landing(props) {
@@ -37,16 +46,16 @@ export default function Landing(props) {
   return (
     <div id='landing'>
       <Box className={classes.root} clone>
-        <AppBar position="static" color="transparent">
+        <AppBar position="static" color="primary">
           <Toolbar>
             <IconButton edge="start" className={classes.iconButton} color="inherit" component={Link} to="/">
-              <School />
+              <Avatar className={classes.logo}> </Avatar>
             </IconButton>
             <Typography variant="h6" className={classes.title}>
               Success Academy
             </Typography>
-            <Button color="inherit" component={Link} to="/signup">Signup</Button>
-            <Button color="inherit" component={Link} to="/">Login</Button>
+            <Button color="inherit" component={Link} to="/signup">登録</Button>
+            <Button color="inherit" component={Link} to="/">ログイン</Button>
           </Toolbar>
         </AppBar>
       </Box>

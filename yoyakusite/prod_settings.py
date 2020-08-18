@@ -31,3 +31,6 @@ django_heroku.settings(locals())
 
 #PayPal
 PAYPAL_API_BASE_URL = 'https://api.paypal.com'
+
+#Stripe
+STRIPE_RETURN_URL = 'https://yoyakusite.herokuapp.com/subscription'

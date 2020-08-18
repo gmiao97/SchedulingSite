@@ -18,19 +18,23 @@ import App from './components/App';
 const theme = createMuiTheme({
   palette: {
     type: 'light',
-    // primary: {
-    //   main: '#fbc02d',
-    // },
-    // secondary: {
-    //   main: '#81d4fa',
-    // },
+    primary: {
+      main: '#EEAF4D',
+    },
+    secondary: {
+      main: '#0074D4',
+    },
   },
 });
 
-const stripePromise = loadStripe('pk_test_51HEGgQK9gCxRnlEi11v8HnbNn5nfVFgN7ruFIFzKPiogRgdCJKT05QlmOi0rlEcsQdopTd9kFCqYI7roSbb3jgLd00SfWRRCoX');
+const stripePromise = loadStripe('pk_test_51HEGgQK9gCxRnlEi11v8HnbNn5nfVFgN7ruFIFzKPiogRgdCJKT05QlmOi0rlEcsQdopTd9kFCqYI7roSbb3jgLd00SfWRRCoX', {
+  locale: 'ja',
+});
 
 if (process.env.NODE_ENV === 'production') {
-  stripePromise = loadStripe('pk_test_51HEGgQK9gCxRnlEi11v8HnbNn5nfVFgN7ruFIFzKPiogRgdCJKT05QlmOi0rlEcsQdopTd9kFCqYI7roSbb3jgLd00SfWRRCoX');
+  stripePromise = loadStripe('pk_test_51HEGgQK9gCxRnlEi11v8HnbNn5nfVFgN7ruFIFzKPiogRgdCJKT05QlmOi0rlEcsQdopTd9kFCqYI7roSbb3jgLd00SfWRRCoX', {
+    locale: 'ja',
+  });
 }
 
 ReactDOM.render((

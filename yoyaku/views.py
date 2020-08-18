@@ -378,7 +378,7 @@ class StripeCustomerPortal(APIView):
     def post(self, request, format=None):
         customer_portal = stripe.billing_portal.Session.create(
             customer=request.data['customerId'],
-            return_url='http://localhost:3000/top',
+            return_url=settings.STRIPE_RETURN_URL,
         )
         return Response(customer_portal)
 

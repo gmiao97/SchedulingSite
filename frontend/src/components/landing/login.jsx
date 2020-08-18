@@ -29,7 +29,6 @@ export default function Login(props) {
     errorSnackbarOpen: false,
   });
   const handleLogin = props.handleLogin;
-  const history = useHistory();
 
   const handleChange = event => {
     setState({
@@ -74,18 +73,18 @@ export default function Login(props) {
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <TextField id='username' name='username' type='text' label='User Id' value={state.username} onChange={handleChange} required fullWidth />
+              <TextField id='username' name='username' type='text' label='ユーザーID' value={state.username} onChange={handleChange} required fullWidth />
             </Grid>
             <Grid item xs={12}>
-              <TextField id='password' name='password' className={classes.sectionEnd} type='password' label='Password' value={state.password} onChange={handleChange} required fullWidth />
+              <TextField id='password' name='password' className={classes.sectionEnd} type='password' label='パスワード' value={state.password} onChange={handleChange} required fullWidth />
             </Grid>
           </Grid>
           <Grid container spacing={3} justify="space-between">
             <Grid item>
-              <Button type="submit" variant="contained" color="primary">Login</Button>
+              <Button type="submit" variant="contained" color="primary">ログイン</Button>
             </Grid>
             <Grid item>
-              <Button type="submit" color="default" size="small" component={Link} to="/signup">New User? Sign up here</Button>
+              <Button type="submit" color="default" size="small" component={Link} to="/signup">新規登録はこちらへ</Button>
             </Grid>
           </Grid>
           
@@ -94,7 +93,7 @@ export default function Login(props) {
       </Box>
       <Snackbar open={state.errorSnackbarOpen} onClose={handleSnackbarClose}>
         <Alert severity="error" variant="filled" elevation={24} onClose={handleSnackbarClose}>
-          Incorrect User Id or Password
+          ユーザーIDまたはパスワードが間違っています。
         </Alert>
       </Snackbar>
     </Paper>

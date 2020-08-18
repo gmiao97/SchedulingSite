@@ -24,12 +24,13 @@ import {
   School,
 } from '@material-ui/icons';
 
-import Top from './top';
+import Subscription from './subscription';
 import Profile from './profile';
 import EditProfile from './editProfile';
 import Calendar from './calendar';
 import axiosInstance from '../../axiosApi';
 import { getUserIdFromToken } from '../../util';
+import Logo from '../../static/success.academy.logo.png';
 
 
 const useStyles = makeStyles(theme => ({
@@ -71,6 +72,13 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.up('sm')]: {
       display: 'none',
     },
+  },
+  logo: {
+    width: theme.spacing(5),
+    height: theme.spacing(5),
+    backgroundColor: 'white',
+    backgroundImage: `url(${Logo})`,
+    backgroundSize: 'cover',
   },
 }));
 
@@ -125,20 +133,20 @@ export default function Home(props) {
       open={mobileMenuOpen}
       onClose={handleMobileMenuClose}
     >
-      <MenuItem onClick={handleMobileMenuClose} component={Link} to="/top">
-        Top
+      <MenuItem onClick={handleMobileMenuClose} component={Link} to="/subscription">
+        サブスクリプション
       </MenuItem>
       {/* <MenuItem onClick={handleMobileMenuClose} component={Link} to="/calendar">
         Calendar
       </MenuItem> */}
       <MenuItem onClick={handleMobileMenuClose} component={Link} to="/profile">
-        Profile
+        プロフィール
       </MenuItem>
       <MenuItem onClick={handleLogout} component={Link} to="/">
-        <Typography className={classes.iconMargin}>
-          Logout
+        <Typography color='error' className={classes.iconMargin}>
+          ログアウト
         </Typography>
-        <ExitToApp color="secondary" />
+        {/* <ExitToApp color="secondary" /> */}
       </MenuItem>
     </Menu>
   );
@@ -159,13 +167,13 @@ export default function Home(props) {
       onClose={handleDesktopMenuClose}
     >
       <MenuItem onClick={handleDesktopMenuClose} component={Link} to="/profile">
-        Profile
+        プロフィール
       </MenuItem>
       <MenuItem onClick={handleLogout} component={Link} to="/">
-        <Typography className={classes.iconMargin}>
-          Logout
+        <Typography　color='error' className={classes.iconMargin}>
+          ログアウト
         </Typography>
-        <ExitToApp color="secondary" />
+        {/* <ExitToApp color="secondary" /> */}
       </MenuItem>
     </Menu>
   );
@@ -175,15 +183,15 @@ export default function Home(props) {
       null :
       <div id='home'>
         <Box className={classes.root} clone>
-          <AppBar position="static" color="transparent">
+          <AppBar position="static" color="primary">
             <Toolbar>
-              <IconButton edge="start" className={classes.iconMargin} color="inherit" component={Link} to="/calendar">
-                <School />
+              <IconButton edge="start" className={classes.iconMargin} color="inherit" component={Link} to="/subscription">
+                <Avatar className={classes.logo}> </Avatar>
               </IconButton>
               <Typography variant="h6" className={classes.title}>
                 Success Academy
               </Typography>
-              <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/top">Top</Button>
+              <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/subscription">サブスクリプション</Button>
               {/* <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/calendar">Calendar</Button> */}
               <div className={`${classes.sectionDesktop} ${classes.menu}`}>
                 <IconButton
@@ -206,9 +214,9 @@ export default function Home(props) {
         </Box>
 
         <Switch>
-          <Route exact path="/top">
+          <Route exact path="/subscription">
             <Box mx='auto' width='60%' my={5} minWidth={700}>
-              <Top currentUser={currentUser} />
+              <Subscription currentUser={currentUser} />
             </Box>
           </Route>
           <Route exact path="/profile">
