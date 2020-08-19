@@ -6,20 +6,20 @@ export const history = createBrowserHistory({forceRefresh: true});
 export const timeZoneNames = moment.tz.names().filter(tz => tz !== 'Asia/Qostanay'); // TODO Asia/Qostanay isn't in pytz timezones
 
 export const gradeMappings = new Map([
-  [-1, 'Preschool'],
-  [0, 'Kindergarten'],
-  [1, 'First Grade'],
-  [2, 'Second Grade'],
-  [3, 'Third Grade'],
-  [4, 'Fourth Grade'],
-  [5, 'Fifth Grade'],
-  [6, 'Sixth Grade'],
-  [7, 'Seventh Grade'],
-  [8, 'Eighth Grade'],
-  [9, 'Ninth Grade'],
-  [10, 'Tenth Grade'],
-  [11, 'Eleventh Grade'],
-  [12, 'Twelfth Grade'],
+  [-1, '未就学'],
+  [0, '幼稚園'],
+  [1, '小１'],
+  [2, '小２'],
+  [3, '小３'],
+  [4, '小４'],
+  [5, '小５'],
+  [6, '中１'],
+  [7, '中２'],
+  [8, '中３'],
+  [9, '高１'],
+  [10, '高２'],
+  [11, '高３'],
+  [12, '高４'],
 ]);
 
 // TODO redirect to login if no token

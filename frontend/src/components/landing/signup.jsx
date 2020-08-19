@@ -3,7 +3,7 @@ import { useHistory, Prompt } from "react-router-dom"
 import moment from 'moment-timezone';
 import { styled, makeStyles } from '@material-ui/core/styles';
 import { DatePicker } from '@material-ui/pickers';
-import Alert from '@material-ui/lab/Alert';
+import { Autocomplete, Alert } from '@material-ui/lab'
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import {
   Box,
@@ -328,22 +328,28 @@ export default function Signup(props) {
       case 1:
         return(
           <form id="signupForm" onSubmit={handleNextStep}>
-            <GeneralSignup 
-              state={signupForm}
-              usernameList={usernameList}
-              passwordMatch={passwordMatch}
-              setPasswordMatch={setPasswordMatch}
-              onChange={handleChange}
-              onDateChange={handleDateChange}
-            />
             {signupForm.user_type === "STUDENT" ? 
-              <StudentProfileSignup
-                state={signupForm.student_profile} 
-                onChange={handleChangeStudentProfile}
+              <StudentSignup 
+                state={signupForm}
+                usernameList={usernameList}
+                passwordMatch={passwordMatch}
+                setPasswordMatch={setPasswordMatch}
+                onChange={handleChange}
+                onStudentChange={handleChangeStudentProfile}
+                signupForm={signupForm}
+                setSignupForm={setSignupForm}
+                onDateChange={handleDateChange}
               /> :
-              <TeacherProfileSignup
-                state={signupForm.teacher_profile} 
-                onChange={handleChangeTeacherProfile}
+              <TeacherSignup
+                state={signupForm}
+                usernameList={usernameList}
+                passwordMatch={passwordMatch}
+                setPasswordMatch={setPasswordMatch}
+                onChange={handleChange}
+                onTeacherChange={handleChangeTeacherProfile}
+                signupForm={signupForm}
+                setSignupForm={setSignupForm}
+                onDateChange={handleDateChange}
               />
             }
           </form>
@@ -464,64 +470,7 @@ export default function Signup(props) {
 }       
 
 
-export function GeneralSignup(props) {
-  return(
-      <MyGrid container spacing={3}>
-          <MyGrid item xs={12}>
-            <TextField id='username' name='username' type='text' label='ユーザーID' value={props.state.username} onChange={props.onChange} required fullWidth variant='filled' 
-            error={props.usernameList.includes(props.state.username)} helperText={props.usernameList.includes(props.state.username) ? 'そのユーザーIDがすでに使われています' : ''} />
-          </MyGrid>
-          <MyGrid item xs={12} sm={6}>
-            <TextField id='password' name='password' type='password' label='パスワード' value={props.state.password} onChange={props.onChange} required fullWidth variant='filled' />
-          </MyGrid>
-          <MyGrid item xs={12} sm={6}>
-            <TextField id='confirmPassword' name='confirmPassword' type='password' label='パスワード確認' value={props.passwordMatch} 
-            onChange={e => props.setPasswordMatch(e.target.value)} required fullWidth variant='filled' error={props.passwordMatch !== props.state.password} />
-          </MyGrid>
-          <MyGrid item xs={12} sm={6}>
-            <TextField id='first_name' name='first_name' type='text' label='生徒名' value={props.state.first_name} onChange={props.onChange} required fullWidth />
-          </MyGrid>
-          <MyGrid item xs={12} sm={6}>
-            <TextField id='last_name' name='last_name' type='text' label='生徒姓' value={props.state.last_name} onChange={props.onChange} required fullWidth />
-          </MyGrid>
-          <MyGrid item xs={12} sm={6}>
-            <TextField id='email' name='email' type='email' label='保護者メールアド' value={props.state.email} onChange={props.onChange} required fullWidth />
-          </MyGrid>
-          <MyGrid item xs={12} sm={6}>
-            <TextField id='phone_number' name='phone_number' type='text' label='保護者電話番号' value={props.state.phone_number} onChange={props.onChange} required fullWidth />
-          </MyGrid>
-          <MyGrid item xs={6}>
-            <DatePicker
-              id='birthday'
-              name='birthday'
-              label="生徒生年月日"
-              value={props.state.birthday}
-              onChange={date => props.onDateChange('birthday', date)}
-              format='YYYY-MM-DD'
-            />
-          </MyGrid>
-          <MyGrid item xs={6}>
-            <InputLabel id="time-zone-label">
-              <Typography variant="caption">時間帯</Typography>
-            </InputLabel>
-            <Select
-              id="time_zone"
-              name="time_zone"
-              labelId="time-zone-label"
-              value={props.state.time_zone}
-              onChange={props.onChange}
-            >
-              {timeZoneNames.map((value, index) => 
-                <MenuItem key={index} value={value}>{value}</MenuItem>
-              )}
-            </Select>
-          </MyGrid>
-      </MyGrid>
-  );
-}
-
-
-export function StudentProfileSignup(props) {
+export function StudentSignup(props) {
   const classes = useStyles();
   const schoolGrades = [];
   for (let grade of gradeMappings) {
@@ -529,39 +478,140 @@ export function StudentProfileSignup(props) {
   }
 
   return(
-    <MyGrid className={classes.sectionEnd} container spacing={3}>
-      <MyGrid item xs={12} sm={6}>
-        <TextField id='school_name' name='school_name' type='text' label='生徒学校名' value={props.state.school_name} onChange={props.onChange} required fullWidth />
-      </MyGrid>
-      <MyGrid item xs={12} sm={6}>
-        <InputLabel id="school-grade-label">
-          <Typography variant="caption">生徒学年</Typography>
-        </InputLabel>
-        <Select
-          id="school_grade"
-          name="school_grade"
-          labelId="school-grade-label"
-          value={props.state.school_grade}
-          onChange={props.onChange}
-        >
-          {schoolGrades.map((value, index) => 
-            <MenuItem key={index} value={value[0]}>{value[1]}</MenuItem>
-          )}
-        </Select>
-      </MyGrid>
+    <MyGrid container spacing={3} className={classes.sectionEnd}>
       <MyGrid item xs={12}>
+        <TextField id='username' name='username' type='text' label='ユーザーID' value={props.state.username} onChange={props.onChange} required fullWidth variant='filled' 
+        error={props.usernameList.includes(props.state.username)} helperText={props.usernameList.includes(props.state.username) ? 'そのユーザーIDがすでに使われています' : ''} />
+      </MyGrid>
+      <MyGrid item xs={12} sm={6}>
+        <TextField id='password' name='password' type='password' label='パスワード' value={props.state.password} onChange={props.onChange} required fullWidth variant='filled' />
+      </MyGrid>
+      <MyGrid item xs={12} sm={6}>
+        <TextField id='confirmPassword' name='confirmPassword' type='password' label='パスワード確認' value={props.passwordMatch} 
+        onChange={e => props.setPasswordMatch(e.target.value)} required fullWidth variant='filled' error={props.passwordMatch !== props.state.password} />
+      </MyGrid>
+      <MyGrid item xs={12} sm={6}>
+        <TextField id='last_name' name='last_name' type='text' label='生徒姓' value={props.state.last_name} onChange={props.onChange} required fullWidth />
+      </MyGrid>
+      <MyGrid item xs={12} sm={6}>
+        <TextField id='first_name' name='first_name' type='text' label='生徒名' value={props.state.first_name} onChange={props.onChange} required fullWidth />
+      </MyGrid>
+      <MyGrid item xs={12} sm={5}>
+        <TextField id='school_name' name='school_name' type='text' label='生徒学校名' value={props.state.student_profile.school_name} onChange={props.onStudentChange} required fullWidth />
+      </MyGrid>
+      <MyGrid item xs={6} sm={3}>
+        <Autocomplete
+          id='school_grade'
+          name='school_grade'
+          options={schoolGrades}
+          getOptionLabel={option => option[1]}
+          defaultValue={schoolGrades[0]}
+          onChange={(event, value) => {
+            props.setSignupForm({
+              ...props.signupForm,
+              student_profile: {
+                ...props.signupForm.student_profile,
+                school_grade: value[0],
+              },
+            });
+          }}
+          renderInput={(params) => <TextField {...params} label="生徒学年" />}
+        />
+      </MyGrid>
+      <MyGrid item xs={6} sm={4}>
+        <DatePicker
+          id='birthday'
+          name='birthday'
+          label="生徒生年月日"
+          value={props.state.birthday}
+          onChange={date => props.onDateChange('birthday', date)}
+          format='YYYY-MM-DD'
+        />
+      </MyGrid>
+      <MyGrid item xs={12} sm={6}>
+        <TextField id='email' name='email' type='email' label='保護者メールアド' value={props.state.email} onChange={props.onChange} required fullWidth />
+      </MyGrid>
+      <MyGrid item xs={12} sm={6}>
+        <TextField id='phone_number' name='phone_number' type='text' label='保護者電話番号' value={props.state.phone_number} onChange={props.onChange} required fullWidth />
+      </MyGrid>
+      <MyGrid item item xs={12} sm={6}>
+        <Autocomplete
+          id='time_zone'
+          name='time_zone'
+          options={timeZoneNames}
+          value={props.state.time_zone}
+          onChange={(event, value) => {
+            props.setSignupForm({
+              ...props.signupForm,
+              time_zone: value,
+            });
+          }}
+          renderInput={(params) => <TextField {...params} label="時間帯" />}
+        />
+      </MyGrid>
+      <MyGrid item xs={12} sm={6}>
+        <TextField id='referrer' name='referrer' type='text' label='紹介者' required fullWidth />
       </MyGrid>
     </MyGrid>
   );
 }
 
 
-export function TeacherProfileSignup(props) {
+export function TeacherSignup(props) {
   const classes = useStyles();
+  
   return(
-    <MyGrid className={classes.sectionEnd} container spacing={3}>
+    <MyGrid container spacing={3} className={classes.sectionEnd}>
+      <MyGrid item xs={12}>
+        <TextField id='username' name='username' type='text' label='ユーザーID' value={props.state.username} onChange={props.onChange} required fullWidth variant='filled' 
+        error={props.usernameList.includes(props.state.username)} helperText={props.usernameList.includes(props.state.username) ? 'そのユーザーIDがすでに使われています' : ''} />
+      </MyGrid>
       <MyGrid item xs={12} sm={6}>
-        <TextField id='association' name='association' type='text' label='所属' value={props.state.association} onChange={props.onChange} required fullWidth />
+        <TextField id='password' name='password' type='password' label='パスワード' value={props.state.password} onChange={props.onChange} required fullWidth variant='filled' />
+      </MyGrid>
+      <MyGrid item xs={12} sm={6}>
+        <TextField id='confirmPassword' name='confirmPassword' type='password' label='パスワード確認' value={props.passwordMatch} 
+        onChange={e => props.setPasswordMatch(e.target.value)} required fullWidth variant='filled' error={props.passwordMatch !== props.state.password} />
+      </MyGrid>
+      <MyGrid item xs={12} sm={6}>
+        <TextField id='last_name' name='last_name' type='text' label='姓' value={props.state.last_name} onChange={props.onChange} required fullWidth />
+      </MyGrid>
+      <MyGrid item xs={12} sm={6}>
+        <TextField id='first_name' name='first_name' type='text' label='名' value={props.state.first_name} onChange={props.onChange} required fullWidth />
+      </MyGrid>
+      <MyGrid item xs={12} sm={6}>
+        <DatePicker
+          id='birthday'
+          name='birthday'
+          label="生年月日"
+          value={props.state.birthday}
+          onChange={date => props.onDateChange('birthday', date)}
+          format='YYYY-MM-DD'
+        />
+      </MyGrid>
+      <MyGrid item xs={12} sm={6}>
+        <TextField id='email' name='email' type='email' label='メールアドレス' value={props.state.email} onChange={props.onChange} required fullWidth />
+      </MyGrid>
+      <MyGrid item xs={12} sm={6}>
+        <TextField id='phone_number' name='phone_number' type='text' label='電話番号' value={props.state.phone_number} onChange={props.onChange} required fullWidth />
+      </MyGrid>
+      <MyGrid item xs={12} sm={6}>
+        <TextField id='association' name='association' type='text' label='所属' value={props.state.teacher_profile.association} onChange={props.onTeacherChange} required fullWidth />
+      </MyGrid>
+      <MyGrid item xs={12} sm={6}>
+        <Autocomplete
+          id='time_zone'
+          name='time_zone'
+          options={timeZoneNames}
+          value={props.state.time_zone}
+          onChange={(event, value) => {
+            props.setSignupForm({
+              ...props.signupForm,
+              time_zone: value,
+            });
+          }}
+          renderInput={(params) => <TextField {...params} label="時間帯" />}
+        />
       </MyGrid>
     </MyGrid>
   );
