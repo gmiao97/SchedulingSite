@@ -32,7 +32,7 @@ const stripePromise = loadStripe('pk_test_51HEGgQK9gCxRnlEi11v8HnbNn5nfVFgN7ruFI
 });
 
 if (process.env.NODE_ENV === 'production') {
-  stripePromise = loadStripe('pk_test_51HEGgQK9gCxRnlEi11v8HnbNn5nfVFgN7ruFIFzKPiogRgdCJKT05QlmOi0rlEcsQdopTd9kFCqYI7roSbb3jgLd00SfWRRCoX', {
+  stripePromise = loadStripe('pk_live_51HEGgQK9gCxRnlEirfQV98mUU1qUlFZ6UV6fOcsgLGpzBQT3DRldkVn0gtgHSg37TbCjvqbBrfdfMC2pMW1vZlcC00yl4X2iop', {
     locale: 'ja',
   });
 }

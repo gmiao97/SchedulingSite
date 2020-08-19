@@ -37,7 +37,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         permission_classes = []
-        if self.action == 'create':
+        if self.action in ('create', 'username_list'):
             permission_classes = [AllowAny]
         elif self.action in ('retrieve', 'update', 'partial_update', 'events'):
             permission_classes = [IsLoggedInUserOrAdmin]
@@ -59,7 +59,7 @@ class UserViewSet(viewsets.ModelViewSet):
                                                   name='{}, {}'.format(request.data['last_name'], request.data['first_name']))
             except Exception as e:
                 return Response(status=status.HTTP_200_OK,
-                                data={'error': 'Failed to register payment account. Please try again later or contact administrator'})
+                                data={'error': '支払いアカウントの作成できませんでした。アドミンに連絡して下さい。'})
             serializer.save(stripeCustomerId=customer.id)
         else:
             self.perform_create(serializer)
@@ -86,6 +86,14 @@ class UserViewSet(viewsets.ModelViewSet):
         students = self.queryset.filter(user_type='STUDENT')
         serializer = MyUserSerializer(students, many=True)
         return Response(serializer.data)
+
+    @action(detail=False)
+    def username_list(self, request):
+        users = self.queryset
+        username_list = []
+        for user in users:
+            username_list.append(user.username)
+        return Response(username_list)
 
     @action(detail=True)
     def events(self, request, pk=None):

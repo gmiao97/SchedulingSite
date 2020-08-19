@@ -1,4 +1,4 @@
-import React, { Component, useState } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import { useHistory, Prompt } from "react-router-dom"
 import moment from 'moment-timezone';
 import { styled, makeStyles } from '@material-ui/core/styles';
@@ -43,7 +43,7 @@ import {
 
 
 const MyGrid = styled(Grid)({
-  alignItems: "flex-end",
+  alignItems: 'flex-end',
 });
 
 const useStyles = makeStyles(theme => ({
@@ -80,6 +80,7 @@ export default function Signup(props) {
   const [passwordMatch, setPasswordMatch] = useState('');
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [cardEntered, setCardEntered] = useState(false);
+  const [usernameList, setUsernameList] = useState([]);
   const [signupForm, setSignupForm] = useState({
     username: '',
     email: '',
@@ -101,9 +102,20 @@ export default function Signup(props) {
   const [newUserInfo, setNewUserInfo] = useState({
     email: "",
   });
+
   const studentSteps = ['ユーザータイプを選択', 'プロフィール設定', '支払い情報'];
   const teacherSteps = ['ユーザータイプを選択', 'プロフィール設定', '確認'];
   const steps = signupForm.user_type === "STUDENT" ? studentSteps : teacherSteps;
+
+
+  useEffect(() => {
+    getUsernameList();
+  }, []);
+
+  const getUsernameList = async () => {
+    const response = await axiosInstance.get('/yoyaku/users/username_list/');
+    setUsernameList(response.data);
+  }
 
   const handleChange = event => {
     setSignupForm({
@@ -111,7 +123,6 @@ export default function Signup(props) {
       [event.target.name]: event.target.value,
     });
   }
-
 
   const handleSnackbarClose = (event, reason) => {
     setSuccessSnackbarOpen(false);
@@ -310,7 +321,7 @@ export default function Signup(props) {
             <FormLabel component="legend">ユーザータイプを選択して下さい</FormLabel>
             <RadioGroup id="user_type" name="user_type" value={signupForm.user_type} onChange={handleChange}>
               <FormControlLabel value="STUDENT" control={<Radio />} label="生徒" />
-              <FormControlLabel value="TEACHER" control={<Radio />} label="先生" />
+              <FormControlLabel value="TEACHER" control={<Radio />} label="先生" disabled />
             </RadioGroup>
           </FormControl>
         );
@@ -319,6 +330,7 @@ export default function Signup(props) {
           <form id="signupForm" onSubmit={handleNextStep}>
             <GeneralSignup 
               state={signupForm}
+              usernameList={usernameList}
               passwordMatch={passwordMatch}
               setPasswordMatch={setPasswordMatch}
               onChange={handleChange}
@@ -347,7 +359,7 @@ export default function Signup(props) {
               setCardEntered={setCardEntered}
             /> :
             <Typography className={classes.stepContent} color="secondary" component='div'>
-              Please confirm<Typography display="inline" color="primary"> teacher </Typography>profile information and complete registration.
+              プロフィール情報を確認して<Typography display="inline" color="primary">先生</Typography>として登録
             </Typography>
         );
       default:
@@ -368,11 +380,15 @@ export default function Signup(props) {
         let tooltipMessage = '';
         if (signupForm.password !== passwordMatch) {
           nextDisabled = true;
-          tooltipMessage = 'Passwords do not match';
+          tooltipMessage = 'パスワードが一致していません';
         }
         if (signupForm.password.length < 8) {
           nextDisabled = true;
-          tooltipMessage = 'Password must be at least 8 characters';
+          tooltipMessage = 'パスワードが７文字以上と必要になっております';
+        }
+        if (usernameList.includes(signupForm.username)) {
+          nextDisabled = true;
+          tooltipMessage = 'そのユーザーIDがすでに使われています';
         }
         return(
           <Tooltip title={tooltipMessage}>
@@ -408,8 +424,8 @@ export default function Signup(props) {
           {activeStep === steps.length ?
             <div>
               <Typography className={classes.stepContent} component='div'>
-                Registration Complete! An confirmation email has been sent to <Typography display="inline" color="secondary">{newUserInfo.email}</Typography>.
-                Welcome to Success Academy! 
+                登録完了！確認メールが<Typography display="inline" color="secondary">{newUserInfo.email}</Typography>に送信されました。
+                Success Academyへようこそ！
                 </Typography>
               <Button variant="contained" color="primary" onClick={() => history.push("/")}>Login</Button>
             </div> :
@@ -452,7 +468,8 @@ export function GeneralSignup(props) {
   return(
       <MyGrid container spacing={3}>
           <MyGrid item xs={12}>
-            <TextField id='username' name='username' type='text' label='ユーザーID' value={props.state.username} onChange={props.onChange} required fullWidth variant='filled' />
+            <TextField id='username' name='username' type='text' label='ユーザーID' value={props.state.username} onChange={props.onChange} required fullWidth variant='filled' 
+            error={props.usernameList.includes(props.state.username)} helperText={props.usernameList.includes(props.state.username) ? 'そのユーザーIDがすでに使われています' : ''} />
           </MyGrid>
           <MyGrid item xs={12} sm={6}>
             <TextField id='password' name='password' type='password' label='パスワード' value={props.state.password} onChange={props.onChange} required fullWidth variant='filled' />
@@ -462,22 +479,22 @@ export function GeneralSignup(props) {
             onChange={e => props.setPasswordMatch(e.target.value)} required fullWidth variant='filled' error={props.passwordMatch !== props.state.password} />
           </MyGrid>
           <MyGrid item xs={12} sm={6}>
-            <TextField id='first_name' name='first_name' type='text' label='名' value={props.state.first_name} onChange={props.onChange} required fullWidth />
+            <TextField id='first_name' name='first_name' type='text' label='生徒名' value={props.state.first_name} onChange={props.onChange} required fullWidth />
           </MyGrid>
           <MyGrid item xs={12} sm={6}>
-            <TextField id='last_name' name='last_name' type='text' label='姓' value={props.state.last_name} onChange={props.onChange} required fullWidth />
+            <TextField id='last_name' name='last_name' type='text' label='生徒姓' value={props.state.last_name} onChange={props.onChange} required fullWidth />
           </MyGrid>
           <MyGrid item xs={12} sm={6}>
-            <TextField id='email' name='email' type='email' label='メールアドレス' value={props.state.email} onChange={props.onChange} required fullWidth />
+            <TextField id='email' name='email' type='email' label='保護者メールアド' value={props.state.email} onChange={props.onChange} required fullWidth />
           </MyGrid>
           <MyGrid item xs={12} sm={6}>
-            <TextField id='phone_number' name='phone_number' type='text' label='電話番号' value={props.state.phone_number} onChange={props.onChange} required fullWidth />
+            <TextField id='phone_number' name='phone_number' type='text' label='保護者電話番号' value={props.state.phone_number} onChange={props.onChange} required fullWidth />
           </MyGrid>
           <MyGrid item xs={6}>
             <DatePicker
               id='birthday'
               name='birthday'
-              label="生年月日"
+              label="生徒生年月日"
               value={props.state.birthday}
               onChange={date => props.onDateChange('birthday', date)}
               format='YYYY-MM-DD'
@@ -514,11 +531,11 @@ export function StudentProfileSignup(props) {
   return(
     <MyGrid className={classes.sectionEnd} container spacing={3}>
       <MyGrid item xs={12} sm={6}>
-        <TextField id='school_name' name='school_name' type='text' label='学校名' value={props.state.school_name} onChange={props.onChange} required fullWidth />
+        <TextField id='school_name' name='school_name' type='text' label='生徒学校名' value={props.state.school_name} onChange={props.onChange} required fullWidth />
       </MyGrid>
       <MyGrid item xs={12} sm={6}>
         <InputLabel id="school-grade-label">
-          <Typography variant="caption">学年</Typography>
+          <Typography variant="caption">生徒学年</Typography>
         </InputLabel>
         <Select
           id="school_grade"

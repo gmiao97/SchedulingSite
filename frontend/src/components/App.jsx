@@ -10,20 +10,19 @@ export default function App(props) {
   const [authenticated, setAuthenticated] = useState(null);
   const history = useHistory();
 
+  useEffect(() => {
+    isAuthenticated();
+  }, []);
+
   const isAuthenticated = async () => {
     try {
       await axiosInstance.get('/yoyaku/validate-token/');
       setAuthenticated(true);
     } 
     catch (error) {
-      setAuthenticated(false);
-      handleLogout()
+      handleLogout();
     }
   }
-
-  useEffect(() => {
-    isAuthenticated();
-  }, []);
 
   const handleLogin = () => {
     history.push('/subscription');
@@ -40,8 +39,8 @@ export default function App(props) {
     catch(err) {
       console.error(err);
     } finally {
-      setAuthenticated(false);
       axiosInstance.defaults.headers['Authorization'] = null;
+      setAuthenticated(false);
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
     }
