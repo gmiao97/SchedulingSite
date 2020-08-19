@@ -3,6 +3,8 @@ import {
   Typography,
   Button,
   Paper,
+  Box,
+  Grid,
 } from '@material-ui/core';
 
 import axiosInstance from '../../axiosApi';
@@ -19,13 +21,28 @@ export default function Subscription(props) {
   }
 
   return(
-    <div>
-      <Typography variant="h5" display='block'>
-        サブスクリプション管理
-      </Typography>
-      <Button variant="contained" color="primary" type="button" onClick={handleStripeCustomerPortalRedirect}>
-        Register
-      </Button>
-    </div>
+    <Grid container spacing={2}>
+      <Grid item xs={5}>
+        <Typography variant='h2' color='textPrimary'>{props.currentUser.first_name} 様</Typography>
+      </Grid>
+      <Grid item xs={7}>
+        <Paper elevation={24}>
+          <Box p={3}>
+            <Typography variant='h4' color='textSecondary' display='block' gutterBottom>
+              サブスクリプション情報
+            </Typography>
+            <Typography variant='h5' color='textSecondary' display='block' gutterBottom>
+              現在のプラン <Typography color='secondary' display='inline'>{props.currentProduct.name}</Typography>
+            </Typography>
+            <Typography variant='h5' color='textSecondary' display='block' gutterBottom>
+              値段 <Typography color='secondary' display='inline'>{props.currentSubscription.items.data[0].price.nickname}</Typography>
+            </Typography>
+            <Button variant='contained' color='secondary' type='button' onClick={handleStripeCustomerPortalRedirect}>
+              プラン管理
+            </Button>
+          </Box>
+        </Paper>
+      </Grid>
+    </Grid>
   );
 }

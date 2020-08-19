@@ -86,7 +86,7 @@ export default function StripeSubscriptionCheckout(props) {
         </Grid> :
         <div>
           <FormControl component='fieldset'>
-            <FormLabel component='legend'>Select your subscription plan</FormLabel>
+            <FormLabel component='legend'>プランを選択して下さい</FormLabel>
             <RadioGroup id='selectedPrice' name="selectedPrice" value={props.selectedPrice} onChange={e => {props.setSelectedPrice(e.target.value)}}>
               {priceList.map(price => 
                 <FormControlLabel 

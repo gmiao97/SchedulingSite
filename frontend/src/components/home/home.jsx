@@ -15,6 +15,8 @@ import {
   Menu,
   MenuItem,
   Avatar,
+  Backdrop,
+  CircularProgress,
 } from '@material-ui/core';
 import { 
   Menu as MenuIcon,
@@ -80,6 +82,10 @@ const useStyles = makeStyles(theme => ({
     backgroundImage: `url(${Logo})`,
     backgroundSize: 'cover',
   },
+  backdrop: {
+    zIndex: theme.zIndex.drawer + 1,
+    color: '#fff',
+  },
 }));
 
 export default function Home(props) {
@@ -88,6 +94,8 @@ export default function Home(props) {
   const [mobileMenuAnchorEl, setMobileMenuAnchorEl] = useState(null);
   const mobileMenuOpen = Boolean(mobileMenuAnchorEl);
   const [currentUser, setCurrentUser] = useState(null);
+  const [currentSubscription, setCurrentSubscription] = useState(null);
+  const [currentProduct, setCurrentProduct] = useState(null);
   const handleLogout = props.handleLogout;
 
   useEffect(() => {
@@ -95,8 +103,24 @@ export default function Home(props) {
   }, []);
 
   const getCurrentUser = async () => {
-    let response = await axiosInstance.get(`/yoyaku/users/${getUserIdFromToken()}/`);
-    setCurrentUser(response.data);
+    let userResponse = await axiosInstance.get(`/yoyaku/users/${getUserIdFromToken()}/`);
+    setCurrentUser(userResponse.data);
+    let subscriptionResponse = await axiosInstance.get('/yoyaku/stripe-subscription/', {
+      params: {
+        subscriptionId: userResponse.data.stripeSubscriptionId,
+      },
+    });
+    setCurrentSubscription(subscriptionResponse.data);
+    let productResponse = await axiosInstance.get('/yoyaku/stripe-product/', {
+      params: {
+        productId: userResponse.data.stripeProductId,
+      },
+    });
+    setCurrentProduct(productResponse.data);
+  }
+
+  const isLoaded = () => {
+    return currentUser && currentSubscription && currentProduct;
   }
 
   const handleDesktopMenuOpen = (event) => {
@@ -179,8 +203,10 @@ export default function Home(props) {
   );
 
   return(
-    currentUser === null ? 
-      null :
+    !isLoaded() ? 
+    <Backdrop className={classes.backdrop} open>
+      <CircularProgress color="inherit" />
+    </Backdrop> :
       <div id='home'>
         <Box className={classes.root} clone>
           <AppBar position="static" color="primary">
@@ -198,7 +224,7 @@ export default function Home(props) {
                   onClick={handleDesktopMenuOpen}
                   color="inherit"
                 >
-                  <Avatar className={classes.purple}>{`${currentUser.first_name[0]}${currentUser.last_name[0]}`}</Avatar>
+                  <Avatar className={classes.purple}>{`${currentUser.first_name[0]}${currentUser.last_name[0]}`.toUpperCase()}</Avatar>
                   {/* <Avatar className={classes.avatar}> </Avatar> */}
                 </IconButton>
               </div>
@@ -215,8 +241,12 @@ export default function Home(props) {
 
         <Switch>
           <Route exact path="/subscription">
-            <Box mx='auto' width='60%' my={5} minWidth={700}>
-              <Subscription currentUser={currentUser} />
+            <Box mx='auto' width='90%' my={5} minWidth={700}>
+              <Subscription 
+                currentUser={currentUser} 
+                currentSubscription={currentSubscription} 
+                currentProduct={currentProduct}
+              />
             </Box>
           </Route>
           <Route exact path="/profile">

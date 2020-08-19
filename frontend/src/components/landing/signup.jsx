@@ -30,7 +30,6 @@ import {
 } from '@material-ui/core';
 
 import axiosInstance from '../../axiosApi';
-import SubscriptionPayment from '../subscriptionPayment';
 import StripeSubscriptionCheckout from '../stripeSubscriptionCheckout';
 import { 
   gradeMappings, 

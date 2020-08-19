@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import FileUploadParser
 from rest_framework.exceptions import ParseError
 from rest_framework.decorators import api_view, action, parser_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -305,19 +305,7 @@ class ValidateToken(APIView):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-class SubscriptionPlan(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request, format=None):
-        r = requests.get(settings.PAYPAL_API_BASE_URL + '/v1/billing/plans', auth=(settings.PAYPAL_CLIENT_ID, settings.PAYPAL_SECRET))
-        try:
-            r.raise_for_status()
-        except requests.exceptions.HTTPError as e:
-            return Response(status=status.HTTP_424_FAILED_DEPENDENCY)
-        return Response(r.json())
-
-
-class StripePrice(APIView):
+class StripePriceList(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, format=None):
@@ -326,15 +314,32 @@ class StripePrice(APIView):
 
 
 class StripeProduct(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        r = stripe.Product.list(active=True)
-        return Response(r)
+        productId = request.query_params.get('productId')
+        try:
+            product = stripe.Product.retrieve(productId)
+        except Exception as e:
+            return Response(data={'error': 'product not found'})
+        return Response(product)
 
 
 class StripeSubscription(APIView):
-    permission_classes = [AllowAny]
+
+    def get_permissions(self):
+        permission_classes = [AllowAny]
+        if self.request.method == 'GET':
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
+
+    def get(self, request, format=None):
+        subscriptionId = request.query_params.get('subscriptionId')
+        try:
+            subscription = stripe.Subscription.retrieve(subscriptionId)
+        except Exception as e:
+            return Response(data={'error': 'subscription not found'})
+        return Response(subscription)
 
     def post(self, request, format=None):
         try:
