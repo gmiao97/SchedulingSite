@@ -58,8 +58,8 @@ class MyUserSerializer(serializers.ModelSerializer):
             mail.send_mail(
                 'Yoyaku site login credentials for new user {}, {}'.format(validated_data.get('last_name'), validated_data.get('first_name')),
                 'username: {}\npassword: {}'.format(validated_data.get('username'), password),
-                'gmgm9797@gmail.com',
-                ['gmiao97@gmail.com'],
+                None,
+                ['success.academy.us@gmail.com'],
                 fail_silently=False,
             )
         user = self.Meta.model(**validated_data)

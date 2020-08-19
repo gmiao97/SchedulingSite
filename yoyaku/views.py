@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, Http404
 from django.utils.dateparse import parse_datetime
 from django.db.models import Q
+from django.core import mail
 from django.conf import settings
 from rest_framework import status, viewsets
 from rest_framework.parsers import JSONParser
@@ -62,6 +63,15 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.save(stripeCustomerId=customer.id)
         else:
             self.perform_create(serializer)
+        mail.send_mail(
+            'Success Academy - {} {}様登録確認しました'.format(request.data['last_name'], request.data['first_name']),
+            'ご登録ありがとうございます。\n{} {}様のログイン情報は以下のとおりです。\nユーザーID：{}\nパスワード：{}\n\n'
+            '以下のページにログインしてクラスZoom情報を確認できます。\n{}\n\n＊このアドレスは送信専用です。ご返信いただいても回答はいたしかねます。'.format(
+                request.data['last_name'], request.data['first_name'], request.data['username'], '*****', settings.BASE_URL),
+            None,
+            [request.data['email'], 'success.academy.us@gmail.com'],
+            fail_silently=False,
+        )
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -419,6 +429,9 @@ class StripeWebhook(APIView):
             invoice = event.data.object
         elif event.type == 'customer.created':
             print('customer.created')
+            customer = event.data.object
+        elif event.type == 'customer.deleted':
+            print('customer.deleted')
             customer = event.data.object
         elif event.type == 'customer.subscription.created':
             print('customer.subscription.created')
