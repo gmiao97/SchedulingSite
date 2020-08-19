@@ -9,7 +9,7 @@ from .models import StudentProfile, TeacherProfile, Recurrence, Event, Subject, 
 class StudentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentProfile
-        fields = ['id', 'school_name', 'school_grade']
+        fields = ['id', 'school_name', 'school_grade', 'referrer']
 
 
 class TeacherProfileSerializer(serializers.ModelSerializer):

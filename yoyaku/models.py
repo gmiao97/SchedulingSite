@@ -90,6 +90,7 @@ class StudentProfile(models.Model):
     user = models.OneToOneField(MyUser, on_delete=models.CASCADE, related_name='student_profile')
     school_name = models.CharField(_('school name'), max_length=200)
     school_grade = models.IntegerField(_('school grade'), choices=SCHOOL_GRADE_CHOICES)
+    referrer = models.CharField(_('referrer'), max_length=20, blank=True)
 
 
 class TeacherProfile(models.Model):

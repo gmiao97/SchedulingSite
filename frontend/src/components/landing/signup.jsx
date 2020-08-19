@@ -88,12 +88,13 @@ export default function Signup(props) {
     first_name: '',
     last_name: '',
     user_type: 'STUDENT',
-    time_zone: 'America/New_York',
+    time_zone: 'America/New York',
     phone_number: '',
     birthday: moment().format('YYYY-MM-DD'),
     student_profile: {
       school_name: '',
       school_grade: '-1',
+      referrer: '',
     },
     teacher_profile: {
       association: '',
@@ -191,7 +192,10 @@ export default function Signup(props) {
 
     setBackdropOpen(true);
     try {
-      const response = await axiosInstance.post('/yoyaku/users/', signupForm);
+      const response = await axiosInstance.post('/yoyaku/users/', {
+        ...signupForm,
+        time_zone: signupForm.time_zone.replace(' ', '_')
+      });
       if (response.data.error) {
         throw new AccountRegistrationError(response.data.error);
       }
@@ -516,6 +520,7 @@ export function StudentSignup(props) {
             });
           }}
           renderInput={(params) => <TextField {...params} label="生徒学年" />}
+          disableClearable
         />
       </MyGrid>
       <MyGrid item xs={6} sm={4}>
@@ -547,10 +552,11 @@ export function StudentSignup(props) {
             });
           }}
           renderInput={(params) => <TextField {...params} label="時間帯" />}
+          disableClearable
         />
       </MyGrid>
       <MyGrid item xs={12} sm={6}>
-        <TextField id='referrer' name='referrer' type='text' label='紹介者' required fullWidth />
+        <TextField id='referrer' name='referrer' type='text' label='紹介者' value={props.state.student_profile.referrer} onChange={props.onStudentChange} fullWidth />
       </MyGrid>
     </MyGrid>
   );
@@ -611,6 +617,7 @@ export function TeacherSignup(props) {
             });
           }}
           renderInput={(params) => <TextField {...params} label="時間帯" />}
+          disableClearable
         />
       </MyGrid>
     </MyGrid>

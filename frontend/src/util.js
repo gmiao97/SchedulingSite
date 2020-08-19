@@ -3,7 +3,7 @@ import moment from 'moment-timezone';
 
 export const history = createBrowserHistory({forceRefresh: true});
 
-export const timeZoneNames = moment.tz.names().filter(tz => tz !== 'Asia/Qostanay'); // TODO Asia/Qostanay isn't in pytz timezones
+export const timeZoneNames = moment.tz.names().filter(tz => tz !== 'Asia/Qostanay').map(tz => tz.replace('_', ' ')); // TODO Asia/Qostanay isn't in pytz timezones
 
 export const gradeMappings = new Map([
   [-1, '未就学'],
