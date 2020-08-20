@@ -96,8 +96,6 @@ export default function StripeSubscriptionCheckout(props) {
           <CircularProgress color="primary" />
         </Grid> :
         <div>
-          <TextField id='code' name='code' className={classes.sectionEnd} type='text' label='クラス番号' helperText='未就学児クラスのみ' value={code} 
-          onChange={e => setCode(e.target.value)} fullWidth variant='outlined' size='small' />
           <FormControl component='fieldset'>
             <FormLabel component='legend'>プランを選択して下さい</FormLabel>
             <RadioGroup id='selectedPrice' name="selectedPrice" value={props.selectedPrice} onChange={e => {props.setSelectedPrice(e.target.value)}}>
@@ -111,12 +109,14 @@ export default function StripeSubscriptionCheckout(props) {
                       <Typography color='textPrimary'>{price.product.name}</Typography>
                       <Typography variant='caption' color='textSecondary'>{price.nickname}</Typography>
                     </div>
-                  } 
+                  }
                   disabled={preschoolPriceDisabled(price.product.name)}
                 />
               )}
             </RadioGroup>
           </FormControl> 
+          <TextField id='code' name='code' className={classes.sectionEnd} type='text' label='クラス番号' helperText='未就学児クラスのみ' value={code} 
+          onChange={e => setCode(e.target.value)} fullWidth variant='outlined' size='small' />
           <Grid id='legalSection' container justify='flex-start' spacing={2}>
             <Grid item>
               <MaterialLink 
