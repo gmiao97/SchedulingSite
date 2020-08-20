@@ -27,7 +27,7 @@ const theme = createMuiTheme({
   },
 });
 
-const stripePromise = loadStripe('pk_test_51HEGgQK9gCxRnlEi11v8HnbNn5nfVFgN7ruFIFzKPiogRgdCJKT05QlmOi0rlEcsQdopTd9kFCqYI7roSbb3jgLd00SfWRRCoX', {
+let stripePromise = loadStripe('pk_test_51HEGgQK9gCxRnlEi11v8HnbNn5nfVFgN7ruFIFzKPiogRgdCJKT05QlmOi0rlEcsQdopTd9kFCqYI7roSbb3jgLd00SfWRRCoX', {
   locale: 'ja',
 });
 
