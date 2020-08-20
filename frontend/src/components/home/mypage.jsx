@@ -11,7 +11,6 @@ import axiosInstance from '../../axiosApi';
 
 
 export default function MyPage(props) {
-  const isSubscribed = props.currentProduct && props.currentSubscription;
 
   const handleStripeCustomerPortalRedirect = async () => {
     const response = await axiosInstance.post('/yoyaku/stripe-customer-portal/', {
@@ -21,7 +20,7 @@ export default function MyPage(props) {
     window.location.assign(response.data.url);
   }
 
-  if (!isSubscribed) {
+  if (props.currentProduct.error || props.currentSubscription.error) {
     return(
       <Grid container spacing={2}>
       <Grid item xs={5}>

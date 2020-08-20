@@ -15,9 +15,15 @@ import {
   TextField,
   Link as MaterialLink,
   Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from '@material-ui/core';
 
 import axiosInstance from '../axiosApi';
+import { userAgreement } from '../util';
 
 
 const useStyles = makeStyles(theme => ({
@@ -53,6 +59,7 @@ export default function StripeSubscriptionCheckout(props) {
   const [priceList, setPriceList] = useState(null);
   const [cardInputError, setCardInputError] = useState('');
   const [code, setCode] = useState('');
+  const [dialogOpen, setDialogOpen] = useState(false);
 
 
   useEffect(() => {
@@ -117,7 +124,8 @@ export default function StripeSubscriptionCheckout(props) {
           </FormControl> 
           <TextField id='code' name='code' className={classes.sectionEnd} type='text' label='クラス番号' helperText='未就学児クラスのみ' value={code} 
           onChange={e => setCode(e.target.value)} fullWidth variant='outlined' size='small' />
-          <Grid id='legalSection' container justify='flex-start' spacing={2}>
+          <Grid id='legalSection' container justify='flex-start' spacing={1}>
+
             <Grid item>
               <MaterialLink 
                 href='http://mercy-education.com/FREE/cn2/2020-07-14-3.html'
@@ -138,6 +146,24 @@ export default function StripeSubscriptionCheckout(props) {
                 お支払いのご案内
               </MaterialLink>
             </Grid>
+
+            <Grid item xs={12}>
+              <Button variant="outlined" color="primary" size='small' onClick={() => setDialogOpen(true)}>
+                利用規約
+              </Button>
+              <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+                <DialogTitle>サクセス・アカデミー利用規約</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    {userAgreement.map(line =>
+                      <Typography>
+                        {line}
+                      </Typography>
+                    )}
+                  </DialogContentText>
+                </DialogContent>
+              </Dialog>
+            </Grid>
             <Grid item xs={12}>
               <FormControlLabel
                 value="end"
@@ -146,6 +172,7 @@ export default function StripeSubscriptionCheckout(props) {
                 labelPlacement="end"
               />
             </Grid>
+
           </Grid>
           <Grid id='cardSection' container justify='center' spacing={1}>
             <Grid item xs={12}>

@@ -463,8 +463,8 @@ export function StudentSignup(props) {
     <MyGrid container spacing={3} className={classes.sectionEnd}>
       <MyGrid item xs={12}>
         <div>
-          <Button variant="outlined" color="secondary" onClick={() => setDialogOpen(true)}>
-            未就学児クラス希望の方はこちらをクリックして下さい
+          <Button variant="outlined" color="secondary" size='small' onClick={() => setDialogOpen(true)}>
+            未就学児クラスご希望の方はこちらをクリックして下さい
           </Button>
           <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
             <DialogTitle>未就学児クラス希望の方</DialogTitle>
