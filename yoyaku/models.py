@@ -48,16 +48,21 @@ class MyUser(AbstractUser):
         (STUDENT, _('Student')),
         (ADMIN, _('Admin')),
     ]
-    username = None
-    email = models.EmailField(_('email address'), unique=True)
+    # username = None
+    email = models.EmailField(_('email address'))
     user_type = models.CharField(_('user type'), choices=USER_TYPE_CHOICES, max_length=10)
     time_zone = TimeZoneField(default='UTC', choices=[(tz, tz) for tz in pytz.all_timezones])
     phone_number = models.CharField(_('phone number'), max_length=15)
     birthday = models.DateField(_('birthday'))
     description = models.CharField(_('personal description'), max_length=300, blank=True)
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['user_type', 'time_zone', 'phone_number', 'birthday', 'description']
+    stripeCustomerId = models.CharField(_('stripe customer id'), max_length=300, null=True)
+    stripeProductId = models.CharField(_('stripe product id'), max_length=300, null=True)
+    stripeSubscriptionId = models.CharField(_('stripe subscription id'), max_length=300, null=True)
+    stripeSubscriptionProvision = models.BooleanField(default=False)
+
+    # USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['email', 'user_type', 'time_zone', 'phone_number', 'birthday', 'description', 'first_name', 'last_name']
 
     objects = MyUserManager()
 
@@ -67,24 +72,26 @@ class MyUser(AbstractUser):
 
 class StudentProfile(models.Model):
     SCHOOL_GRADE_CHOICES = [
-        (-1, _('Preschool')),
-        (0, _('Kindergarten')),
-        (1, _('First Grade')),
-        (2, _('Second Grade')),
-        (3, _('Third Grade')),
-        (4, _('Fourth Grade')),
-        (5, _('Fifth Grade')),
-        (6, _('Sixth Grade')),
-        (7, _('Seventh Grade')),
-        (8, _('Eighth Grade')),
-        (9, _('Ninth Grade')),
-        (10, _('Tenth Grade')),
-        (11, _('Eleventh Grade')),
-        (12, _('Twelfth Grade')),
+        (-1, _('未就学')),
+        (0, _('幼稚園')),
+        (1, _('小１')),
+        (2, _('小２')),
+        (3, _('小３')),
+        (4, _('小４')),
+        (5, _('小５')),
+        (6, _('小６')),
+        (7, _('中１')),
+        (8, _('中２')),
+        (9, _('中３')),
+        (10, _('高１')),
+        (11, _('高２')),
+        (12, _('高３')),
+        (13, _('高４')),
     ]
     user = models.OneToOneField(MyUser, on_delete=models.CASCADE, related_name='student_profile')
     school_name = models.CharField(_('school name'), max_length=200)
     school_grade = models.IntegerField(_('school grade'), choices=SCHOOL_GRADE_CHOICES)
+    referrer = models.CharField(_('referrer'), max_length=20, blank=True)
 
 
 class TeacherProfile(models.Model):

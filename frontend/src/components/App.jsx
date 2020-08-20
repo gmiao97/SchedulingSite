@@ -1,83 +1,59 @@
-import React, { Component } from 'react';
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { faLanguage, faUser, faSchool } from '@fortawesome/free-solid-svg-icons'
+import React, { Component, useState, useEffect } from 'react';
+import { useHistory } from 'react-router-dom'
 
 import Landing from './landing/landing';
 import Home from './home/home';
 import axiosInstance from '../axiosApi';
 
-library.add(faLanguage, faUser, faSchool);
 
-class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      isAuthenticated: null,
-    };
+export default function App(props) {
+  const [authenticated, setAuthenticated] = useState(null);
+  const history = useHistory();
 
-    this.handleLogin = this.handleLogin.bind(this);
-    this.handleLogout = this.handleLogout.bind(this);
-  }
+  useEffect(() => {
+    isAuthenticated();
+  }, []);
 
-  componentDidMount() {
-    this.isAuthenticated();
-  }
-
-  async isAuthenticated() {
+  const isAuthenticated = async () => {
     try {
       await axiosInstance.get('/yoyaku/validate-token/');
-      this.setState({
-        isAuthenticated: true,
-      });
+      setAuthenticated(true);
     } 
     catch (error) {
-      this.setState({
-        isAuthenticated: false,
-      });
-      this.handleLogout()
+      handleLogout();
     }
   }
 
-  handleLogin() {
-    this.setState({
-      isAuthenticated: true,
-    });
+  const handleLogin = () => {
+    history.push('/class-info');
+    setAuthenticated(true);
   }
 
-  async handleLogout() {
+  const handleLogout = async () => {
     try {
       const response = await axiosInstance.post('/yoyaku/blacklist/', {
         'refresh_token': localStorage.getItem('refresh_token')
       });
       return response;
     }
-    catch(e) {
-      console.log(e);
+    catch(err) {
+      console.error(err);
     } finally {
-      this.setState({
-        isAuthenticated: false,
-      });
       axiosInstance.defaults.headers['Authorization'] = null;
+      setAuthenticated(false);
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
     }
   }
 
-  render() {
-    let renderComponent;
-    if (this.state.isAuthenticated == null) {
-      renderComponent = null;
-    } else {
-      renderComponent = (this.state.isAuthenticated) ? 
-      <Home handleLogout={this.handleLogout}/> : 
-      <Landing handleLogin={this.handleLogin}/>
-    }
-    return (
-      <div id='app'>
-        {renderComponent}
-      </div>   
-    );
+
+  if (authenticated === null) {
+    return null;
+  } else {
+    return(
+      authenticated ? 
+        <Home handleLogout={handleLogout} /> : 
+        <Landing handleLogin={handleLogin} />
+    )
   }
 }
-
-export default App;

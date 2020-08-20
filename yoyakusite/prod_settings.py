@@ -28,3 +28,8 @@ SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 django_heroku.settings(locals())
+
+BASE_URL = 'https://yoyakusite.herokuapp.com'
+
+#Stripe
+STRIPE_RETURN_URL = 'https://yoyakusite.herokuapp.com/my-page'

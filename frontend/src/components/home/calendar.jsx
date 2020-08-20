@@ -276,8 +276,8 @@ class Calendar extends Component {
       const response = await axiosInstance.post('/yoyaku/events/', payload);
       this.forceUpdate();
       return response;
-    } catch(error) {
-      console.log(error.stack);
+    } catch(err) {
+      console.error(err);
     } finally {
       this.toggleForm('new');
     }
@@ -296,8 +296,8 @@ class Calendar extends Component {
       }
       this.forceUpdate();
       return response;
-    } catch (error) {
-      console.log(error.stack);
+    } catch (err) {
+      console.error(err);
     } finally {
       this.toggleForm('edit');
     }
@@ -323,7 +323,7 @@ class Calendar extends Component {
             onClick: async () => {
               if (window.confirm('All future events in this series will be deleted?')) {
                 await axiosInstance.post(`/yoyaku/events/${this.state.recurrence.id}/destroy_recurrence/`, {
-                  delete_from: new Date(Date.now()).toISOString(),
+                  delete_from: moment().format(),
                 });
                 this.forceUpdate();
               }

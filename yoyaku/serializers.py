@@ -1,4 +1,5 @@
 import pytz
+from django.core import mail
 from rest_framework import serializers
 from rest_framework.fields import FileField
 
@@ -8,7 +9,7 @@ from .models import StudentProfile, TeacherProfile, Recurrence, Event, Subject, 
 class StudentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentProfile
-        fields = ['id', 'school_name', 'school_grade']
+        fields = ['id', 'school_name', 'school_grade', 'referrer']
 
 
 class TeacherProfileSerializer(serializers.ModelSerializer):
@@ -34,14 +35,33 @@ class MyUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MyUser
-        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'user_type', 'time_zone', 'phone_number',
-                  'birthday', 'description', 'student_profile', 'teacher_profile', 'student_id', 'teacher_id']
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ['id', 'first_name', 'last_name', 'email', 'username', 'password', 'user_type', 'time_zone', 'phone_number',
+                  'birthday', 'description', 'stripeCustomerId', 'stripeProductId', 'stripeSubscriptionId', 'stripeSubscriptionProvision',
+                  'student_profile', 'teacher_profile', 'student_id', 'teacher_id']
+        extra_kwargs = {'password': {'write_only': True, 'required': False}, 'username': {'required': False}}
 
     def create(self, validated_data):
-        student_profile = validated_data.pop('student_profile')
-        teacher_profile = validated_data.pop('teacher_profile')
-        password = validated_data.pop('password')
+        student_profile = validated_data.pop('student_profile', None)
+        teacher_profile = validated_data.pop('teacher_profile', None)
+        username = validated_data.get('username', None)
+        if username is None:
+            username = validated_data.get('last_name') + '_' + validated_data.get('first_name')
+            counter = 1
+            while MyUser.objects.filter(username=username):
+                username = validated_data.get('last_name') + '_' + validated_data.get('first_name') + '_' + str(counter)
+                counter += 1
+            validated_data['username'] = username
+        password = validated_data.pop('password', None)
+        if password is None:
+            password = MyUser.objects.make_random_password(length=8)
+            mail.get_connection()
+            mail.send_mail(
+                'Yoyaku site login credentials for new user {}, {}'.format(validated_data.get('last_name'), validated_data.get('first_name')),
+                'username: {}\npassword: {}'.format(validated_data.get('username'), password),
+                None,
+                ['success.academy.us@gmail.com'],
+                fail_silently=False,
+            )
         user = self.Meta.model(**validated_data)
         user.set_password(password)
         user.save()

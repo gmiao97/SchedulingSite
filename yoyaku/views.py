@@ -2,24 +2,34 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, Http404
 from django.utils.dateparse import parse_datetime
 from django.db.models import Q
+from django.core import mail
+from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status, viewsets
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.parsers import FileUploadParser
 from rest_framework.exceptions import ParseError
 from rest_framework.decorators import api_view, action, parser_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from dateutil.rrule import rrule, FREQNAMES
 from dateutil.parser import parse
 from datetime import datetime, date, time, timezone, timedelta
+from dateutil import relativedelta
 import copy
+import requests
+import stripe
+import json
 
 from .models import MyUser, Recurrence, Event, Subject
 from .serializers import MyUserSerializer, RecurrenceSerializer, EventSerializer, EventReadSerializer, SubjectSerializer
 from .permissions import IsAdminUser, IsLoggedInUserOrAdmin, IsLoggedInTeacherUser, IsLoggedInUserAndEventOwner
+
+
+stripe.api_key = settings.STRIPE_SECRET
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -28,7 +38,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         permission_classes = []
-        if self.action == 'create':
+        if self.action in ('create', 'username_list'):
             permission_classes = [AllowAny]
         elif self.action in ('retrieve', 'update', 'partial_update', 'events'):
             permission_classes = [IsLoggedInUserOrAdmin]
@@ -38,17 +48,75 @@ class UserViewSet(viewsets.ModelViewSet):
             permission_classes = [IsLoggedInTeacherUser | IsAdminUser]
         return [permission() for permission in permission_classes]
 
+    # Override
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_200_OK, data={'error': str(serializer.errors)})
+        if request.data['user_type'] == 'STUDENT':
+            customer = None
+            try:
+                customer = stripe.Customer.create(email=request.data['email'],
+                                                  name='{}, {}'.format(request.data['last_name'], request.data['first_name']),
+                                                  payment_method=request.data['paymentMethodId'])
+                stripe.Customer.modify(customer.id,
+                                       invoice_settings={'default_payment_method': request.data['paymentMethodId']})
+                utc_now = datetime.now(timezone.utc)
+                datetime_next_month_first = datetime.combine(utc_now.date(), time(0, 0), utc_now.tzinfo).replace(day=1) + relativedelta.relativedelta(months=1)
+                billing_cycle_anchor = int(datetime_next_month_first.timestamp())
+
+                # Create the subscription
+                subscription = stripe.Subscription.create(
+                    customer=customer.id,
+                    items=[
+                        {
+                            'price': request.data['priceId']
+                        }
+                    ],
+                    trial_period_days=7,
+                    billing_cycle_anchor=billing_cycle_anchor,
+                    expand=['latest_invoice.payment_intent', 'pending_setup_intent'],
+                )
+
+            except Exception as e:
+                if customer:
+                    stripe.Customer.delete(customer.id)
+                return Response(data={'error': '登録できませんでした。サポートに連絡して下さい。'})
+            serializer.save(stripeCustomerId=customer.id)
+        else:
+            self.perform_create(serializer)
+
+        mail.send_mail(
+            'Success Academy - {} {}様登録確認しました'.format(request.data['last_name'], request.data['first_name']),
+            'ご登録ありがとうございます。\n{} {}様のログイン情報は以下のとおりです。\nユーザーID：{}\nパスワード：{}\n\n'
+            '以下のページにログインしてクラスZoom情報を確認できます。\n{}\n\n＊このアドレスは送信専用です。ご返信いただいても回答はいたしかねます。'.format(
+                request.data['last_name'], request.data['first_name'], request.data['username'], '*****', settings.BASE_URL),
+            None,
+            [request.data['email']],  # 'success.academy.us@gmail.com'],
+            fail_silently=False,
+        )
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
     @action(detail=False)
     def teacher_list(self, request):
-        teachers = self.queryset.filter(user_type='TEACHER')
+        teachers = MyUser.objects.filter(user_type='TEACHER')
         serializer = MyUserSerializer(teachers, many=True)
         return Response(serializer.data)
 
     @action(detail=False)
     def student_list(self, request):
-        students = self.queryset.filter(user_type='STUDENT')
+        students = MyUser.objects.filter(user_type='STUDENT')
         serializer = MyUserSerializer(students, many=True)
         return Response(serializer.data)
+
+    @action(detail=False)
+    def username_list(self, request):
+        users = MyUser.objects.all()
+        username_list = []
+        for user in users:
+            username_list.append(user.username)
+        return Response(username_list)
 
     @action(detail=True)
     def events(self, request, pk=None):
@@ -276,6 +344,165 @@ class ValidateToken(APIView):
         if request.user.is_authenticated:
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
+class StripePriceList(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, format=None):
+        r = stripe.Price.list(active=True, expand=['data.product'])
+        return Response(r)
+
+
+class StripeProduct(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        productId = request.query_params.get('productId')
+        try:
+            product = stripe.Product.retrieve(productId)
+        except Exception as e:
+            return Response(data={'error': 'product not found'})
+        return Response(product)
+
+
+class StripeSubscription(APIView):
+
+    def get_permissions(self):
+        permission_classes = [AllowAny]
+        if self.request.method == 'GET':
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
+
+    def get(self, request, format=None):
+        subscriptionId = request.query_params.get('subscriptionId')
+        try:
+            subscription = stripe.Subscription.retrieve(subscriptionId)
+        except Exception as e:
+            return Response(data={'error': 'subscription not found'})
+        return Response(subscription)
+
+
+class StripeSetupIntent(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, format=None):
+        try:
+            setup_intent = stripe.SetupIntent.create(
+                payment_method_types=["card"],
+            )
+        except Exception:
+            return Response(data={'error': '登録できませんでした。Stripe内部エラーが発生しました。もう一度お試し下さい。またはサポートに連絡して下さい。'})
+        return Response(setup_intent)
+
+
+class StripeCustomerPortal(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, format=None):
+        customer_portal = stripe.billing_portal.Session.create(
+            customer=request.data['customerId'],
+            return_url=settings.STRIPE_RETURN_URL,
+        )
+        return Response(customer_portal)
+
+
+class StripeWebhook(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, format=None):
+        payload = request.body
+        sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+        webhook_secret = settings.STRIPE_WEBHOOK_SECRET
+        event = None
+
+        try:
+            event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+        except ValueError as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except stripe.error.SignatureVerificationError as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        # Handle the event
+        if event.type == 'invoice.paid':
+            print('invoice.paid')
+            invoice = event.data.object
+            user = MyUser.objects.get(stripeCustomerId=invoice['customer'])
+            user.stripeSubscriptionProvision = True
+            user.save()
+        elif event.type == 'invoice.payment_failed':
+            print('invoice.payment_failed')
+            invoice = event.data.object
+        elif event.type == 'invoice.payment_action_required':
+            print('invoice.payment_action_required')
+            invoice = event.data.object
+        elif event.type == 'customer.created':
+            print('customer.created')
+            customer = event.data.object
+        elif event.type == 'customer.deleted':
+            print('customer.deleted')
+            customer = event.data.object
+        elif event.type == 'customer.subscription.created':
+            print('customer.subscription.created')
+            subscription = event.data.object
+            user = MyUser.objects.get(stripeCustomerId=subscription['customer'])
+            user.stripeSubscriptionId = subscription['id']
+            user.stripeProductId = subscription['items']['data'][0]['price']['product']
+            user.save()
+        elif event.type == 'customer.subscription.updated':
+            print('customer.subscription.updated')
+            subscription = event.data.object
+            user = MyUser.objects.get(stripeCustomerId=subscription['customer'])
+            if subscription['status'] in ('active', 'past_due', 'trialing'):
+                user.stripeSubscriptionProvision = True
+            else:
+                user.stripeSubscriptionProvision = False
+            user.stripeSubscriptionId = subscription['id']
+            user.stripeProductId = subscription['items']['data'][0]['price']['product']
+            user.save()
+        elif event.type == 'customer.subscription.deleted':
+            print('customer.subscription.deleted')
+            subscription = event.data.object
+            user = MyUser.objects.get(stripeCustomerId=subscription['customer'])
+            user.stripeSubscriptionId = None
+            user.stripeProductId = None
+            user.stripeSubscriptionProvision = False
+            user.save()
+        elif event.type == 'product.updated':
+            print('product.updated')
+            product = event.data.object
+        else:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(status=status.HTTP_200_OK)
+
+
+class PasswordReset(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, format=None):
+        try:
+            user = MyUser.objects.get(username=request.data.get('username'))
+            password_reset = MyUser.objects.make_random_password(length=8)
+            mail.send_mail(
+                'Success Academy - {}様の臨時パスワード'.format(request.data['username']),
+                '''パスワードがリセットされました。以下の臨時パスワードでログインしてパスワードを変更して下さい。
+                
+臨時パスワード：{}
+{}
+                
+＊このアドレスは送信専用です。ご返信いただいても回答はいたしかねます。'''.format(password_reset, settings.BASE_URL),
+                None,
+                [user.email],
+                fail_silently=False,
+            )
+            user.set_password(password_reset)
+            user.save()
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_200_OK, data={'error': 'そのユーザーが見つかりませんでした。'})
+        except Exception:
+            return Response(status=status.HTTP_200_OK, data={'error': 'パスワードリセットできませんでした。アドミンに連絡して下さい。'})
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class SubjectListByTeacher(APIView):
