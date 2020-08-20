@@ -11,6 +11,7 @@ import axiosInstance from '../../axiosApi';
 
 
 export default function Subscription(props) {
+  const isSubscribed = props.currentProduct && props.currentSubscription;
 
   const handleStripeCustomerPortalRedirect = async () => {
     const response = await axiosInstance.post('/yoyaku/stripe-customer-portal/', {
@@ -20,10 +21,38 @@ export default function Subscription(props) {
     window.location.assign(response.data.url);
   }
 
+  if (!isSubscribed) {
+    return(
+      <Grid container spacing={2}>
+      <Grid item xs={5}>
+        <Typography variant='h3' color='textPrimary'>{props.currentUser.first_name} 様</Typography>
+      </Grid>
+      <Grid item xs={7}>
+        <Paper elevation={24}>
+          <Box p={3}>
+            <Typography variant='h4' color='textSecondary' display='block' gutterBottom>
+              サブスクリプション情報
+            </Typography>
+            <Typography variant='h5' color='textSecondary' display='block' gutterBottom>
+              現在のプラン <Typography color='secondary' display='inline'>サブスクリプションありません</Typography>
+            </Typography>
+            <Typography variant='h5' color='textSecondary' display='block' gutterBottom>
+              値段
+            </Typography>
+            <Button variant='contained' color='secondary' type='button' onClick={handleStripeCustomerPortalRedirect}>
+              プラン管理
+            </Button>
+          </Box>
+        </Paper>
+      </Grid>
+    </Grid>
+    )
+  }
+
   return(
     <Grid container spacing={2}>
       <Grid item xs={5}>
-        <Typography variant='h2' color='textPrimary'>{props.currentUser.first_name} 様</Typography>
+        <Typography variant='h3' color='textPrimary'>{props.currentUser.first_name} 様</Typography>
       </Grid>
       <Grid item xs={7}>
         <Paper elevation={24}>

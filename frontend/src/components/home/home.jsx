@@ -105,18 +105,21 @@ export default function Home(props) {
   const getCurrentUser = async () => {
     let userResponse = await axiosInstance.get(`/yoyaku/users/${getUserIdFromToken()}/`);
     setCurrentUser(userResponse.data);
-    let subscriptionResponse = await axiosInstance.get('/yoyaku/stripe-subscription/', {
-      params: {
-        subscriptionId: userResponse.data.stripeSubscriptionId,
-      },
-    });
-    setCurrentSubscription(subscriptionResponse.data);
-    let productResponse = await axiosInstance.get('/yoyaku/stripe-product/', {
-      params: {
-        productId: userResponse.data.stripeProductId,
-      },
-    });
-    setCurrentProduct(productResponse.data);
+
+    if (userResponse.data.stripeSubscriptionId && userResponse.data.stripeProductId) {
+      let subscriptionResponse = await axiosInstance.get('/yoyaku/stripe-subscription/', {
+        params: {
+          subscriptionId: userResponse.data.stripeSubscriptionId,
+        },
+      });
+      let productResponse = await axiosInstance.get('/yoyaku/stripe-product/', {
+        params: {
+          productId: userResponse.data.stripeProductId,
+        },
+      });
+      setCurrentSubscription(subscriptionResponse.data);
+      setCurrentProduct(productResponse.data);
+    }
   }
 
   const isLoaded = () => {
@@ -158,7 +161,7 @@ export default function Home(props) {
       onClose={handleMobileMenuClose}
     >
       <MenuItem onClick={handleMobileMenuClose} component={Link} to="/subscription">
-        サブスクリプション
+        マイページ
       </MenuItem>
       {/* <MenuItem onClick={handleMobileMenuClose} component={Link} to="/calendar">
         Calendar
@@ -217,7 +220,7 @@ export default function Home(props) {
               <Typography variant="h6" className={classes.title}>
                 Success Academy
               </Typography>
-              <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/subscription">サブスクリプション</Button>
+              <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/subscription">マイページ</Button>
               {/* <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/calendar">Calendar</Button> */}
               <div className={`${classes.sectionDesktop} ${classes.menu}`}>
                 <IconButton
