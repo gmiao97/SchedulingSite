@@ -78,19 +78,19 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False)
     def teacher_list(self, request):
-        teachers = self.queryset.filter(user_type='TEACHER')
+        teachers = MyUser.objects.filter(user_type='TEACHER')
         serializer = MyUserSerializer(teachers, many=True)
         return Response(serializer.data)
 
     @action(detail=False)
     def student_list(self, request):
-        students = self.queryset.filter(user_type='STUDENT')
+        students = MyUser.objects.filter(user_type='STUDENT')
         serializer = MyUserSerializer(students, many=True)
         return Response(serializer.data)
 
     @action(detail=False)
     def username_list(self, request):
-        users = self.queryset
+        users = MyUser.objects.all()
         username_list = []
         for user in users:
             username_list.append(user.username)

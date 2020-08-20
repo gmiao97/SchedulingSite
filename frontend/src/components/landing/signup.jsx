@@ -30,6 +30,7 @@ import {
   DialogContentText,
   DialogTitle,
   Link as MaterialLink,
+  Checkbox,
 } from '@material-ui/core';
 
 import axiosInstance from '../../axiosApi';
@@ -83,7 +84,7 @@ export default function Signup(props) {
   const [passwordMatch, setPasswordMatch] = useState('');
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [cardEntered, setCardEntered] = useState(false);
-  const [codeMatch, setCodeMatch] = useState(true);
+  const [agreed, setAgreed] = useState(false);
   const [usernameList, setUsernameList] = useState([]);
   const [signupForm, setSignupForm] = useState({
     username: '',
@@ -97,7 +98,7 @@ export default function Signup(props) {
     birthday: moment().format('YYYY-MM-DD'),
     student_profile: {
       school_name: '',
-      school_grade: '-1',
+      school_grade: -1,
       referrer: '',
     },
     teacher_profile: {
@@ -371,6 +372,8 @@ export default function Signup(props) {
               setError={setError}
               setErrorSnackbarOpen={setErrorSnackbarOpen}
               setCardEntered={setCardEntered}
+              agreed={agreed}
+              setAgreed={setAgreed}
             /> :
             <Typography className={classes.stepContent} color="secondary" component='div'>
               プロフィール情報を確認して<Typography display="inline" color="primary">先生</Typography>として登録
@@ -415,7 +418,7 @@ export default function Signup(props) {
         );
       case 2:
         return(
-          <Button variant="contained" color="primary" type="button" onClick={handleSubmit} disabled={signupForm.user_type === 'STUDENT' && !cardEntered}>
+          <Button variant="contained" color="primary" type="button" onClick={handleSubmit} disabled={!agreed || (signupForm.user_type === 'STUDENT' && !cardEntered)}>
             登録
           </Button>
         );
@@ -506,6 +509,7 @@ export function StudentSignup(props) {
                 href='https://docs.google.com/forms/d/e/1FAIpQLSejTfHCqYgJSySdlYnb6I_xTJpyAEl8B0MUAq5WqEPDpbl3OQ/viewform'
                 target='_blank'
                 rel='noopener noreferrer'
+                color='secondary'
               >
                 未就学児クラス希望フォームへ
               </MaterialLink>
@@ -539,7 +543,9 @@ export function StudentSignup(props) {
           name='school_grade'
           options={schoolGrades}
           getOptionLabel={option => option[1]}
-          defaultValue={schoolGrades[0]}
+          getOptionSelected={(option, value) => option[1] === value[1]}
+          // defaultValue={schoolGrades[0]}
+          value={[props.state.student_profile.school_grade, gradeMappings.get(props.state.student_profile.school_grade)]}
           onChange={(event, value) => {
             props.setSignupForm({
               ...props.signupForm,
