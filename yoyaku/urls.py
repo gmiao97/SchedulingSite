@@ -5,7 +5,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 from .views import UserViewSet, EventViewSet, SubjectListByTeacher, TeacherListBySubject, ValidateToken, \
     StripePriceList, StripeProduct, StripeSubscription, StripeCustomerPortal, StripeWebhook, \
-    LogoutAndBlacklistRefreshTokenForUserView
+    LogoutAndBlacklistRefreshTokenForUserView, PasswordReset
 
 
 router = routers.DefaultRouter()
@@ -22,5 +22,6 @@ urlpatterns = [
     path('stripe-subscription/', StripeSubscription.as_view()),
     path('stripe-customer-portal/', StripeCustomerPortal.as_view()),
     path('stripe-webhook/', StripeWebhook.as_view()),
+    path('password-reset/', PasswordReset.as_view()),
     path('blacklist/', LogoutAndBlacklistRefreshTokenForUserView.as_view(), name='blacklist'),
 ]

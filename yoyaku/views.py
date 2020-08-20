@@ -4,6 +4,7 @@ from django.utils.dateparse import parse_datetime
 from django.db.models import Q
 from django.core import mail
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status, viewsets
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
@@ -467,10 +468,41 @@ class StripeWebhook(APIView):
             user.stripeProductId = None
             user.stripeSubscriptionProvision = False
             user.save()
+        elif event.type == 'product.updated':
+            print('product.updated')
+            product = event.data.object
         else:
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response(status=status.HTTP_200_OK)
+
+
+class PasswordReset(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, format=None):
+        try:
+            user = MyUser.objects.get(username=request.data.get('username'))
+            password_reset = MyUser.objects.make_random_password(length=8)
+            mail.send_mail(
+                'Success Academy - {}様の臨時パスワード'.format(request.data['username']),
+                '''パスワードがリセットされました。以下の臨時パスワードでログインしてパスワードを変更して下さい。
+                
+臨時パスワード：{}
+{}
+                
+＊このアドレスは送信専用です。ご返信いただいても回答はいたしかねます。'''.format(password_reset, settings.BASE_URL),
+                None,
+                [user.email],
+                fail_silently=False,
+            )
+            user.set_password(password_reset)
+            user.save()
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_200_OK, data={'error': 'そのユーザーが見つかりませんでした。'})
+        except Exception:
+            return Response(status=status.HTTP_200_OK, data={'error': 'パスワードリセットできませんでした。アドミンに連絡して下さい。'})
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class SubjectListByTeacher(APIView):

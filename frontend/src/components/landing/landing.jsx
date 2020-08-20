@@ -16,7 +16,7 @@ import {
   School,
 } from '@material-ui/icons';
 
-import Login from './login';
+import Login, { PasswordReset } from './login';
 import Signup from './signup';
 import Logo from '../../static/success.academy.logo.png';
 
@@ -62,12 +62,17 @@ export default function Landing(props) {
 
       <Switch>
         <Route exact path="/">
-          <Box mx='auto' my={5} width="40%" minWidth={300}>
+          <Box mx='auto' my={5} width="50%" minWidth={300}>
             <Login handleLogin={props.handleLogin} />
           </Box>
         </Route>
+        <Route exact path="/password-reset">
+          <Box mx='auto' my={5} width="50%" minWidth={300}>
+            <PasswordReset />
+          </Box>
+        </Route>
         <Route exact path="/signup">
-          <Box mx='auto' my={5} width="40%" minWidth={400}>
+          <Box mx='auto' my={5} width="50%" minWidth={400}>
             <Signup />
           </Box>
         </Route>
