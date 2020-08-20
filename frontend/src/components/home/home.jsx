@@ -304,7 +304,7 @@ export function Announce(props) {
     <Grid container spacing={2}>
       <Paper elevation={24}>
         <Box p={3}>
-          <MaterialLink href='http://staffvoice.mercy-education.com' target='_blank' rel='noopener noreferrer'>
+          <MaterialLink href='http://staffvoice.mercy-education.com' target='_blank' rel='noopener noreferrer' color='secondary'>
             指導報告へ
           </MaterialLink>
         </Box>
