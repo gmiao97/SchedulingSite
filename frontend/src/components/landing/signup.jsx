@@ -12,9 +12,6 @@ import {
   Typography,
   Button,
   TextField,
-  Select,
-  MenuItem,
-  InputLabel,
   Snackbar,
   Backdrop,
   CircularProgress,
@@ -27,6 +24,12 @@ import {
   FormControl,
   FormLabel,
   Tooltip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Link as MaterialLink,
 } from '@material-ui/core';
 
 import axiosInstance from '../../axiosApi';
@@ -80,6 +83,7 @@ export default function Signup(props) {
   const [passwordMatch, setPasswordMatch] = useState('');
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [cardEntered, setCardEntered] = useState(false);
+  const [codeMatch, setCodeMatch] = useState(true);
   const [usernameList, setUsernameList] = useState([]);
   const [signupForm, setSignupForm] = useState({
     username: '',
@@ -481,8 +485,34 @@ export function StudentSignup(props) {
     schoolGrades.push(grade);
   }
 
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   return(
     <MyGrid container spacing={3} className={classes.sectionEnd}>
+      <MyGrid item xs={12}>
+        <div>
+          <Button variant="outlined" color="secondary" onClick={() => setDialogOpen(true)}>
+            未就学児クラス希望の方はこちらをクリックして下さい
+          </Button>
+          <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+            <DialogTitle>未就学児クラス希望の方</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                許可されたクラス番号をお持ちですか？お持ちでない方は下記のフォームから申請して下さい。
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <MaterialLink 
+                href='https://docs.google.com/forms/d/e/1FAIpQLSejTfHCqYgJSySdlYnb6I_xTJpyAEl8B0MUAq5WqEPDpbl3OQ/viewform'
+                target='_blank'
+                rel='noopener noreferrer'
+              >
+                未就学児クラス希望フォームへ
+              </MaterialLink>
+            </DialogActions>
+          </Dialog>
+        </div>
+      </MyGrid>
       <MyGrid item xs={12}>
         <TextField id='username' name='username' type='text' label='ユーザーID' value={props.state.username} onChange={props.onChange} required fullWidth variant='filled' 
         error={props.usernameList.includes(props.state.username)} helperText={props.usernameList.includes(props.state.username) ? 'そのユーザーIDがすでに使われています' : ''} />

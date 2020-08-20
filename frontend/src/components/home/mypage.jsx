@@ -10,7 +10,7 @@ import {
 import axiosInstance from '../../axiosApi';
 
 
-export default function Subscription(props) {
+export default function MyPage(props) {
   const isSubscribed = props.currentProduct && props.currentSubscription;
 
   const handleStripeCustomerPortalRedirect = async () => {
@@ -51,10 +51,10 @@ export default function Subscription(props) {
 
   return(
     <Grid container spacing={2}>
-      <Grid item xs={5}>
+      <Grid item xs={12} md={5}>
         <Typography variant='h3' color='textPrimary'>{props.currentUser.first_name} 様</Typography>
       </Grid>
-      <Grid item xs={7}>
+      <Grid item xs={12} md={7}>
         <Paper elevation={24}>
           <Box p={3}>
             <Typography variant='h4' color='textSecondary' display='block' gutterBottom>

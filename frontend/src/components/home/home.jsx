@@ -17,6 +17,8 @@ import {
   Avatar,
   Backdrop,
   CircularProgress,
+  Paper,
+  Link as MaterialLink,
 } from '@material-ui/core';
 import { 
   Menu as MenuIcon,
@@ -26,7 +28,7 @@ import {
   School,
 } from '@material-ui/icons';
 
-import Subscription from './subscription';
+import MyPage from './mypage';
 import Profile from './profile';
 import EditProfile from './editProfile';
 import Calendar from './calendar';
@@ -58,8 +60,8 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: deepPurple[500],
   },
   avatar: {
-    width: theme.spacing(5),
-    height: theme.spacing(5),
+    width: theme.spacing(6),
+    height: theme.spacing(6),
     backgroundImage: `url(${Panda})`,
     backgroundSize: "cover",
   },
@@ -76,8 +78,8 @@ const useStyles = makeStyles(theme => ({
     },
   },
   logo: {
-    width: theme.spacing(5),
-    height: theme.spacing(5),
+    width: theme.spacing(6),
+    height: theme.spacing(6),
     backgroundColor: 'white',
     backgroundImage: `url(${Logo})`,
     backgroundSize: 'cover',
@@ -160,15 +162,21 @@ export default function Home(props) {
       open={mobileMenuOpen}
       onClose={handleMobileMenuClose}
     >
-      <MenuItem onClick={handleMobileMenuClose} component={Link} to="/subscription">
+      <MenuItem onClick={handleMobileMenuClose} component={Link} to="/class-info">
+        クラス情報（ズーム）
+      </MenuItem>
+      <MenuItem onClick={handleMobileMenuClose} component={Link} to="/announce">
+        指導報告
+      </MenuItem>
+      <MenuItem onClick={handleMobileMenuClose} component={Link} to="/my-page">
         マイページ
       </MenuItem>
       {/* <MenuItem onClick={handleMobileMenuClose} component={Link} to="/calendar">
         Calendar
       </MenuItem> */}
-      <MenuItem onClick={handleMobileMenuClose} component={Link} to="/profile">
+      {/* <MenuItem onClick={handleMobileMenuClose} component={Link} to="/profile">
         プロフィール
-      </MenuItem>
+      </MenuItem> */}
       <MenuItem onClick={handleLogout} component={Link} to="/">
         <Typography color='error' className={classes.iconMargin}>
           ログアウト
@@ -193,9 +201,9 @@ export default function Home(props) {
       open={desktopMenuOpen}
       onClose={handleDesktopMenuClose}
     >
-      <MenuItem onClick={handleDesktopMenuClose} component={Link} to="/profile">
+      {/* <MenuItem onClick={handleDesktopMenuClose} component={Link} to="/profile">
         プロフィール
-      </MenuItem>
+      </MenuItem> */}
       <MenuItem onClick={handleLogout} component={Link} to="/">
         <Typography　color='error' className={classes.iconMargin}>
           ログアウト
@@ -214,13 +222,15 @@ export default function Home(props) {
         <Box className={classes.root} clone>
           <AppBar position="static" color="primary">
             <Toolbar>
-              <IconButton edge="start" className={classes.iconMargin} color="inherit" component={Link} to="/subscription">
+              <IconButton edge="start" className={classes.iconMargin} color="inherit" component={Link} to="/class-info">
                 <Avatar className={classes.logo}> </Avatar>
               </IconButton>
               <Typography variant="h6" className={classes.title}>
                 Success Academy
               </Typography>
-              <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/subscription">マイページ</Button>
+              <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/class-info">クラス情報（ズーム）</Button>
+              <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/announce">指導報告</Button>
+              <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/my-page">マイページ</Button>
               {/* <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/calendar">Calendar</Button> */}
               <div className={`${classes.sectionDesktop} ${classes.menu}`}>
                 <IconButton
@@ -243,13 +253,23 @@ export default function Home(props) {
         </Box>
 
         <Switch>
-          <Route exact path="/subscription">
-            <Box mx='auto' width='90%' my={5} minWidth={700}>
-              <Subscription 
+          <Route exact path="/my-page">
+            <Box mx='auto' width='90%' my={5} minWidth={400}>
+              <MyPage 
                 currentUser={currentUser} 
                 currentSubscription={currentSubscription} 
                 currentProduct={currentProduct}
               />
+            </Box>
+          </Route>
+          <Route exact path="/class-info">
+            <Box mx='auto' width='90%' my={5} minWidth={400}>
+              <ClassInfo currentUser={currentUser} />
+            </Box>
+          </Route>
+          <Route exact path="/announce">
+            <Box mx='auto' width='90%' my={5} minWidth={400}>
+              <Announce />
             </Box>
           </Route>
           <Route exact path="/profile">
@@ -267,3 +287,28 @@ export default function Home(props) {
   );
 }
 
+export function ClassInfo(props) {
+  return(
+    <Grid container spacing={2}>
+      <Paper elevation={24}>
+        <Box p={3}>
+          ズームID
+        </Box>
+      </Paper>
+    </Grid>
+  );
+}
+
+export function Announce(props) {
+  return(
+    <Grid container spacing={2}>
+      <Paper elevation={24}>
+        <Box p={3}>
+          <MaterialLink href='http://staffvoice.mercy-education.com' target='_blank' rel='noopener noreferrer'>
+            指導報告へ
+          </MaterialLink>
+        </Box>
+      </Paper>
+    </Grid>
+  );
+}

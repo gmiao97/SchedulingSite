@@ -172,4 +172,4 @@ BASE_URL = 'http://localhost:3000'
 #Stripe
 STRIPE_SECRET = os.environ['STRIPE_SECRET']
 STRIPE_WEBHOOK_SECRET = os.environ['STRIPE_WEBHOOK_SECRET']
-STRIPE_RETURN_URL = 'http://localhost:3000/subscription'
+STRIPE_RETURN_URL = 'http://localhost:3000/my-page'

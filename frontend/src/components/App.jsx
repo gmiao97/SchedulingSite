@@ -25,7 +25,7 @@ export default function App(props) {
   }
 
   const handleLogin = () => {
-    history.push('/subscription');
+    history.push('/class-info');
     setAuthenticated(true);
   }
 

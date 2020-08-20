@@ -32,4 +32,4 @@ django_heroku.settings(locals())
 BASE_URL = 'https://yoyakusite.herokuapp.com'
 
 #Stripe
-STRIPE_RETURN_URL = 'https://yoyakusite.herokuapp.com/subscription'
+STRIPE_RETURN_URL = 'https://yoyakusite.herokuapp.com/my-page'
