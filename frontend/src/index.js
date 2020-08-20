@@ -2,7 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+import moment from 'moment';
 import MomentUtils from '@date-io/moment';
+import 'moment/locale/ja';
 import {
   MuiPickersUtilsProvider,
 } from '@material-ui/pickers';
@@ -14,6 +16,8 @@ import { loadStripe } from '@stripe/stripe-js';
 import './main.scss'; // webpack must be configured to do this
 import App from './components/App';
 
+
+moment.locale('ja');
 
 const theme = createMuiTheme({
   palette: {
@@ -40,7 +44,7 @@ if (process.env.NODE_ENV === 'production') {
 ReactDOM.render((
   <BrowserRouter>
     <ThemeProvider theme={theme}>
-      <MuiPickersUtilsProvider utils={MomentUtils}>
+      <MuiPickersUtilsProvider utils={MomentUtils} locale='ja'>
         <Elements stripe={stripePromise}>
           <App/>
         </Elements>

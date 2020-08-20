@@ -58,31 +58,17 @@ export class AccountRegistrationError extends Error {
   }
 }
 
-export class CreatePaymentMethodError extends Error {
+export class CardError extends Error {
   constructor(message) {
     super(message);
-    this.name = 'CreatePaymentMethodError';
+    this.name = 'CardError';
   }
 }
 
-export class CreateSubscriptionError extends Error {
+export class SetupIntentError extends Error {
   constructor(message) {
     super(message);
-    this.name = 'CreateSubscriptionError';
-  }
-}
-
-export class RequiresActionError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'RequiresActionError';
-  }
-}
-
-export class RequiresPaymentMethodError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'RequiresPaymentMethodError';
+    this.name = 'SetupIntentError';
   }
 }
 

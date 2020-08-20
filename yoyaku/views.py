@@ -54,23 +54,45 @@ class UserViewSet(viewsets.ModelViewSet):
         if not serializer.is_valid():
             return Response(status=status.HTTP_200_OK, data={'error': str(serializer.errors)})
         if request.data['user_type'] == 'STUDENT':
+            customer = None
             try:
-                # Create a new customer object
                 customer = stripe.Customer.create(email=request.data['email'],
-                                                  name='{}, {}'.format(request.data['last_name'], request.data['first_name']))
+                                                  name='{}, {}'.format(request.data['last_name'], request.data['first_name']),
+                                                  payment_method=request.data['paymentMethodId'])
+                stripe.Customer.modify(customer.id,
+                                       invoice_settings={'default_payment_method': request.data['paymentMethodId']})
+                utc_now = datetime.now(timezone.utc)
+                datetime_next_month_first = datetime.combine(utc_now.date(), time(0, 0), utc_now.tzinfo).replace(day=1) + relativedelta.relativedelta(months=1)
+                billing_cycle_anchor = int(datetime_next_month_first.timestamp())
+
+                # Create the subscription
+                subscription = stripe.Subscription.create(
+                    customer=customer.id,
+                    items=[
+                        {
+                            'price': request.data['priceId']
+                        }
+                    ],
+                    trial_period_days=7,
+                    billing_cycle_anchor=billing_cycle_anchor,
+                    expand=['latest_invoice.payment_intent', 'pending_setup_intent'],
+                )
+
             except Exception as e:
-                return Response(status=status.HTTP_200_OK,
-                                data={'error': '支払いアカウントの作成できませんでした。アドミンに連絡して下さい。'})
+                if customer:
+                    stripe.Customer.delete(customer.id)
+                return Response(data={'error': '登録できませんでした。サポートに連絡して下さい。'})
             serializer.save(stripeCustomerId=customer.id)
         else:
             self.perform_create(serializer)
+
         mail.send_mail(
             'Success Academy - {} {}様登録確認しました'.format(request.data['last_name'], request.data['first_name']),
             'ご登録ありがとうございます。\n{} {}様のログイン情報は以下のとおりです。\nユーザーID：{}\nパスワード：{}\n\n'
             '以下のページにログインしてクラスZoom情報を確認できます。\n{}\n\n＊このアドレスは送信専用です。ご返信いただいても回答はいたしかねます。'.format(
                 request.data['last_name'], request.data['first_name'], request.data['username'], '*****', settings.BASE_URL),
             None,
-            [request.data['email'], 'success.academy.us@gmail.com'],
+            [request.data['email']],  # 'success.academy.us@gmail.com'],
             fail_silently=False,
         )
         headers = self.get_success_headers(serializer.data)
@@ -360,40 +382,18 @@ class StripeSubscription(APIView):
             return Response(data={'error': 'subscription not found'})
         return Response(subscription)
 
-    def post(self, request, format=None):
+
+class StripeSetupIntent(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, format=None):
         try:
-            # Attach the payment method to the customer
-            stripe.PaymentMethod.attach(
-                request.data['paymentMethodId'],
-                customer=request.data['customerId'],
+            setup_intent = stripe.SetupIntent.create(
+                payment_method_types=["card"],
             )
-            # Set the default payment method on the customer
-            stripe.Customer.modify(
-                request.data['customerId'],
-                invoice_settings={
-                    'default_payment_method': request.data['paymentMethodId'],
-                },
-            )
-
-            utc_now = datetime.now(timezone.utc)
-            datetime_next_month_first = datetime.combine(utc_now.date(), time(0, 0), utc_now.tzinfo).replace(day=1) + relativedelta.relativedelta(months=1)
-            billing_cycle_anchor = int(datetime_next_month_first.timestamp())
-
-            # Create the subscription
-            subscription = stripe.Subscription.create(
-                customer=request.data['customerId'],
-                items=[
-                    {
-                        'price': request.data['priceId']
-                    }
-                ],
-                trial_period_days=7,
-                billing_cycle_anchor=billing_cycle_anchor,
-                expand=['latest_invoice.payment_intent', 'pending_setup_intent'],
-            )
-            return Response(subscription, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            return Response(status=status.HTTP_200_OK, data={'error': str(e)})
+        except Exception:
+            return Response(data={'error': '登録できませんでした。Stripe内部エラーが発生しました。もう一度お試し下さい。またはサポートに連絡して下さい。'})
+        return Response(setup_intent)
 
 
 class StripeCustomerPortal(APIView):

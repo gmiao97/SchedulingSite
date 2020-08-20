@@ -1,8 +1,8 @@
 import React, { Component, useState, useEffect } from 'react';
 import { useHistory, Prompt } from "react-router-dom"
-import moment from 'moment-timezone';
+import moment, { isMoment } from 'moment-timezone';
 import { styled, makeStyles } from '@material-ui/core/styles';
-import { DatePicker } from '@material-ui/pickers';
+import { DatePicker, KeyboardDatePicker } from '@material-ui/pickers';
 import { Autocomplete, Alert } from '@material-ui/lab'
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import {
@@ -39,15 +39,13 @@ import {
   gradeMappings, 
   timeZoneNames, 
   AccountRegistrationError, 
-  CreatePaymentMethodError,
-  CreateSubscriptionError,
-  RequiresActionError,
-  RequiresPaymentMethodError,
+  CardError,
+  SetupIntentError,
 } from '../../util';
 
 
 const MyGrid = styled(Grid)({
-  alignItems: 'flex-end',
+  alignItems: 'flex-start',
 });
 
 const useStyles = makeStyles(theme => ({
@@ -85,6 +83,7 @@ export default function Signup(props) {
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [cardEntered, setCardEntered] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [dateError, setDateError] = useState(false);
   const [usernameList, setUsernameList] = useState([]);
   const [signupForm, setSignupForm] = useState({
     username: '',
@@ -116,7 +115,7 @@ export default function Signup(props) {
 
   useEffect(() => {
     getUsernameList();
-  }, []);
+  }, [signupForm.username]);
 
   const getUsernameList = async () => {
     const response = await axiosInstance.get('/yoyaku/users/username_list/');
@@ -154,6 +153,7 @@ export default function Signup(props) {
       ...signupForm,
       [name]: moment(date).format('YYYY-MM-DD'),
     });
+    setDateError(!date || !date.isValid());
   }
 
   const handleChangeStudentProfile = event => {
@@ -197,10 +197,22 @@ export default function Signup(props) {
 
     setBackdropOpen(true);
     try {
-      const response = await axiosInstance.post('/yoyaku/users/', {
-        ...signupForm,
-        time_zone: signupForm.time_zone.replace(' ', '_')
-      });
+      let response = null;
+      if (signupForm.user_type === 'STUDENT') {
+        const paymentMethodId = await handleStripeSubmit();
+        response = await axiosInstance.post('/yoyaku/users/', {
+          ...signupForm,
+          time_zone: signupForm.time_zone.replace(' ', '_'),
+          paymentMethodId: paymentMethodId,
+          priceId: selectedPrice,
+        });
+      } else {
+        response = await axiosInstance.post('/yoyaku/users/', {
+          ...signupForm,
+          time_zone: signupForm.time_zone.replace(' ', '_'),
+        });
+      }
+
       if (response.data.error) {
         throw new AccountRegistrationError(response.data.error);
       }
@@ -209,45 +221,8 @@ export default function Signup(props) {
         email: signupForm.email.slice(),
       });
 
-      if (signupForm.user_type === 'STUDENT') {
-        await handleStripeSubmit(response.data.stripeCustomerId);
-      }
-
       setActiveStep(prevActiveStep => prevActiveStep + 1);
       setSuccessSnackbarOpen(true);
-    } catch(err) {
-      if (err instanceof AccountRegistrationError) {
-        console.error('[AccountRegistrationError]', err);
-        handleStepReset();
-        setError(err.message);
-        setErrorSnackbarOpen(true);
-      } else if (err instanceof CreatePaymentMethodError) {
-        console.error('[CreatePaymentMethodError]', err);
-        setActiveStep(prevActiveStep => prevActiveStep + 1);
-        setWarning(err.message);
-        setWarningSnackbarOpen(true);
-      } else if (err instanceof CreateSubscriptionError) {
-        console.error('[CreateSubscriptionError]', err);
-        setActiveStep(prevActiveStep => prevActiveStep + 1);
-        setWarning(err.message);
-        setWarningSnackbarOpen(true);
-      } else if (err instanceof RequiresActionError) {
-        console.error('[RequiresActionError]', err);
-        setActiveStep(prevActiveStep => prevActiveStep + 1);
-        setWarning(err.message);
-        setWarningSnackbarOpen(true);
-      } else if (err instanceof RequiresPaymentMethodError) {
-        console.error('[RequiresPaymentMethodError]', err);
-        setActiveStep(prevActiveStep => prevActiveStep + 1);
-        setWarning(err.message);
-        setWarningSnackbarOpen(true);
-      } else {
-        handleStepReset();
-        setError("登録できませんでした。ウェブサイトのアドミンに連絡して下さい。");
-        setErrorSnackbarOpen(true);
-      }
-    } finally {
-      setBackdropOpen(false);
       setSignupForm({
         username: '',
         email: '',
@@ -267,60 +242,50 @@ export default function Signup(props) {
         },
       });
       setPasswordMatch('');
+    } catch(err) {
+      if (err instanceof SetupIntentError) {
+        console.error('[SetupIntentError]', err);
+        setError(err.message);
+        setErrorSnackbarOpen(true);
+      } else if (err instanceof AccountRegistrationError) {
+        console.error('[AccountRegistrationError]', err);
+        setError(err.message);
+        setErrorSnackbarOpen(true);
+      } else if (err instanceof CardError) {
+        console.error('[CardError]', err);
+        setWarning(err.message);
+        setWarningSnackbarOpen(true);
+      } else {
+        console.log(err);
+        setError("登録できませんでした。サポートに連絡して下さい。");
+        setErrorSnackbarOpen(true);
+      }
+    } finally {
+      setBackdropOpen(false);
     }
   }
 
-  const handleStripeSubmit = async (customerId) => {
+  const handleStripeSubmit = async () => {
     const cardElement = elements.getElement(CardElement);
 
-    const { error, paymentMethod } = await stripe.createPaymentMethod({
-      type: 'card',
-      card: cardElement,
-    });
+    const setupResponse = await axiosInstance.get('/yoyaku/stripe-setup-intent/');
+    if (setupResponse.data.error) {
+      throw new SetupIntentError(setupResponse.data.error);
+    }
 
-    if (error) {
-      throw new CreatePaymentMethodError('Account created successfully but payment method failed. Please try again after logging in.');
+    const confirmResponse = await stripe.confirmCardSetup(setupResponse.data.client_secret, {
+      payment_method: {
+        type: 'card',
+        card: cardElement,
+      },
+    });
+    if (confirmResponse.error) {
+      console.error(confirmResponse.error);
+      throw new CardError(confirmResponse.error.message);
     } else {
-      console.log('[PaymentMethod]', paymentMethod);
-      const paymentMethodId = paymentMethod.id;
-      await createSubscription(customerId, paymentMethodId, selectedPrice);
-    }
-  };
-
-  const createSubscription = async (customerId, paymentMethodId, priceId) => {
-    const response = await axiosInstance.post('/yoyaku/stripe-subscription/', {
-      customerId: customerId,
-      paymentMethodId: paymentMethodId,
-      priceId: priceId,
-    });
-
-    if (response.data.error) {
-      throw new CreateSubscriptionError('Account created successfully but subscription failed with error: ' + response.data.error);
-    }
-    const subscription = response.data;
-    
-    console.log(subscription);
-    
-    // handle requires_action and requires_payment_method
-    const {pending_setup_intent} = subscription;
-    if (pending_setup_intent) {
-      const {client_secret, status} = subscription.pending_setup_intent;
-      if (status === 'requires_action') {
-        const response = await stripe.confirmCardSetup(client_secret);
-          if (response.error) {
-            throw new RequiresActionError('Payment could not be authenticated. Please update payment method in account settings.');
-          } else {
-            console.log('requires_action succeeded');
-          }
-      } else if (status === 'requires_payment_method') {
-        throw new RequiresPaymentMethodError('Payment declined. Please update payment method in account settings.')
-      }
+      return confirmResponse.setupIntent.payment_method;
     }
   }
-
-  // const retryWithNewPayment = async (customerId, paymentMethodId, priceId) => {
-   
-  // }
 
   const getStepContent = stepIndex => {
     switch (stepIndex) {
@@ -395,6 +360,10 @@ export default function Signup(props) {
       case 1:
         let nextDisabled = false;
         let tooltipMessage = '';
+        if (dateError) {
+          nextDisabled = true;
+          tooltipMessage = '生年月日を入力して下さい';
+        }
         if (signupForm.password !== passwordMatch) {
           nextDisabled = true;
           tooltipMessage = 'パスワードが一致していません';
@@ -519,10 +488,12 @@ export function StudentSignup(props) {
       </MyGrid>
       <MyGrid item xs={12}>
         <TextField id='username' name='username' type='text' label='ユーザーID' value={props.state.username} onChange={props.onChange} required fullWidth variant='filled' 
-        error={props.usernameList.includes(props.state.username)} helperText={props.usernameList.includes(props.state.username) ? 'そのユーザーIDがすでに使われています' : ''} />
+        error={props.usernameList.includes(props.state.username)} helperText={props.usernameList.includes(props.state.username) ? 'そのユーザーIDがすでに使われています' : ''} 
+        helperText='半角英数・記号' />
       </MyGrid>
       <MyGrid item xs={12} sm={6}>
-        <TextField id='password' name='password' type='password' label='パスワード' value={props.state.password} onChange={props.onChange} required fullWidth variant='filled' />
+        <TextField id='password' name='password' type='password' label='パスワード' value={props.state.password} onChange={props.onChange} required fullWidth variant='filled' 
+        helperText='半角英数・記号（e.g. !@#%*.）７文字以上' />
       </MyGrid>
       <MyGrid item xs={12} sm={6}>
         <TextField id='confirmPassword' name='confirmPassword' type='password' label='パスワード確認' value={props.passwordMatch} 
@@ -560,13 +531,17 @@ export function StudentSignup(props) {
         />
       </MyGrid>
       <MyGrid item xs={6} sm={4}>
-        <DatePicker
+        <KeyboardDatePicker
           id='birthday'
           name='birthday'
+          variant='inline'
           label="生徒生年月日"
           value={props.state.birthday}
           onChange={date => props.onDateChange('birthday', date)}
           format='YYYY-MM-DD'
+          invalidDateMessage='正しい日にちを入力して下さい'
+          maxDateMessage='正しい日にちを入力して下さい'
+          minDateMessage='正しい日にちを入力して下さい'
         />
       </MyGrid>
       <MyGrid item xs={12} sm={6}>
