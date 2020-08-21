@@ -580,7 +580,7 @@ export function TeacherSignup(props) {
     <MyGrid container spacing={3} className={classes.sectionEnd}>
       <MyGrid item xs={12}>
         <TextField id='username' name='username' type='text' label='ユーザーID' value={props.state.username} onChange={props.onChange} required fullWidth variant='filled' 
-        error={props.usernameList.includes(props.state.username)} helperText={props.usernameList.includes(props.state.username) ? 'そのユーザーIDがすでに使われています' : '半角英数・記号'} />
+        error={props.usernameList.includes(props.state.username)} helperText={props.usernameList.includes(props.state.username) ? 'そのユーザーIDはすでに使われています' : '半角英数・記号'} />
       </MyGrid>
       <MyGrid item xs={12} sm={6}>
         <TextField id='password' name='password' type='password' label='パスワード' value={props.state.password} onChange={props.onChange} required fullWidth variant='filled'
