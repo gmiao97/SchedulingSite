@@ -488,8 +488,7 @@ export function StudentSignup(props) {
       </MyGrid>
       <MyGrid item xs={12}>
         <TextField id='username' name='username' type='text' label='ユーザーID' value={props.state.username} onChange={props.onChange} required fullWidth variant='filled' 
-        error={props.usernameList.includes(props.state.username)} helperText={props.usernameList.includes(props.state.username) ? 'そのユーザーIDがすでに使われています' : ''} 
-        helperText='半角英数・記号' />
+        error={props.usernameList.includes(props.state.username)} helperText={props.usernameList.includes(props.state.username) ? 'そのユーザーIDがすでに使われています' : '半角英数・記号'} />
       </MyGrid>
       <MyGrid item xs={12} sm={6}>
         <TextField id='password' name='password' type='password' label='パスワード' value={props.state.password} onChange={props.onChange} required fullWidth variant='filled' 
@@ -562,7 +561,7 @@ export function StudentSignup(props) {
               time_zone: value,
             });
           }}
-          renderInput={(params) => <TextField {...params} label="時間帯" />}
+          renderInput={(params) => <TextField {...params} label="地域/タイムゾーン" />}
           disableClearable
         />
       </MyGrid>
@@ -581,10 +580,11 @@ export function TeacherSignup(props) {
     <MyGrid container spacing={3} className={classes.sectionEnd}>
       <MyGrid item xs={12}>
         <TextField id='username' name='username' type='text' label='ユーザーID' value={props.state.username} onChange={props.onChange} required fullWidth variant='filled' 
-        error={props.usernameList.includes(props.state.username)} helperText={props.usernameList.includes(props.state.username) ? 'そのユーザーIDがすでに使われています' : ''} />
+        error={props.usernameList.includes(props.state.username)} helperText={props.usernameList.includes(props.state.username) ? 'そのユーザーIDがすでに使われています' : '半角英数・記号'} />
       </MyGrid>
       <MyGrid item xs={12} sm={6}>
-        <TextField id='password' name='password' type='password' label='パスワード' value={props.state.password} onChange={props.onChange} required fullWidth variant='filled' />
+        <TextField id='password' name='password' type='password' label='パスワード' value={props.state.password} onChange={props.onChange} required fullWidth variant='filled'
+        helperText='半角英数・記号（e.g. !@#%*.）７文字以上' />
       </MyGrid>
       <MyGrid item xs={12} sm={6}>
         <TextField id='confirmPassword' name='confirmPassword' type='password' label='パスワード確認' value={props.passwordMatch} 
@@ -627,7 +627,7 @@ export function TeacherSignup(props) {
               time_zone: value,
             });
           }}
-          renderInput={(params) => <TextField {...params} label="時間帯" />}
+          renderInput={(params) => <TextField {...params} label="地域/タイムゾーン" />}
           disableClearable
         />
       </MyGrid>
