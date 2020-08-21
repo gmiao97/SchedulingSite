@@ -65,9 +65,6 @@ class UserViewSet(viewsets.ModelViewSet):
                 datetime_next_month_first = datetime.combine(utc_now.date(), time(0, 0), utc_now.tzinfo).replace(day=1) + relativedelta.relativedelta(months=1)
                 billing_cycle_anchor = int(datetime_next_month_first.timestamp())
 
-                datetime_one_minute = utc_now + relativedelta.relativedelta(minutes=1)
-                trial_end = int(datetime_one_minute.timestamp())
-
                 # Create the subscription
                 subscription = stripe.Subscription.create(
                     customer=customer.id,
@@ -76,8 +73,7 @@ class UserViewSet(viewsets.ModelViewSet):
                             'price': request.data['priceId']
                         }
                     ],
-                    # trial_period_days=7,
-                    trial_end=trial_end,
+                    trial_period_days=7,
                     billing_cycle_anchor=billing_cycle_anchor,
                     expand=['latest_invoice.payment_intent', 'pending_setup_intent'],
                 )
