@@ -168,7 +168,7 @@ export default function StripeSubscriptionCheckout(props) {
               <FormControlLabel
                 value="end"
                 control={<Checkbox color="primary" checked={props.agreed} onChange={e => props.setAgreed(e.target.checked)} color='secondary' />}
-                label="同意します"
+                label="利用規約同意します"
                 labelPlacement="end"
               />
             </Grid>
