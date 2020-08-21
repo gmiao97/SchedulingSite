@@ -65,6 +65,9 @@ export default function MyPage(props) {
             <Typography variant='h5' color='textSecondary' display='block' gutterBottom>
               値段 <Typography color='secondary' display='inline'>{props.currentSubscription.items.data[0].price.nickname}</Typography>
             </Typography>
+            <Typography color='error' display='block' gutterBottom>
+              トライアル期間中にプランを変更するとすぐに支払いが始まりますのでご注意下さい
+            </Typography>
             <Button variant='contained' color='secondary' type='button' onClick={handleStripeCustomerPortalRedirect}>
               プランと支払い方法の管理
             </Button>

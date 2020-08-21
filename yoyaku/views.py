@@ -92,7 +92,7 @@ class UserViewSet(viewsets.ModelViewSet):
             '以下のページにログインしてクラスZoom情報を確認できます。\n{}\n\n＊このアドレスは送信専用です。ご返信いただいても回答はいたしかねます。'.format(
                 request.data['last_name'], request.data['first_name'], request.data['username'], '*****', settings.BASE_URL),
             None,
-            [request.data['email']],  # 'success.academy.us@gmail.com'],
+            [request.data['email'], 'success.academy.us@gmail.com'],
             fail_silently=False,
         )
         headers = self.get_success_headers(serializer.data)

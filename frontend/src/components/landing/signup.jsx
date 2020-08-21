@@ -413,7 +413,7 @@ export default function Signup(props) {
                 登録完了！確認メールが<Typography display="inline" color="secondary">{newUserInfo.email}</Typography>に送信されました。
                 Success Academyへようこそ！
                 </Typography>
-              <Button variant="contained" color="primary" onClick={() => history.push("/")}>Login</Button>
+              <Button variant="contained" color="primary" onClick={() => history.push("/")}>ログイン</Button>
             </div> :
             <div>
               <div>
