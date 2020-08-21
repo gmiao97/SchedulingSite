@@ -66,7 +66,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 billing_cycle_anchor = int(datetime_next_month_first.timestamp())
 
                 datetime_one_minute = utc_now + relativedelta.relativedelta(minutes=1)
-                trial_end = int(datetime_next_month_first.timestamp())
+                trial_end = int(datetime_one_minute.timestamp())
 
                 # Create the subscription
                 subscription = stripe.Subscription.create(
