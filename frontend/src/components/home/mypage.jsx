@@ -66,7 +66,7 @@ export default function MyPage(props) {
               値段 <Typography color='secondary' display='inline'>{props.currentSubscription.items.data[0].price.nickname}</Typography>
             </Typography>
             <Button variant='contained' color='secondary' type='button' onClick={handleStripeCustomerPortalRedirect}>
-              プラン管理
+              プランと支払い方法の管理
             </Button>
           </Box>
         </Paper>
