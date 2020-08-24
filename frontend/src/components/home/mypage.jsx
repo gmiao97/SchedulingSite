@@ -1,20 +1,80 @@
 import React, { Component, useState, useEffect } from 'react';
+import moment from 'moment-timezone';
+import { styled, makeStyles } from '@material-ui/core/styles';
+import { KeyboardDatePicker } from '@material-ui/pickers';
+import { Person, CreditCard, LocationOn } from '@material-ui/icons';
+import { Alert, Autocomplete } from '@material-ui/lab'
 import {  
   Typography,
   Button,
   Paper,
   Box,
   Grid,
+  Tabs,
+  Tab,
+  Snackbar,
+  Divider,
+  TextField,
 } from '@material-ui/core';
 
 import axiosInstance from '../../axiosApi';
+import { gradeMappings, timeZoneNames, getUserIdFromToken } from '../../util';
 
+
+const MyGrid = styled(Grid)({
+  alignItems: 'flex-start',
+});
+
+const useStyles = makeStyles(theme => ({
+  sectionEnd: {
+    marginBottom: theme.spacing(2),
+  },
+  backButton: {
+    marginRight: theme.spacing(1),
+  },
+  multiline: {
+    whiteSpace: 'pre-line',
+  },
+}));
 
 export default function MyPage(props) {
+  const [activeTab, setActiveTab] = React.useState(0);
+
+  return(
+    <Paper elevation={24}>
+      <Tabs value={activeTab} indicatorColor='primary' textColor='primary' onChange={(event, value) => setActiveTab(value)}>
+        <Tab label='プロフィール' icon={<Person />} />
+        <Tab label='サブスクリプション' icon={<CreditCard />} />
+      </Tabs>
+      <Box p={3}>
+        {activeTab === 0 ?
+          <StudentProfile currentUser={props.currentUser} setReload={props.setReload} /> :
+          <Subscription 
+            stripeCustomerId={props.currentUser.stripeCustomerId} 
+            currentSubscription={props.currentSubscription} 
+            currentProduct={props.currentProduct}
+          />
+        }
+      </Box>
+    </Paper>
+  );
+}
+
+
+export function Subscription(props) {
+  const subscriptionStatusMap = new Map([
+    ['active', '有効'],
+    ['past_due', 'インボイス期日経過'],
+    ['unpaid', '未払い'],
+    ['canceled', 'キャンセル'],
+    ['incomplete', '登録未完了'],
+    ['incomplete_expired', '登録無効'],
+    ['trialing', 'トライアル期間中'],
+  ]);
 
   const handleStripeCustomerPortalRedirect = async () => {
     const response = await axiosInstance.post('/yoyaku/stripe-customer-portal/', {
-      customerId: props.currentUser.stripeCustomerId,
+      customerId: props.stripeCustomerId,
     });
     console.log(response.data.url);
     window.location.assign(response.data.url);
@@ -22,55 +82,338 @@ export default function MyPage(props) {
 
   if (props.currentProduct.error || props.currentSubscription.error) {
     return(
-      <Grid container spacing={2}>
-      <Grid item xs={5}>
-        <Typography variant='h3' color='textPrimary'>{props.currentUser.first_name} 様</Typography>
-      </Grid>
-      <Grid item xs={7}>
-        <Paper elevation={24}>
-          <Box p={3}>
-            <Typography variant='h4' color='textSecondary' display='block' gutterBottom>
-              サブスクリプション情報
-            </Typography>
-            <Typography variant='h5' color='textSecondary' display='block' gutterBottom>
-              現在のプラン <Typography color='secondary' display='inline'>サブスクリプションありません</Typography>
-            </Typography>
-            <Typography variant='h5' color='textSecondary' display='block' gutterBottom>
-              値段
-            </Typography>
-            <Button variant='contained' color='secondary' type='button' onClick={handleStripeCustomerPortalRedirect}>
-              プラン管理
-            </Button>
-          </Box>
-        </Paper>
-      </Grid>
-    </Grid>
-    )
+      <div>
+        <Typography variant='h5' color='textSecondary' display='block' gutterBottom>
+          サブスクリプションはありません。
+        </Typography>
+        <Button variant='contained' color='secondary' type='button' onClick={handleStripeCustomerPortalRedirect}>
+          プランと支払い方法の管理
+        </Button>
+      </div>
+    );
   }
 
   return(
-    <Grid container spacing={2}>
-      <Grid item xs={12} md={5}>
-        <Typography variant='h3' color='textPrimary'>{props.currentUser.first_name} 様</Typography>
+    <div>
+      <Typography variant='h6' color='textSecondary' display='block' gutterBottom>
+        現在のプラン・
+        <Typography color='secondary' display='inline'>{props.currentProduct.name}</Typography>
+      </Typography>
+      <Typography variant='h6' color='textSecondary' display='block' gutterBottom>
+        ステータス・
+        <Typography color='secondary' display='inline'>{subscriptionStatusMap.get(props.currentSubscription.status)}</Typography>
+      </Typography>
+      <Typography variant='h6' color='textSecondary' display='block' gutterBottom>
+        値段・
+        <Typography color='secondary' display='inline'>{props.currentSubscription.items.data[0].price.nickname}</Typography>
+      </Typography>
+      <Button variant='contained' color='secondary' type='button' onClick={handleStripeCustomerPortalRedirect}>
+        プランと支払い方法の管理
+      </Button>
+      <Snackbar open={props.currentSubscription.status === 'trialing'}>
+        <Alert severity='warning' variant='filled'>
+          トライアル期間中にプランを変更するとすぐに支払いが始まりますのでご注意下さい
+        </Alert>
+      </Snackbar>
+    </div>
+  );
+}
+
+
+export function StudentProfile(props) {
+  const classes = useStyles();
+  const [edit, setEdit] = useState(false);
+  const [changePassword, setChangePassword] = useState(false);
+  const [dateError, setDateError] = useState(false);
+  const [passwordChangeSuccessSnackbarOpen, setPasswordChangeSuccessSnackbarOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    email: props.currentUser.email,
+    first_name: props.currentUser.first_name,
+    last_name: props.currentUser.last_name,
+    description: props.currentUser.description,
+    time_zone: props.currentUser.time_zone.replace('_', ' '), 
+    phone_number: props.currentUser.phone_number, 
+    birthday: props.currentUser.birthday,
+    student_profile: {
+      school_name: props.currentUser.student_profile.school_name,
+      school_grade: props.currentUser.student_profile.school_grade,
+    },
+    student_id: props.currentUser.student_profile.id,
+  });
+  const schoolGrades = [];
+  for (let grade of gradeMappings) {
+    schoolGrades.push(grade);
+  }
+
+  const handleChange = event => {
+    setEditForm({
+      ...editForm,
+      [event.target.name]: event.target.value,
+    });
+  }
+
+  const handleChangeStudentProfile = event => {
+    setEditForm({
+      ...editForm,
+      student_profile: {
+        ...editForm.student_profile,
+        [event.target.name]: event.target.value,
+      },
+    });
+  }
+
+  const handleDateChange = (name, date) => {
+    setEditForm({
+      ...editForm,
+      [name]: moment(date).format('YYYY-MM-DD'),
+    });
+    setDateError(!date || !date.isValid());
+  }
+
+  const handleSnackbarClose = (event, reason) => {
+    setPasswordChangeSuccessSnackbarOpen(false);
+  }
+
+  const resetEditForm = () => {
+    setEditForm({
+      email: props.currentUser.email,
+      first_name: props.currentUser.first_name,
+      last_name: props.currentUser.last_name, 
+      description: props.currentUser.description,
+      time_zone: props.currentUser.time_zone.replace('_', ' '), 
+      phone_number: props.currentUser.phone_number, 
+      birthday: props.currentUser.birthday,
+      student_profile: {
+        school_name: props.currentUser.student_profile.school_name,
+        school_grade: props.currentUser.student_profile.school_grade,
+      },
+      student_id: props.currentUser.student_profile.id,
+    });
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const response = await axiosInstance.patch(`/yoyaku/users/${getUserIdFromToken()}/`, {
+      ...editForm,
+      time_zone: editForm.time_zone.replace(' ', '_'),
+    });
+    props.setReload(true);
+    setEdit(false);
+  }
+
+  if (changePassword) {
+    return(
+      <ChangePassword 
+        setChangePassword={setChangePassword}
+        setPasswordChangeSuccessSnackbarOpen={setPasswordChangeSuccessSnackbarOpen}
+      />
+    );
+  }
+
+  if (edit) {
+    return(
+      <form id='editStudentProfile' onSubmit={handleSubmit}>
+        <MyGrid container spacing={3} className={classes.sectionEnd}>
+          <MyGrid item xs={12} sm={6}>
+            <TextField id='last_name' name='last_name' type='text' label='生徒姓' value={editForm.last_name} onChange={handleChange} required fullWidth />
+          </MyGrid>
+          <MyGrid item xs={12} sm={6}>
+            <TextField id='first_name' name='first_name' type='text' label='生徒名' value={editForm.first_name} onChange={handleChange} required fullWidth />
+          </MyGrid>
+          <MyGrid item xs={12}>
+            <TextField id='description' name='description' type='text' label='自己紹介' value={editForm.description} onChange={handleChange} variant='outlined' 
+            inputProps={{maxLength: 300}} helperText='300文字数制限' multiline fullWidth />
+          </MyGrid>
+          <MyGrid item xs={12} sm={5}>
+            <TextField id='school_name' name='school_name' type='text' label='生徒学校名' value={editForm.student_profile.school_name} onChange={handleChangeStudentProfile} required fullWidth />
+          </MyGrid>
+          <MyGrid item xs={6} sm={3}>
+            <Autocomplete
+              id='school_grade'
+              name='school_grade'
+              options={schoolGrades}
+              getOptionLabel={option => option[1]}
+              getOptionSelected={(option, value) => option[1] === value[1]}
+              value={[editForm.student_profile.school_grade, gradeMappings.get(editForm.student_profile.school_grade)]}
+              onChange={(event, value) => {
+                setEditForm({
+                  ...editForm,
+                  student_profile: {
+                    ...editForm.student_profile,
+                    school_grade: value[0],
+                  },
+                });
+              }}
+              renderInput={(params) => <TextField {...params} label="生徒学年" />}
+              disableClearable
+            />
+          </MyGrid>
+          <MyGrid item xs={6} sm={4}>
+            <KeyboardDatePicker
+              id='birthday'
+              name='birthday'
+              variant='inline'
+              label="生徒生年月日"
+              value={editForm.birthday}
+              onChange={date => handleDateChange('birthday', date)}
+              format='YYYY/MM/DD'
+              invalidDateMessage='正しい日にちを入力して下さい'
+              maxDateMessage='正しい日にちを入力して下さい'
+              minDateMessage='正しい日にちを入力して下さい'
+            />
+          </MyGrid>
+          <MyGrid item xs={12} sm={6}>
+            <TextField id='email' name='email' type='email' label='保護者メールアド' value={editForm.email} onChange={handleChange} required fullWidth />
+          </MyGrid>
+          <MyGrid item xs={12} sm={6}>
+            <TextField id='phone_number' name='phone_number' type='text' label='保護者電話番号' value={editForm.phone_number} onChange={handleChange} required fullWidth />
+          </MyGrid>
+          <MyGrid item item xs={12} sm={6}>
+            <Autocomplete
+              id='time_zone'
+              name='time_zone'
+              options={timeZoneNames}
+              value={editForm.time_zone}
+              onChange={(event, value) => {
+                setEditForm({
+                  ...editForm,
+                  time_zone: value,
+                });
+              }}
+              renderInput={(params) => <TextField {...params} label="地域/タイムゾーン" />}
+              disableClearable
+            />
+          </MyGrid>
+        </MyGrid>
+        <Button type='button' onClick={() => {setEdit(false)}} className={classes.backButton}>
+          戻る
+        </Button>
+        <Button type='submit' variant='contained' color='primary' disabled={dateError}>
+          サブミット
+        </Button>
+      </form>
+    );
+  }
+
+  return(
+    <div>
+      <Grid container justify='space-between'>
+        <Grid container justify='flex-end'>
+          <Button 
+            type="button" 
+            size='small' 
+            color='primary' 
+            onClick={() => {
+              setEdit(true);
+              resetEditForm();
+            }}
+          >
+            プロフィール編集
+          </Button>
+          <Button type="button" size='small' color='primary' onClick={() => setChangePassword(true)}>
+            パスワード変更
+          </Button>
+        </Grid>
+        <Typography variant='h5' color='textSecondary' display='block' gutterBottom>
+          {`${props.currentUser.last_name} ${props.currentUser.first_name}様`}
+          <Typography variant='caption' color='secondary' display='inline'>
+            ・生徒
+          </Typography>
+        </Typography>
+        <Typography variant='caption' color='secondary' display='inline'>
+          <LocationOn /> {props.currentUser.time_zone.replace('_', ' ')}
+        </Typography>
       </Grid>
-      <Grid item xs={12} md={7}>
-        <Paper elevation={24}>
-          <Box p={3}>
-            <Typography variant='h4' color='textSecondary' display='block' gutterBottom>
-              サブスクリプション情報
-            </Typography>
-            <Typography variant='h5' color='textSecondary' display='block' gutterBottom>
-              現在のプラン <Typography color='secondary' display='inline'>{props.currentProduct.name}</Typography>
-            </Typography>
-            <Typography variant='h5' color='textSecondary' display='block' gutterBottom>
-              値段 <Typography color='secondary' display='inline'>{props.currentSubscription.items.data[0].price.nickname}</Typography>
-            </Typography>
-            <Button variant='contained' color='secondary' type='button' onClick={handleStripeCustomerPortalRedirect}>
-              プランと支払い方法の管理
-            </Button>
-          </Box>
-        </Paper>
-      </Grid>
-    </Grid>
+      <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+        生年月日・
+        <Typography variant='body2' color='textPrimary' display='inline'>
+          {new Date(props.currentUser.birthday).toLocaleDateString('ja-JP')}
+        </Typography>
+      </Typography>
+      <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+        紹介者・
+        <Typography variant='body2' color='textPrimary' display='inline'>
+          {props.currentUser.student_profile.referrer}
+        </Typography>
+      </Typography>
+      <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+        学校名・
+        <Typography variant='body2' color='textPrimary' display='inline'>
+          {props.currentUser.student_profile.school_name}
+        </Typography>
+      </Typography>
+      <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+        学年・
+        <Typography variant='body2' color='textPrimary' display='inline'>
+          {gradeMappings.get(props.currentUser.student_profile.school_grade)}
+        </Typography>
+      </Typography>
+      <Divider />
+      <Typography variant='subtitle1' color='textSecondary' display='block' gutterBottom>
+        自己紹介
+      </Typography>
+      <Typography variant='body2' color='textPrimary' display='block' className={classes.multiline} gutterBottom>
+        {props.currentUser.description}
+      </Typography>
+      <Divider />
+      <Typography variant='subtitle1' color='textSecondary' display='block' gutterBottom>
+        連絡情報
+      </Typography>
+      <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+        保護者メールアドレス・
+        <Typography variant='body2' color='textPrimary' display='inline'>
+          {props.currentUser.email}
+        </Typography>
+      </Typography>
+      <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+        保護者電話番号・
+        <Typography variant='body2' color='textPrimary' display='inline'>
+          {props.currentUser.phone_number}
+        </Typography>
+      </Typography>
+      <Snackbar open={passwordChangeSuccessSnackbarOpen} onClose={handleSnackbarClose}>
+        <Alert severity='success' variant='filled' onClose={handleSnackbarClose}>
+          パスワードを変更されました
+        </Alert>
+      </Snackbar>
+    </div>
+  );
+}
+
+export function ChangePassword(props) {
+  const classes = useStyles();
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const response = await axiosInstance.post(`/yoyaku/users/${getUserIdFromToken()}/change_password/`, {
+      newPassword: newPassword,
+    });
+    props.setPasswordChangeSuccessSnackbarOpen(true);
+    props.setChangePassword(false);
+  }
+
+  return(
+    <div>
+      <form onSubmit={handleSubmit}>
+        <MyGrid container spacing={3} className={classes.sectionEnd}>
+          <MyGrid item xs={12}>
+            <TextField id='newPassword' name='newPassword' type='password' label='新しいパスワード' value={newPassword} onChange={e => setNewPassword(e.target.value)} 
+            helperText='半角英数・記号（e.g. !@#%*.）７文字以上' required fullWidth />
+          </MyGrid>
+          <MyGrid item xs={12}>
+            <TextField id='newPasswordConfirm' name='newPasswordConfirm' type='password' label='新しいパスワードを確認' value={confirmNewPassword} error={newPassword !== confirmNewPassword}
+            onChange={e => setConfirmNewPassword(e.target.value)} required fullWidth />
+          </MyGrid>
+        </MyGrid>
+        <Button type='button' onClick={() => {props.setChangePassword(false)}} className={classes.backButton}>
+          戻る
+        </Button>
+        <Button type="submit" variant="contained" color="primary" disabled={newPassword.length < 8 || confirmNewPassword !== newPassword}>
+          パスワードを変更
+        </Button>
+      </form>
+    </div>
   );
 }

@@ -91,6 +91,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function Home(props) {
+  const classes = useStyles();
   const [desktopMenuAnchorEl, setDesktopMenuAnchorEl] = useState(null);
   const desktopMenuOpen = Boolean(desktopMenuAnchorEl);
   const [mobileMenuAnchorEl, setMobileMenuAnchorEl] = useState(null);
@@ -98,11 +99,13 @@ export default function Home(props) {
   const [currentUser, setCurrentUser] = useState(null);
   const [currentSubscription, setCurrentSubscription] = useState(null);
   const [currentProduct, setCurrentProduct] = useState(null);
+  const [reload, setReload] = useState(false);
   const handleLogout = props.handleLogout;
 
   useEffect(() => {
     getCurrentUser();
-  }, []);
+    setReload(false);
+  }, [reload]);
 
   const getCurrentUser = async () => {
     let userResponse = await axiosInstance.get(`/yoyaku/users/${getUserIdFromToken()}/`);
@@ -146,9 +149,6 @@ export default function Home(props) {
   const handleMobileMenuClose = () => {
     setMobileMenuAnchorEl(null);
   }
-
-
-  const classes = useStyles();
 
   const mobileMenu = (
     <Menu
@@ -240,7 +240,7 @@ export default function Home(props) {
                   onClick={handleDesktopMenuOpen}
                   color="inherit"
                 >
-                  <Avatar className={classes.purple}>{`${currentUser.first_name[0]}${currentUser.last_name[0]}`.toUpperCase()}</Avatar>
+                  <Avatar className={classes.purple}>{`${currentUser.last_name[0]}`.toUpperCase()}</Avatar>
                   {/* <Avatar className={classes.avatar}> </Avatar> */}
                 </IconButton>
               </div>
@@ -257,11 +257,12 @@ export default function Home(props) {
 
         <Switch>
           <Route exact path="/my-page">
-            <Box mx='auto' width='90%' my={5} minWidth={400}>
+            <Box mx='auto' width='75%' my={5} minWidth={400}>
               <MyPage 
                 currentUser={currentUser} 
                 currentSubscription={currentSubscription} 
                 currentProduct={currentProduct}
+                setReload={setReload}
               />
             </Box>
           </Route>
@@ -295,7 +296,7 @@ export function ClassInfo(props) {
     <Grid container spacing={2}>
       <Paper elevation={24}>
         <Box p={3}>
-          ズームID
+          ズームID（９月のクラスは９月１日から９月３０日までです）
         </Box>
       </Paper>
     </Grid>

@@ -1,8 +1,8 @@
 import React, { Component, useState, useEffect } from 'react';
 import { useHistory, Prompt } from "react-router-dom"
-import moment, { isMoment } from 'moment-timezone';
+import moment from 'moment-timezone';
 import { styled, makeStyles } from '@material-ui/core/styles';
-import { DatePicker, KeyboardDatePicker } from '@material-ui/pickers';
+import { KeyboardDatePicker } from '@material-ui/pickers';
 import { Autocomplete, Alert } from '@material-ui/lab'
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import {
@@ -230,7 +230,7 @@ export default function Signup(props) {
         first_name: '',
         last_name: '',
         user_type: 'STUDENT',
-        time_zone: 'America/New_York',
+        time_zone: 'America/New York',
         phone_number: '',
         birthday: moment().format('YYYY-MM-DD'),
         student_profile: {
@@ -340,8 +340,8 @@ export default function Signup(props) {
               agreed={agreed}
               setAgreed={setAgreed}
             /> :
-            <Typography className={classes.stepContent} color="secondary" component='div'>
-              プロフィール情報を確認して<Typography display="inline" color="primary">先生</Typography>として登録
+            <Typography className={classes.stepContent} color="textSecondary" component='div'>
+              プロフィール情報を確認して<Typography display="inline" color="secondary">先生</Typography>として登録
             </Typography>
         );
       default:
@@ -370,7 +370,7 @@ export default function Signup(props) {
         }
         if (signupForm.password.length < 8) {
           nextDisabled = true;
-          tooltipMessage = 'パスワードが７文字以上と必要になっております';
+          tooltipMessage = 'パスワードは７文字以上入力して下さい';
         }
         if (usernameList.includes(signupForm.username)) {
           nextDisabled = true;
@@ -413,7 +413,7 @@ export default function Signup(props) {
                 登録完了！確認メールが<Typography display="inline" color="secondary">{newUserInfo.email}</Typography>に送信されました。
                 Success Academyへようこそ！
                 </Typography>
-              <Button variant="contained" color="primary" onClick={() => history.push("/")}>Login</Button>
+              <Button variant="contained" color="primary" onClick={() => history.push("/")}>ログイン</Button>
             </div> :
             <div>
               <div>
@@ -537,7 +537,7 @@ export function StudentSignup(props) {
           label="生徒生年月日"
           value={props.state.birthday}
           onChange={date => props.onDateChange('birthday', date)}
-          format='YYYY-MM-DD'
+          format='YYYY/MM/DD'
           invalidDateMessage='正しい日にちを入力して下さい'
           maxDateMessage='正しい日にちを入力して下さい'
           minDateMessage='正しい日にちを入力して下さい'
@@ -597,13 +597,17 @@ export function TeacherSignup(props) {
         <TextField id='first_name' name='first_name' type='text' label='名' value={props.state.first_name} onChange={props.onChange} required fullWidth />
       </MyGrid>
       <MyGrid item xs={12} sm={6}>
-        <DatePicker
+        <KeyboardDatePicker
           id='birthday'
           name='birthday'
+          variant='inline'
           label="生年月日"
           value={props.state.birthday}
           onChange={date => props.onDateChange('birthday', date)}
-          format='YYYY-MM-DD'
+          format='YYYY/MM/DD'
+          invalidDateMessage='正しい日にちを入力して下さい'
+          maxDateMessage='正しい日にちを入力して下さい'
+          minDateMessage='正しい日にちを入力して下さい'
         />
       </MyGrid>
       <MyGrid item xs={12} sm={6}>

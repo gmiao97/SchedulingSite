@@ -2,8 +2,13 @@ import pytz
 from django.core import mail
 from rest_framework import serializers
 from rest_framework.fields import FileField
+from django.conf import settings
+import stripe
 
 from .models import StudentProfile, TeacherProfile, Recurrence, Event, Subject, MyUser
+
+
+stripe.api_key = settings.STRIPE_SECRET
 
 
 class StudentProfileSerializer(serializers.ModelSerializer):
@@ -74,11 +79,12 @@ class MyUserSerializer(serializers.ModelSerializer):
         return user
 
     def update(self, instance, validated_data):
-        student_data = validated_data.pop('student_profile')
-        teacher_data = validated_data.pop('teacher_profile')
-        student_instance = validated_data.pop('student_id')
-        teacher_instance = validated_data.pop('teacher_id')
+        student_data = validated_data.pop('student_profile', None)
+        teacher_data = validated_data.pop('teacher_profile', None)
+        student_instance = validated_data.pop('student_id', None)
+        teacher_instance = validated_data.pop('teacher_id', None)
 
+        instance.username = validated_data.get('username', instance.username)
         instance.first_name = validated_data.get('first_name', instance.first_name)
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.email = validated_data.get('email', instance.email)
@@ -88,9 +94,16 @@ class MyUserSerializer(serializers.ModelSerializer):
         instance.description = validated_data.get('description', instance.description)
         instance.save()
 
+        stripe.Customer.modify(
+            instance.stripeCustomerId,
+            email=instance.email,
+            name='{}, {}'.format(instance.last_name, instance.first_name),
+        )
+
         if student_instance:
             student_instance.school_name = student_data.get('school_name', student_instance.school_name)
             student_instance.school_grade = student_data.get('school_grade', student_instance.school_grade)
+            student_instance.referrer = student_data.get('referrer', student_instance.referrer)
             student_instance.save()
         if teacher_instance:
             teacher_instance.association = teacher_data.get('association', teacher_instance.association)

@@ -40,7 +40,7 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes = []
         if self.action in ('create', 'username_list'):
             permission_classes = [AllowAny]
-        elif self.action in ('retrieve', 'update', 'partial_update', 'events'):
+        elif self.action in ('retrieve', 'update', 'partial_update', 'events', 'change_password'):
             permission_classes = [IsLoggedInUserOrAdmin]
         elif self.action == 'list' or self.action == 'destroy':
             permission_classes = [IsAdminUser]
@@ -92,7 +92,7 @@ class UserViewSet(viewsets.ModelViewSet):
             '以下のページにログインしてクラスZoom情報を確認できます。\n{}\n\n＊このアドレスは送信専用です。ご返信いただいても回答はいたしかねます。'.format(
                 request.data['last_name'], request.data['first_name'], request.data['username'], '*****', settings.BASE_URL),
             None,
-            [request.data['email']],  # 'success.academy.us@gmail.com'],
+            [request.data['email'], 'success.academy.us@gmail.com'],
             fail_silently=False,
         )
         headers = self.get_success_headers(serializer.data)
@@ -137,6 +137,13 @@ class UserViewSet(viewsets.ModelViewSet):
             events = user.studentEvents.filter(start__gte=active_start, end__lte=active_end)
         serializer = EventReadSerializer(events, many=True, context={'request': request})
         return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def change_password(self, request, pk=None):
+        user = MyUser.objects.get(pk=pk)
+        user.set_password(request.data['newPassword'])
+        user.save()
+        return Response()
 
 
 class EventViewSet(viewsets.ModelViewSet):
