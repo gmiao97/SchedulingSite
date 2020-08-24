@@ -91,6 +91,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function Home(props) {
+  const classes = useStyles();
   const [desktopMenuAnchorEl, setDesktopMenuAnchorEl] = useState(null);
   const desktopMenuOpen = Boolean(desktopMenuAnchorEl);
   const [mobileMenuAnchorEl, setMobileMenuAnchorEl] = useState(null);
@@ -146,9 +147,6 @@ export default function Home(props) {
   const handleMobileMenuClose = () => {
     setMobileMenuAnchorEl(null);
   }
-
-
-  const classes = useStyles();
 
   const mobileMenu = (
     <Menu
@@ -240,7 +238,7 @@ export default function Home(props) {
                   onClick={handleDesktopMenuOpen}
                   color="inherit"
                 >
-                  <Avatar className={classes.purple}>{`${currentUser.first_name[0]}${currentUser.last_name[0]}`.toUpperCase()}</Avatar>
+                  <Avatar className={classes.purple}>{`${currentUser.last_name[0]}`.toUpperCase()}</Avatar>
                   {/* <Avatar className={classes.avatar}> </Avatar> */}
                 </IconButton>
               </div>
@@ -257,7 +255,7 @@ export default function Home(props) {
 
         <Switch>
           <Route exact path="/my-page">
-            <Box mx='auto' width='90%' my={5} minWidth={400}>
+            <Box mx='auto' width='75%' my={5} minWidth={400}>
               <MyPage 
                 currentUser={currentUser} 
                 currentSubscription={currentSubscription} 
