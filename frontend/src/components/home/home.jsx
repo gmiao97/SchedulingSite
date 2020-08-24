@@ -296,7 +296,7 @@ export function ClassInfo(props) {
     <Grid container spacing={2}>
       <Paper elevation={24}>
         <Box p={3}>
-          ズームID
+          ズームID（９月のクラスは９月１日から９月３０日までです）
         </Box>
       </Paper>
     </Grid>

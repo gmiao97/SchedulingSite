@@ -32,6 +32,9 @@ const useStyles = makeStyles(theme => ({
   backButton: {
     marginRight: theme.spacing(1),
   },
+  multiline: {
+    whiteSpace: 'pre-line',
+  },
 }));
 
 export default function MyPage(props) {
@@ -120,11 +123,14 @@ export function Subscription(props) {
 export function StudentProfile(props) {
   const classes = useStyles();
   const [edit, setEdit] = useState(false);
+  const [changePassword, setChangePassword] = useState(false);
   const [dateError, setDateError] = useState(false);
+  const [passwordChangeSuccessSnackbarOpen, setPasswordChangeSuccessSnackbarOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     email: props.currentUser.email,
     first_name: props.currentUser.first_name,
-    last_name: props.currentUser.last_name, 
+    last_name: props.currentUser.last_name,
+    description: props.currentUser.description,
     time_zone: props.currentUser.time_zone.replace('_', ' '), 
     phone_number: props.currentUser.phone_number, 
     birthday: props.currentUser.birthday,
@@ -164,11 +170,16 @@ export function StudentProfile(props) {
     setDateError(!date || !date.isValid());
   }
 
+  const handleSnackbarClose = (event, reason) => {
+    setPasswordChangeSuccessSnackbarOpen(false);
+  }
+
   const resetEditForm = () => {
     setEditForm({
       email: props.currentUser.email,
       first_name: props.currentUser.first_name,
       last_name: props.currentUser.last_name, 
+      description: props.currentUser.description,
       time_zone: props.currentUser.time_zone.replace('_', ' '), 
       phone_number: props.currentUser.phone_number, 
       birthday: props.currentUser.birthday,
@@ -190,6 +201,15 @@ export function StudentProfile(props) {
     setEdit(false);
   }
 
+  if (changePassword) {
+    return(
+      <ChangePassword 
+        setChangePassword={setChangePassword}
+        setPasswordChangeSuccessSnackbarOpen={setPasswordChangeSuccessSnackbarOpen}
+      />
+    );
+  }
+
   if (edit) {
     return(
       <form id='editStudentProfile' onSubmit={handleSubmit}>
@@ -199,6 +219,10 @@ export function StudentProfile(props) {
           </MyGrid>
           <MyGrid item xs={12} sm={6}>
             <TextField id='first_name' name='first_name' type='text' label='生徒名' value={editForm.first_name} onChange={handleChange} required fullWidth />
+          </MyGrid>
+          <MyGrid item xs={12}>
+            <TextField id='description' name='description' type='text' label='自己紹介' value={editForm.description} onChange={handleChange} variant='outlined' 
+            inputProps={{maxLength: 300}} helperText='300文字数制限' multiline fullWidth />
           </MyGrid>
           <MyGrid item xs={12} sm={5}>
             <TextField id='school_name' name='school_name' type='text' label='生徒学校名' value={editForm.student_profile.school_name} onChange={handleChangeStudentProfile} required fullWidth />
@@ -286,6 +310,9 @@ export function StudentProfile(props) {
           >
             プロフィール編集
           </Button>
+          <Button type="button" size='small' color='primary' onClick={() => setChangePassword(true)}>
+            パスワード変更
+          </Button>
         </Grid>
         <Typography variant='h5' color='textSecondary' display='block' gutterBottom>
           {`${props.currentUser.last_name} ${props.currentUser.first_name}様`}
@@ -325,7 +352,7 @@ export function StudentProfile(props) {
       <Typography variant='subtitle1' color='textSecondary' display='block' gutterBottom>
         自己紹介
       </Typography>
-      <Typography variant='body2' color='textPrimary' display='block' gutterBottom>
+      <Typography variant='body2' color='textPrimary' display='block' className={classes.multiline} gutterBottom>
         {props.currentUser.description}
       </Typography>
       <Divider />
@@ -344,6 +371,49 @@ export function StudentProfile(props) {
           {props.currentUser.phone_number}
         </Typography>
       </Typography>
+      <Snackbar open={passwordChangeSuccessSnackbarOpen} onClose={handleSnackbarClose}>
+        <Alert severity='success' variant='filled' onClose={handleSnackbarClose}>
+          パスワードを変更されました
+        </Alert>
+      </Snackbar>
+    </div>
+  );
+}
+
+export function ChangePassword(props) {
+  const classes = useStyles();
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const response = await axiosInstance.post(`/yoyaku/users/${getUserIdFromToken()}/change_password/`, {
+      newPassword: newPassword,
+    });
+    props.setPasswordChangeSuccessSnackbarOpen(true);
+    props.setChangePassword(false);
+  }
+
+  return(
+    <div>
+      <form onSubmit={handleSubmit}>
+        <MyGrid container spacing={3} className={classes.sectionEnd}>
+          <MyGrid item xs={12}>
+            <TextField id='newPassword' name='newPassword' type='password' label='新しいパスワード' value={newPassword} onChange={e => setNewPassword(e.target.value)} 
+            helperText='半角英数・記号（e.g. !@#%*.）７文字以上' required fullWidth />
+          </MyGrid>
+          <MyGrid item xs={12}>
+            <TextField id='newPasswordConfirm' name='newPasswordConfirm' type='password' label='新しいパスワードを確認' value={confirmNewPassword} error={newPassword !== confirmNewPassword}
+            onChange={e => setConfirmNewPassword(e.target.value)} required fullWidth />
+          </MyGrid>
+        </MyGrid>
+        <Button type='button' onClick={() => {props.setChangePassword(false)}} className={classes.backButton}>
+          戻る
+        </Button>
+        <Button type="submit" variant="contained" color="primary" disabled={newPassword.length < 8 || confirmNewPassword !== newPassword}>
+          パスワードを変更
+        </Button>
+      </form>
     </div>
   );
 }
