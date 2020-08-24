@@ -256,7 +256,7 @@ export function StudentProfile(props) {
               label="生徒生年月日"
               value={editForm.birthday}
               onChange={date => handleDateChange('birthday', date)}
-              format='YYYY/MM/DD'
+              format='YYYY-MM-DD'
               invalidDateMessage='正しい日にちを入力して下さい'
               maxDateMessage='正しい日にちを入力して下さい'
               minDateMessage='正しい日にちを入力して下さい'
@@ -289,7 +289,7 @@ export function StudentProfile(props) {
           戻る
         </Button>
         <Button type='submit' variant='contained' color='primary' disabled={dateError}>
-          サブミット
+          提出
         </Button>
       </form>
     );
@@ -327,7 +327,7 @@ export function StudentProfile(props) {
       <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
         生年月日・
         <Typography variant='body2' color='textPrimary' display='inline'>
-          {new Date(props.currentUser.birthday).toLocaleDateString('ja-JP')}
+          {props.currentUser.birthday}
         </Typography>
       </Typography>
       <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
