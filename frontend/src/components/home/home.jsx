@@ -99,11 +99,13 @@ export default function Home(props) {
   const [currentUser, setCurrentUser] = useState(null);
   const [currentSubscription, setCurrentSubscription] = useState(null);
   const [currentProduct, setCurrentProduct] = useState(null);
+  const [reload, setReload] = useState(false);
   const handleLogout = props.handleLogout;
 
   useEffect(() => {
     getCurrentUser();
-  }, []);
+    setReload(false);
+  }, [reload]);
 
   const getCurrentUser = async () => {
     let userResponse = await axiosInstance.get(`/yoyaku/users/${getUserIdFromToken()}/`);
@@ -260,6 +262,7 @@ export default function Home(props) {
                 currentUser={currentUser} 
                 currentSubscription={currentSubscription} 
                 currentProduct={currentProduct}
+                setReload={setReload}
               />
             </Box>
           </Route>

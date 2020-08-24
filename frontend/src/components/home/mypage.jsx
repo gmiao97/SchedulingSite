@@ -45,7 +45,7 @@ export default function MyPage(props) {
       </Tabs>
       <Box p={3}>
         {activeTab === 0 ?
-          <StudentProfile currentUser={props.currentUser} /> :
+          <StudentProfile currentUser={props.currentUser} setReload={props.setReload} /> :
           <Subscription 
             stripeCustomerId={props.currentUser.stripeCustomerId} 
             currentSubscription={props.currentSubscription} 
@@ -186,6 +186,7 @@ export function StudentProfile(props) {
       ...editForm,
       time_zone: editForm.time_zone.replace(' ', '_'),
     });
+    props.setReload(true);
     setEdit(false);
   }
 
