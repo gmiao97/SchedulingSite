@@ -537,7 +537,7 @@ export function StudentSignup(props) {
           label="生徒生年月日"
           value={props.state.birthday}
           onChange={date => props.onDateChange('birthday', date)}
-          format='YYYY/MM/DD'
+          format='YYYY-MM-DD'
           invalidDateMessage='正しい日にちを入力して下さい'
           maxDateMessage='正しい日にちを入力して下さい'
           minDateMessage='正しい日にちを入力して下さい'
@@ -604,7 +604,7 @@ export function TeacherSignup(props) {
           label="生年月日"
           value={props.state.birthday}
           onChange={date => props.onDateChange('birthday', date)}
-          format='YYYY/MM/DD'
+          format='YYYY-MM-DD'
           invalidDateMessage='正しい日にちを入力して下さい'
           maxDateMessage='正しい日にちを入力して下さい'
           minDateMessage='正しい日にちを入力して下さい'
