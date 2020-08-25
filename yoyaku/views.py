@@ -61,8 +61,11 @@ class UserViewSet(viewsets.ModelViewSet):
                                                   payment_method=request.data['paymentMethodId'])
                 stripe.Customer.modify(customer.id,
                                        invoice_settings={'default_payment_method': request.data['paymentMethodId']})
+
+                trial_days = 7
                 utc_now = datetime.now(timezone.utc)
-                datetime_next_month_first = datetime.combine(utc_now.date(), time(12, 0), utc_now.tzinfo).replace(day=1) + relativedelta.relativedelta(months=1)
+                datetime_next_month_first = datetime.combine(utc_now.date(), time(12, 0), utc_now.tzinfo)
+                datetime_next_month_first = (datetime_next_month_first + relativedelta.relativedelta(days=trial_days)).replace(day=1) + relativedelta.relativedelta(months=1)
                 billing_cycle_anchor = int(datetime_next_month_first.timestamp())
 
                 # Create the subscription
@@ -73,7 +76,7 @@ class UserViewSet(viewsets.ModelViewSet):
                             'price': request.data['priceId']
                         }
                     ],
-                    trial_period_days=7,
+                    trial_period_days=trial_days,
                     billing_cycle_anchor=billing_cycle_anchor,
                     expand=['latest_invoice.payment_intent', 'pending_setup_intent'],
                 )
@@ -81,6 +84,7 @@ class UserViewSet(viewsets.ModelViewSet):
             except Exception as e:
                 if customer:
                     stripe.Customer.delete(customer.id)
+                print(e)
                 return Response(data={'error': '登録できませんでした。サポートに連絡して下さい。'})
             serializer.save(stripeCustomerId=customer.id)
         else:
