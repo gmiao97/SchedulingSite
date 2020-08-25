@@ -62,7 +62,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 stripe.Customer.modify(customer.id,
                                        invoice_settings={'default_payment_method': request.data['paymentMethodId']})
                 utc_now = datetime.now(timezone.utc)
-                datetime_next_month_first = datetime.combine(utc_now.date(), time(0, 0), utc_now.tzinfo).replace(day=1) + relativedelta.relativedelta(months=1)
+                datetime_next_month_first = datetime.combine(utc_now.date(), time(12, 0), utc_now.tzinfo).replace(day=1) + relativedelta.relativedelta(months=1)
                 billing_cycle_anchor = int(datetime_next_month_first.timestamp())
 
                 # Create the subscription
