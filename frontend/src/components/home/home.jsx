@@ -4,7 +4,6 @@ import { deepOrange, deepPurple } from '@material-ui/core/colors';
 import Panda from '../../static/avatars/panda.png';
 import { Switch, Route, Link, } from "react-router-dom";
 import {  
-  Container, 
   Grid,
   AppBar,
   Toolbar,
@@ -22,10 +21,6 @@ import {
 } from '@material-ui/core';
 import { 
   Menu as MenuIcon,
-  MoreVert,
-  ExitToApp,
-  AccountCircle,
-  School,
 } from '@material-ui/icons';
 
 import MyPage from './myPage/myPage';

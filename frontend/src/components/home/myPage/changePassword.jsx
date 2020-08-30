@@ -1,19 +1,13 @@
-import React, { Component, useState, useEffect } from 'react';
-import moment from 'moment-timezone';
+import React, { useState } from 'react';
 import { styled, makeStyles } from '@material-ui/core/styles';
-import { KeyboardDatePicker } from '@material-ui/pickers';
-import { Person, CreditCard, LocationOn } from '@material-ui/icons';
-import { Alert, Autocomplete } from '@material-ui/lab'
 import {  
   Button,
   Grid,
-  Snackbar,
   TextField,
 } from '@material-ui/core';
 
 import axiosInstance from '../../../axiosApi';
-import { gradeMappings, timeZoneNames, getUserIdFromToken } from '../../../util';
-import StudentProfile, { Subscription } from './studentPage';
+import { getUserIdFromToken } from '../../../util';
 
 
 const MyGrid = styled(Grid)({

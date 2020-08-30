@@ -1,8 +1,8 @@
-import React, { Component, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import moment from 'moment-timezone';
 import { styled, makeStyles } from '@material-ui/core/styles';
 import { KeyboardDatePicker } from '@material-ui/pickers';
-import { Person, CreditCard, LocationOn } from '@material-ui/icons';
+import { LocationOn } from '@material-ui/icons';
 import { Alert, Autocomplete } from '@material-ui/lab'
 import {  
   Typography,
@@ -98,7 +98,9 @@ export default function StudentProfile(props) {
   const [edit, setEdit] = useState(false);
   const [changePassword, setChangePassword] = useState(false);
   const [dateError, setDateError] = useState(false);
+  const [usernameList, setUsernameList] = useState([]);
   const [editForm, setEditForm] = useState({
+    username: props.currentUser.username,
     email: props.currentUser.email,
     first_name: props.currentUser.first_name,
     last_name: props.currentUser.last_name,
@@ -116,6 +118,17 @@ export default function StudentProfile(props) {
   for (let grade of gradeMappings) {
     schoolGrades.push(grade);
   }
+
+  useEffect(() => {
+    getUsernameList();
+  }, [editForm.username]);
+
+  const getUsernameList = async () => {
+    const response = await axiosInstance.get('/yoyaku/users/username_list/');
+    setUsernameList(response.data);
+  }
+
+  const usernameTaken = () => usernameList.includes(editForm.username) && editForm.username !== props.currentUser.username;
 
   const handleChange = event => {
     setEditForm({
@@ -144,6 +157,7 @@ export default function StudentProfile(props) {
 
   const resetEditForm = () => {
     setEditForm({
+      username: props.currentUser.username,
       email: props.currentUser.email,
       first_name: props.currentUser.first_name,
       last_name: props.currentUser.last_name, 
@@ -185,6 +199,10 @@ export default function StudentProfile(props) {
     return(
       <form id='editStudentProfile' onSubmit={handleSubmit}>
         <MyGrid container spacing={3} className={classes.sectionEnd}>
+          <MyGrid item xs={12}>
+            <TextField id='username' name='username' type='text' label='ユーザーID' value={editForm.username} onChange={handleChange} required fullWidth variant='filled'
+            error={usernameTaken()} helperText={usernameTaken() ? 'そのユーザーIDがすでに使われています' : '半角英数・記号'} />
+          </MyGrid>
           <MyGrid item xs={12} sm={6}>
             <TextField id='last_name' name='last_name' type='text' label='生徒姓' value={editForm.last_name} onChange={handleChange} required fullWidth />
           </MyGrid>
@@ -259,7 +277,7 @@ export default function StudentProfile(props) {
         <Button type='button' onClick={() => {setEdit(false)}} className={classes.backButton}>
           戻る
         </Button>
-        <Button type='submit' variant='contained' color='primary' disabled={dateError}>
+        <Button type='submit' variant='contained' color='primary' disabled={dateError || usernameTaken()}>
           提出
         </Button>
       </form>
@@ -295,6 +313,12 @@ export default function StudentProfile(props) {
           <LocationOn /> {props.currentUser.time_zone.replace('_', ' ')}
         </Typography>
       </Grid>
+      <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+        ユーザーID・
+        <Typography variant='body2' color='textPrimary' display='inline'>
+          {props.currentUser.username}
+        </Typography>
+      </Typography>
       <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
         生年月日・
         <Typography variant='body2' color='textPrimary' display='inline'>

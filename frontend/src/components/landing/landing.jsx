@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Switch, Route, Link, } from "react-router-dom";
 import {  
-  Container, 
-  Grid,
   AppBar,
   Toolbar,
   Typography,
@@ -12,9 +10,6 @@ import {
   Box,
   Avatar,
 } from '@material-ui/core';
-import { 
-  School,
-} from '@material-ui/icons';
 
 import Login, { PasswordReset } from './login';
 import Signup from './signup';

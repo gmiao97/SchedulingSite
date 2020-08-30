@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { styled, makeStyles } from '@material-ui/core/styles';
-import { useHistory, Link } from "react-router-dom"
+import { makeStyles } from '@material-ui/core/styles';
+import { Link } from "react-router-dom"
 import {
   Box,
   Grid,
   Paper,
   Typography,
-  Divider,
   Button,
   TextField,
   Snackbar,
