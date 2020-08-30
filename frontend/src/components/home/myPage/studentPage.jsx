@@ -7,18 +7,15 @@ import { Alert, Autocomplete } from '@material-ui/lab'
 import {  
   Typography,
   Button,
-  Paper,
-  Box,
   Grid,
-  Tabs,
-  Tab,
   Snackbar,
   Divider,
   TextField,
 } from '@material-ui/core';
 
-import axiosInstance from '../../axiosApi';
-import { gradeMappings, timeZoneNames, getUserIdFromToken } from '../../util';
+import axiosInstance from '../../../axiosApi';
+import { gradeMappings, timeZoneNames, getUserIdFromToken } from '../../../util';
+import ChangePassword from './changePassword';
 
 
 const MyGrid = styled(Grid)({
@@ -36,29 +33,6 @@ const useStyles = makeStyles(theme => ({
     whiteSpace: 'pre-line',
   },
 }));
-
-export default function MyPage(props) {
-  const [activeTab, setActiveTab] = React.useState(0);
-
-  return(
-    <Paper elevation={24}>
-      <Tabs value={activeTab} indicatorColor='primary' textColor='primary' onChange={(event, value) => setActiveTab(value)}>
-        <Tab label='プロフィール' icon={<Person />} />
-        <Tab label='サブスクリプション' icon={<CreditCard />} />
-      </Tabs>
-      <Box p={3}>
-        {activeTab === 0 ?
-          <StudentProfile currentUser={props.currentUser} setReload={props.setReload} /> :
-          <Subscription 
-            stripeCustomerId={props.currentUser.stripeCustomerId} 
-            currentSubscription={props.currentSubscription} 
-            currentProduct={props.currentProduct}
-          />
-        }
-      </Box>
-    </Paper>
-  );
-}
 
 
 export function Subscription(props) {
@@ -119,13 +93,11 @@ export function Subscription(props) {
   );
 }
 
-
-export function StudentProfile(props) {
+export default function StudentProfile(props) {
   const classes = useStyles();
   const [edit, setEdit] = useState(false);
   const [changePassword, setChangePassword] = useState(false);
   const [dateError, setDateError] = useState(false);
-  const [passwordChangeSuccessSnackbarOpen, setPasswordChangeSuccessSnackbarOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     email: props.currentUser.email,
     first_name: props.currentUser.first_name,
@@ -170,10 +142,6 @@ export function StudentProfile(props) {
     setDateError(!date || !date.isValid());
   }
 
-  const handleSnackbarClose = (event, reason) => {
-    setPasswordChangeSuccessSnackbarOpen(false);
-  }
-
   const resetEditForm = () => {
     setEditForm({
       email: props.currentUser.email,
@@ -199,13 +167,16 @@ export function StudentProfile(props) {
     });
     props.setReload(true);
     setEdit(false);
+    props.setSuccessMessage('プロフィールを編集されました。')
+    props.setSuccessSnackbarOpen(true);
   }
 
   if (changePassword) {
     return(
       <ChangePassword 
         setChangePassword={setChangePassword}
-        setPasswordChangeSuccessSnackbarOpen={setPasswordChangeSuccessSnackbarOpen}
+        setSuccessMessage={props.setSuccessMessage}
+        setSuccessSnackbarOpen={props.setSuccessSnackbarOpen}
       />
     );
   }
@@ -371,49 +342,6 @@ export function StudentProfile(props) {
           {props.currentUser.phone_number}
         </Typography>
       </Typography>
-      <Snackbar open={passwordChangeSuccessSnackbarOpen} onClose={handleSnackbarClose}>
-        <Alert severity='success' variant='filled' onClose={handleSnackbarClose}>
-          パスワードを変更されました
-        </Alert>
-      </Snackbar>
-    </div>
-  );
-}
-
-export function ChangePassword(props) {
-  const classes = useStyles();
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const response = await axiosInstance.post(`/yoyaku/users/${getUserIdFromToken()}/change_password/`, {
-      newPassword: newPassword,
-    });
-    props.setPasswordChangeSuccessSnackbarOpen(true);
-    props.setChangePassword(false);
-  }
-
-  return(
-    <div>
-      <form onSubmit={handleSubmit}>
-        <MyGrid container spacing={3} className={classes.sectionEnd}>
-          <MyGrid item xs={12}>
-            <TextField id='newPassword' name='newPassword' type='password' label='新しいパスワード' value={newPassword} onChange={e => setNewPassword(e.target.value)} 
-            helperText='半角英数・記号（e.g. !@#%*.）７文字以上' required fullWidth />
-          </MyGrid>
-          <MyGrid item xs={12}>
-            <TextField id='newPasswordConfirm' name='newPasswordConfirm' type='password' label='新しいパスワードを確認' value={confirmNewPassword} error={newPassword !== confirmNewPassword}
-            onChange={e => setConfirmNewPassword(e.target.value)} required fullWidth />
-          </MyGrid>
-        </MyGrid>
-        <Button type='button' onClick={() => {props.setChangePassword(false)}} className={classes.backButton}>
-          戻る
-        </Button>
-        <Button type="submit" variant="contained" color="primary" disabled={newPassword.length < 8 || confirmNewPassword !== newPassword}>
-          パスワードを変更
-        </Button>
-      </form>
     </div>
   );
 }

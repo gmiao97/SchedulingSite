@@ -28,9 +28,7 @@ import {
   School,
 } from '@material-ui/icons';
 
-import MyPage from './mypage';
-import Profile from './profile';
-import EditProfile from './editProfile';
+import MyPage from './myPage/myPage';
 import Calendar from './calendar';
 import axiosInstance from '../../axiosApi';
 import { getUserIdFromToken } from '../../util';
@@ -67,13 +65,13 @@ const useStyles = makeStyles(theme => ({
   },
   sectionDesktop: {
     display: 'none',
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up('md')]: {
       display: 'flex',
     },
   },
   sectionMobile: {
     display: 'flex',
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up('md')]: {
       display: 'none',
     },
   },
@@ -177,9 +175,6 @@ export default function Home(props) {
       {/* <MenuItem onClick={handleMobileMenuClose} component={Link} to="/calendar">
         Calendar
       </MenuItem> */}
-      {/* <MenuItem onClick={handleMobileMenuClose} component={Link} to="/profile">
-        プロフィール
-      </MenuItem> */}
       <MenuItem onClick={handleLogout} component={Link} to="/">
         <Typography color='error' className={classes.iconMargin}>
           ログアウト
@@ -204,9 +199,6 @@ export default function Home(props) {
       open={desktopMenuOpen}
       onClose={handleDesktopMenuClose}
     >
-      {/* <MenuItem onClick={handleDesktopMenuClose} component={Link} to="/profile">
-        プロフィール
-      </MenuItem> */}
       <MenuItem onClick={handleLogout} component={Link} to="/">
         <Typography　color='error' className={classes.iconMargin}>
           ログアウト
@@ -274,11 +266,6 @@ export default function Home(props) {
           <Route exact path="/announce">
             <Box mx='auto' width='90%' my={5} minWidth={400}>
               <Announce />
-            </Box>
-          </Route>
-          <Route exact path="/profile">
-            <Box mx='auto' minWidth={700}>
-              <Profile currentUser={currentUser} />
             </Box>
           </Route>
           <Route exact path="/calendar">
