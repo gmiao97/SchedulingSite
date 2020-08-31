@@ -57,7 +57,7 @@ export function Subscription(props) {
   if (props.currentProduct.error || props.currentSubscription.error) {
     return(
       <div>
-        <Typography variant='h5' color='textSecondary' display='block' gutterBottom>
+        <Typography variant='h6' color='textSecondary' display='block' gutterBottom>
           サブスクリプションはありません。
         </Typography>
         <Button variant='contained' color='secondary' type='button' onClick={handleStripeCustomerPortalRedirect}>
@@ -200,8 +200,8 @@ export default function StudentProfile(props) {
       <form id='editStudentProfile' onSubmit={handleSubmit}>
         <MyGrid container spacing={3} className={classes.sectionEnd}>
           <MyGrid item xs={12}>
-            <TextField id='username' name='username' type='text' label='ユーザーID' value={editForm.username} onChange={handleChange} required fullWidth variant='filled'
-            error={usernameTaken()} helperText={usernameTaken() ? 'そのユーザーIDがすでに使われています' : '半角英数・記号'} />
+            <TextField id='username' name='username' type='text' label='ユーザー名' value={editForm.username} onChange={handleChange} required fullWidth variant='filled'
+            error={usernameTaken()} helperText={usernameTaken() ? 'そのユーザー名はすでに使われています' : '半角英数・記号'} />
           </MyGrid>
           <MyGrid item xs={12} sm={6}>
             <TextField id='last_name' name='last_name' type='text' label='生徒姓' value={editForm.last_name} onChange={handleChange} required fullWidth />
@@ -314,7 +314,7 @@ export default function StudentProfile(props) {
         </Typography>
       </Grid>
       <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
-        ユーザーID・
+        ユーザー名・
         <Typography variant='body2' color='textPrimary' display='inline'>
           {props.currentUser.username}
         </Typography>

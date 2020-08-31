@@ -78,7 +78,7 @@ export default function Login(props) {
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <TextField id='username' name='username' type='text' label='ユーザーID' value={state.username} onChange={handleChange} required fullWidth />
+              <TextField id='username' name='username' type='text' label='ユーザー名' value={state.username} onChange={handleChange} required fullWidth />
             </Grid>
             <Grid item xs={12}>
               <TextField id='password' name='password' className={classes.sectionEnd} type='password' label='パスワード' value={state.password} onChange={handleChange} required fullWidth />
@@ -99,7 +99,7 @@ export default function Login(props) {
       </Box>
       <Snackbar open={state.errorSnackbarOpen} onClose={handleSnackbarClose}>
         <Alert severity="error" variant="filled" elevation={24} onClose={handleSnackbarClose}>
-          ユーザーIDまたはパスワードが間違っています。
+          ユーザー名またはパスワードが間違っています。
         </Alert>
       </Snackbar>
     </Paper>
@@ -151,7 +151,7 @@ export function PasswordReset(props) {
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
               <Grid item xs={12}>
-                <TextField id='username' name='username' type='text' label='ユーザーID' value={state.username} onChange={handleChange} required fullWidth />
+                <TextField id='username' name='username' type='text' label='ユーザー名' value={state.username} onChange={handleChange} required fullWidth />
               </Grid>
               <Grid item xs={12}>
                 <Button type="submit" variant="contained" color="primary">パスワードをリセット</Button>

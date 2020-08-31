@@ -1,8 +1,9 @@
-import React, { Component, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { deepOrange, deepPurple } from '@material-ui/core/colors';
 import Panda from '../../static/avatars/panda.png';
 import { Switch, Route, Link, } from "react-router-dom";
+import { Menu as MenuIcon} from '@material-ui/icons';
 import {  
   Grid,
   AppBar,
@@ -19,12 +20,10 @@ import {
   Paper,
   Link as MaterialLink,
 } from '@material-ui/core';
-import { 
-  Menu as MenuIcon,
-} from '@material-ui/icons';
 
 import MyPage from './myPage/myPage';
 import Calendar from './calendar';
+import ManageUsers from './manageUsers';
 import axiosInstance from '../../axiosApi';
 import { getUserIdFromToken } from '../../util';
 import Logo from '../../static/success.academy.logo.png';
@@ -167,6 +166,12 @@ export default function Home(props) {
       <MenuItem onClick={handleMobileMenuClose} component={Link} to="/my-page">
         マイページ
       </MenuItem>
+      {currentUser && currentUser.user_type === 'ADMIN' ?
+        <MenuItem onClick={handleMobileMenuClose} component={Link} to="/manage-users">
+          ユーザー管理
+        </MenuItem> :
+        null
+      }
       {/* <MenuItem onClick={handleMobileMenuClose} component={Link} to="/calendar">
         Calendar
       </MenuItem> */}
@@ -174,7 +179,6 @@ export default function Home(props) {
         <Typography color='error' className={classes.iconMargin}>
           ログアウト
         </Typography>
-        {/* <ExitToApp color="secondary" /> */}
       </MenuItem>
     </Menu>
   );
@@ -198,7 +202,6 @@ export default function Home(props) {
         <Typography　color='error' className={classes.iconMargin}>
           ログアウト
         </Typography>
-        {/* <ExitToApp color="secondary" /> */}
       </MenuItem>
     </Menu>
   );
@@ -221,6 +224,10 @@ export default function Home(props) {
               <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/class-info">クラス情報（ズーム）</Button>
               <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/announce">指導報告</Button>
               <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/my-page">マイページ</Button>
+              {currentUser.user_type === 'ADMIN' ?
+                <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/manage-users">ユーザー管理</Button> :
+                null
+              }
               {/* <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/calendar">Calendar</Button> */}
               <div className={`${classes.sectionDesktop} ${classes.menu}`}>
                 <IconButton
@@ -268,6 +275,14 @@ export default function Home(props) {
               <Calendar />
             </Box>
           </Route>
+          {currentUser.user_type === 'ADMIN' ? 
+            <Route exact path="/manage-users">
+              <Box mx='auto' width='90%' my={5} minWidth={400}>
+                <ManageUsers />
+              </Box>
+            </Route> :
+            null
+          }
         </Switch>
       </div>
   );
