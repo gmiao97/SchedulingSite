@@ -24,6 +24,7 @@ import {
 import MyPage from './myPage/myPage';
 import Calendar from './calendar';
 import ManageUsers from './manageUsers';
+import ClassInfo from './classInfo';
 import axiosInstance from '../../axiosApi';
 import { getUserIdFromToken } from '../../util';
 import Logo from '../../static/success.academy.logo.png';
@@ -95,11 +96,11 @@ export default function Home(props) {
   const handleLogout = props.handleLogout;
 
   useEffect(() => {
-    getCurrentUser();
+    getUserData();
     setReload(false);
   }, [reload]);
 
-  const getCurrentUser = async () => {
+  const getUserData = async () => {
     let userResponse = await axiosInstance.get(`/yoyaku/users/${getUserIdFromToken()}/`);
     setCurrentUser(userResponse.data);
 
@@ -262,7 +263,10 @@ export default function Home(props) {
           </Route>
           <Route exact path="/class-info">
             <Box mx='auto' width='90%' my={5} minWidth={400}>
-              <ClassInfo currentUser={currentUser} />
+              <ClassInfo 
+                currentUser={currentUser}
+                currentProduct={currentProduct}
+              />
             </Box>
           </Route>
           <Route exact path="/announce">
@@ -285,18 +289,6 @@ export default function Home(props) {
           }
         </Switch>
       </div>
-  );
-}
-
-export function ClassInfo(props) {
-  return(
-    <Grid container spacing={2}>
-      <Paper elevation={24}>
-        <Box p={3}>
-          ズームID（９月のクラスは９月１日から９月３０日までです）
-        </Box>
-      </Paper>
-    </Grid>
   );
 }
 
