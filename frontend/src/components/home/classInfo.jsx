@@ -20,6 +20,14 @@ const useStyles = makeStyles(theme => ({
   table: {
     minWidth: 500,
   },
+  sectionEnd: {
+    marginBottom: theme.spacing(2),
+  },
+  printout: {
+    width: '100%',
+    border: 0,
+    height: 300,
+  },
 }));
 
 
@@ -54,10 +62,12 @@ export default function ClassInfo(props) {
         <Typography variant='body1' color='textSecondary'>{line}</Typography>
       )}
       <Typography display='block' variant='caption' color='textSecondary' gutterBottom>何かご事情がある場合は保護者の方からご相談下さい。info@mercy-education.com</Typography>
-      <Button variant='outlined' color='secondary' href='http://mercy-education.com/FREE/cn2/2020-08-17.html' target='_blank' rel='noopener noreferrer'>
+      <Button variant='outlined' className={classes.sectionEnd} color='secondary' href='http://mercy-education.com/FREE/cn2/2020-08-17.html' 
+      target='_blank' rel='noopener noreferrer'>
         時間割り
       </Button>
-      <TableContainer component={Paper}>
+      <Typography variant='h6' display='block'>ZOOM ID</Typography>
+      <TableContainer component={Paper} elevation={24} className={classes.sectionEnd}>
         <Table className={classes.table}>
           <TableHead>
             <TableRow>
@@ -85,6 +95,12 @@ export default function ClassInfo(props) {
           </TableBody>
         </Table>
       </TableContainer>
+      <Typography variant='h6' display='block'>プリント</Typography>
+      <Paper elevation={24}>
+        <Box p={3}>
+          <iframe className={classes.printout} src="https://drive.google.com/embeddedfolderview?id=1EMhq3GkTEfsk5NiSHpqyZjS4H2N_aSak#list" />
+        </Box>
+      </Paper>
     </div>
   );
 }
