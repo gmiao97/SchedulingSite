@@ -61,5 +61,7 @@ export default function MyPage(props) {
     return(
       <Typography>建設中</Typography>
     );
+  } else {
+    return null;
   }
 }

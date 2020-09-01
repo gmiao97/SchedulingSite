@@ -2,10 +2,9 @@ import React, { useState, useEffect, forwardRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import MaterialTable from 'material-table';
 import {
+  Typography,
   Box,
   Grid,
-  Backdrop,
-  CircularProgress,
 } from '@material-ui/core';
 import { 
   AddBox,
@@ -26,6 +25,7 @@ import {
 } from '@material-ui/icons';
 
 import axiosInstance from '../../axiosApi';
+import { gradeMappings } from '../../util';
 
 
 const useStyles = makeStyles(theme => ({
@@ -35,6 +35,9 @@ const useStyles = makeStyles(theme => ({
   backdrop: {
     zIndex: theme.zIndex.drawer + 1,
     color: '#fff',
+  },
+  multiline: {
+    whiteSpace: 'pre-line',
   },
 }));
 
@@ -62,6 +65,7 @@ const tableIcons = {
 export default function ManageUsers(props) {
   const classes = useStyles();
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getUsers();
@@ -69,7 +73,10 @@ export default function ManageUsers(props) {
 
   const getUsers = async () => {
     let response = await axiosInstance.get(`/yoyaku/users/`);
-    setUsers(response.data);
+    setUsers(response.data.map(user => 
+      ({...user, time_zone: user.time_zone.replace('_', ' ')})
+    ));
+    setLoading(false);
   }
 
   return(
@@ -77,6 +84,7 @@ export default function ManageUsers(props) {
       <MaterialTable 
         title='ユーザー管理'
         icons={tableIcons}
+        isLoading={loading}
         options={{
           // filtering: true,
           // headerStyle: {
@@ -85,9 +93,21 @@ export default function ManageUsers(props) {
         }}
         onRowClick={(event, rowData, togglePanel) => togglePanel()}
         detailPanel={rowData => {
-          return (
-            <StudentDetails data={rowData} />
-          )
+          if (rowData.user_type === 'STUDENT') {
+            return(
+              <StudentDetails data={rowData} />
+            )
+          } else if (rowData.user_type === 'TEACHER') {
+            return(
+              <TeacherDetails data={rowData} />
+            );
+          } else if (rowData.user_type === 'ADMIN') {
+            return(
+              <AdminDetails data={rowData} />
+            );
+          } else {
+            return null;
+          }
         }}
         localization={{
           pagination: {
@@ -117,6 +137,7 @@ export default function ManageUsers(props) {
           {title: 'ID', field: 'id', type: 'numeric', filtering: false},
           {title: 'ユーザー名', field: 'username', filtering: false},
           {title: 'ユーザータイプ', field: 'user_type'},
+          {title: 'タイムゾーン', field: 'time_zone'},
           {title: '姓', field: 'last_name', filtering: false},
           {title: '名', field: 'first_name', filtering: false},
           {title: 'メールアドレス', field: 'email', filtering: false},
@@ -128,11 +149,144 @@ export default function ManageUsers(props) {
 }
 
 export function StudentDetails(props) {
+  const classes = useStyles();
+
   return(
     <Box m={2}>
-      <Grid container spacing={2}>
+      <Grid container spacing={4} justify='space-around'>
+        <Grid item xs={12}>
+          <Typography variant='subtitle1' color='textSecondary' display='block' gutterBottom>
+            自己紹介
+          </Typography>
+          <Typography variant='body2' color='textPrimary' display='block' className={classes.multiline} gutterBottom>
+            {props.data.description}
+          </Typography>
+        </Grid>
         <Grid item>
-          
+          <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+            保護者電話番号・
+            <Typography variant='body2' color='textPrimary' display='inline'>
+              {props.data.phone_number}
+            </Typography>
+          </Typography>
+        </Grid>
+        <Grid item>
+          <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+            生年月日・
+            <Typography variant='body2' color='textPrimary' display='inline'>
+              {props.data.birthday}
+            </Typography>
+          </Typography>
+        </Grid>
+        <Grid item>
+          <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+            Stripe顧客ID・
+            <Typography variant='body2' color='textPrimary' display='inline'>
+              {props.data.stripeCustomerId}
+            </Typography>
+          </Typography>
+        </Grid>
+        <Grid item>
+          <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+            学校名・
+            <Typography variant='body2' color='textPrimary' display='inline'>
+              {props.data.student_profile.school_name}
+            </Typography>
+          </Typography>
+        </Grid>
+        <Grid item>
+          <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+            学年・
+            <Typography variant='body2' color='textPrimary' display='inline'>
+              {gradeMappings.get(props.data.student_profile.school_grade)}
+            </Typography>
+          </Typography>
+        </Grid>
+        <Grid item>
+          <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+            紹介者・
+            <Typography variant='body2' color='textPrimary' display='inline'>
+              {props.data.student_profile.referrer}
+            </Typography>
+          </Typography>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+}
+
+export function TeacherDetails(props) {
+  const classes = useStyles();
+
+  return(
+    <Box m={2}>
+      <Grid container spacing={4} justify='space-around'>
+        <Grid item xs={12}>
+          <Typography variant='subtitle1' color='textSecondary' display='block' gutterBottom>
+            自己紹介
+          </Typography>
+          <Typography variant='body2' color='textPrimary' display='block' className={classes.multiline} gutterBottom>
+            {props.data.description}
+          </Typography>
+        </Grid>
+        <Grid item>
+          <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+            電話番号・
+            <Typography variant='body2' color='textPrimary' display='inline'>
+              {props.data.phone_number}
+            </Typography>
+          </Typography>
+        </Grid>
+        <Grid item>
+          <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+            生年月日・
+            <Typography variant='body2' color='textPrimary' display='inline'>
+              {props.data.birthday}
+            </Typography>
+          </Typography>
+        </Grid>
+        <Grid item>
+          <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+            所属・
+            <Typography variant='body2' color='textPrimary' display='inline'>
+              {props.data.teacher_profile.association}
+            </Typography>
+          </Typography>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+}
+
+export function AdminDetails(props) {
+  const classes = useStyles();
+
+  return(
+    <Box m={2}>
+      <Grid container spacing={4} justify='space-around'>
+        <Grid item xs={12}>
+          <Typography variant='subtitle1' color='textSecondary' display='block' gutterBottom>
+            自己紹介
+          </Typography>
+          <Typography variant='body2' color='textPrimary' display='block' className={classes.multiline} gutterBottom>
+            {props.data.description}
+          </Typography>
+        </Grid>
+        <Grid item>
+          <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+            電話番号・
+            <Typography variant='body2' color='textPrimary' display='inline'>
+              {props.data.phone_number}
+            </Typography>
+          </Typography>
+        </Grid>
+        <Grid item>
+          <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+            生年月日・
+            <Typography variant='body2' color='textPrimary' display='inline'>
+              {props.data.birthday}
+            </Typography>
+          </Typography>
         </Grid>
       </Grid>
     </Box>
