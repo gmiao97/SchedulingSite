@@ -98,7 +98,12 @@ export default function ClassInfo(props) {
       <Typography variant='h6' display='block'>プリント</Typography>
       <Paper elevation={24}>
         <Box p={3}>
-          <iframe className={classes.printout} src="https://drive.google.com/embeddedfolderview?id=1EMhq3GkTEfsk5NiSHpqyZjS4H2N_aSak#list" />
+          <iframe className={classes.printout} src="https://drive.google.com/embeddedfolderview?id=1EMhq3GkTEfsk5NiSHpqyZjS4H2N_aSak#list">
+            <Button variant='outlined' className={classes.sectionEnd} color='secondary' target='_blank' rel='noopener noreferrer'
+            href='https://drive.google.com/drive/folders/1EMhq3GkTEfsk5NiSHpqyZjS4H2N_aSak?usp=sharing'>
+              Googleドライブへ
+            </Button>
+          </iframe>
         </Box>
       </Paper>
     </div>
