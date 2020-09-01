@@ -64,8 +64,14 @@ class UserViewSet(viewsets.ModelViewSet):
 
                 trial_days = 7
                 utc_now = datetime.now(timezone.utc)
-                datetime_next_month_first = datetime.combine(utc_now.date(), time(12, 0), utc_now.tzinfo)
-                datetime_next_month_first = (datetime_next_month_first + relativedelta.relativedelta(days=trial_days)).replace(day=1) + relativedelta.relativedelta(months=1)
+                trial_end_datetime = utc_now + relativedelta.relativedelta(days=trial_days)
+                datetime_next_month_first = utc_now + relativedelta.relativedelta(months=1)
+                datetime_next_month_first = datetime_next_month_first.replace(day=1)
+                datetime_next_month_first = datetime.combine(datetime_next_month_first.date(), time(12, 0), datetime_next_month_first.tzinfo)
+
+                if datetime_next_month_first <= trial_end_datetime:
+                    datetime_next_month_first = datetime_next_month_first + relativedelta.relativedelta(months=1)
+
                 billing_cycle_anchor = int(datetime_next_month_first.timestamp())
 
                 # Create the subscription

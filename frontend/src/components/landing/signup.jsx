@@ -1,5 +1,5 @@
-import React, { Component, useState, useEffect } from 'react';
-import { useHistory, Prompt } from "react-router-dom"
+import React, { useState, useEffect } from 'react';
+import { useHistory } from "react-router-dom"
 import moment from 'moment-timezone';
 import { styled, makeStyles } from '@material-ui/core/styles';
 import { KeyboardDatePicker } from '@material-ui/pickers';
@@ -374,7 +374,7 @@ export default function Signup(props) {
         }
         if (usernameList.includes(signupForm.username)) {
           nextDisabled = true;
-          tooltipMessage = 'そのユーザーIDがすでに使われています';
+          tooltipMessage = 'そのユーザー名はすでに使われています';
         }
         return(
           <Tooltip title={tooltipMessage}>
@@ -487,8 +487,8 @@ export function StudentSignup(props) {
         </div>
       </MyGrid>
       <MyGrid item xs={12}>
-        <TextField id='username' name='username' type='text' label='ユーザーID' value={props.state.username} onChange={props.onChange} required fullWidth variant='filled' 
-        error={props.usernameList.includes(props.state.username)} helperText={props.usernameList.includes(props.state.username) ? 'そのユーザーIDがすでに使われています' : '半角英数・記号'} />
+        <TextField id='username' name='username' type='text' label='ユーザー名' value={props.state.username} onChange={props.onChange} required fullWidth variant='filled' 
+        error={props.usernameList.includes(props.state.username)} helperText={props.usernameList.includes(props.state.username) ? 'そのユーザー名はすでに使われています' : '半角英数・記号'} />
       </MyGrid>
       <MyGrid item xs={12} sm={6}>
         <TextField id='password' name='password' type='password' label='パスワード' value={props.state.password} onChange={props.onChange} required fullWidth variant='filled' 
@@ -579,8 +579,8 @@ export function TeacherSignup(props) {
   return(
     <MyGrid container spacing={3} className={classes.sectionEnd}>
       <MyGrid item xs={12}>
-        <TextField id='username' name='username' type='text' label='ユーザーID' value={props.state.username} onChange={props.onChange} required fullWidth variant='filled' 
-        error={props.usernameList.includes(props.state.username)} helperText={props.usernameList.includes(props.state.username) ? 'そのユーザーIDはすでに使われています' : '半角英数・記号'} />
+        <TextField id='username' name='username' type='text' label='ユーザー名' value={props.state.username} onChange={props.onChange} required fullWidth variant='filled' 
+        error={props.usernameList.includes(props.state.username)} helperText={props.usernameList.includes(props.state.username) ? 'そのユーザー名はすでに使われています' : '半角英数・記号'} />
       </MyGrid>
       <MyGrid item xs={12} sm={6}>
         <TextField id='password' name='password' type='password' label='パスワード' value={props.state.password} onChange={props.onChange} required fullWidth variant='filled'
