@@ -40,6 +40,7 @@ export default function MyPage(props) {
               /> :
               <Subscription 
                 stripeCustomerId={props.currentUser.stripeCustomerId} 
+                currentUser={props.currentUser}
                 currentSubscription={props.currentSubscription} 
                 currentProduct={props.currentProduct}
               />

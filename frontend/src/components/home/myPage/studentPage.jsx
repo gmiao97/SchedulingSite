@@ -54,7 +54,7 @@ export function Subscription(props) {
     window.location.assign(response.data.url);
   }
 
-  if (props.currentProduct.error || props.currentSubscription.error) {
+  if (!props.currentUser.stripeSubscriptionProvision) {
     return(
       <div>
         <Typography variant='h6' color='textSecondary' display='block' gutterBottom>
