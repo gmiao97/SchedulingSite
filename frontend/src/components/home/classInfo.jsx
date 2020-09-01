@@ -34,9 +34,11 @@ const useStyles = makeStyles(theme => ({
 export default function ClassInfo(props) {
   const classes = useStyles();
 
+  const showContent = props.currentUser.user_type !== 'STUDENT' || props.currentUser.stripeSubscriptionProvision;
+
   const createData = (name, link, meetingId, password) => ({name, link, meetingId, password});
   let rows = [];
-  if (props.currentUser.stripeSubscriptionProvision) {
+  if (showContent) {
     rows = rows.concat([
       createData('通常フリーレッスン（月～金）', 'https://us04web.zoom.us/j/77084078128?pwd=bFJJeEFEa0ZoTlhTZm9za3VZT2sxdz09', '770 8407 8128', '9191'),
       createData('フリーレッスン中学生', 'https://us04web.zoom.us/j/79279262394?pwd=L3ZrTFFhR0QrazVhM2ZzeHQ3b2FHQT09', '792 7926 2394', '9191'),
@@ -70,7 +72,7 @@ export default function ClassInfo(props) {
         時間割り
       </Button>
       <Typography variant='h6' display='block'>ZOOM ID</Typography>
-      {props.currentUser.stripeSubscriptionProvision ? 
+      {showContent ? 
         <TableContainer component={Paper} elevation={24} className={classes.sectionEnd}>
           <Table className={classes.table}>
             <TableHead>
@@ -104,7 +106,7 @@ export default function ClassInfo(props) {
       <Typography variant='h6' display='block'>プリント</Typography>
       <Paper elevation={24}>
         <Box p={3}>
-          {props.currentUser.stripeSubscriptionProvision ? 
+          {showContent ? 
             <iframe className={classes.printout} src="https://drive.google.com/embeddedfolderview?id=1EMhq3GkTEfsk5NiSHpqyZjS4H2N_aSak#list">
               <Button variant='outlined' className={classes.sectionEnd} color='secondary' target='_blank' rel='noopener noreferrer'
               href='https://drive.google.com/drive/folders/1EMhq3GkTEfsk5NiSHpqyZjS4H2N_aSak?usp=sharing'>
