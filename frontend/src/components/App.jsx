@@ -10,10 +10,6 @@ export default function App(props) {
   const [authenticated, setAuthenticated] = useState(null);
   const history = useHistory();
 
-  useEffect(() => {
-    isAuthenticated();
-  }, []);
-
   const isAuthenticated = async () => {
     try {
       await axiosInstance.get('/yoyaku/validate-token/');
@@ -23,6 +19,10 @@ export default function App(props) {
       handleLogout();
     }
   }
+
+  useEffect(() => {
+    isAuthenticated();
+  }, []);
 
   const handleLogin = () => {
     history.push('/class-info');

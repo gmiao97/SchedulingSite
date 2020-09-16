@@ -48,13 +48,35 @@ class MyUser(AbstractUser):
         (STUDENT, _('Student')),
         (ADMIN, _('Admin')),
     ]
-    # username = None
+    AVATAR_CHOICES = [
+        ('bear', _('Bear')),
+        ('cat', _('Cat')),
+        ('deer', _('Deer')),
+        ('dog', _('Dog')),
+        ('fox', _('Fox')),
+        ('giraffe', _('Giraffe')),
+        ('gorilla', _('Gorilla')),
+        ('koala', _('Koala')),
+        ('llama', _('Llama')),
+        ('panda', _('Panda')),
+        ('pug', _('Pug')),
+        ('rabbit', _('Rabbit')),
+        ('raccoon', _('Raccoon')),
+        ('reindeer', _('Reindeer')),
+        ('skunk', _('Skunk')),
+        ('wolf', _('Wolf')),
+        ('lion', _('Lion')),
+        ('weasel', _('Weasel')),
+        ('monkey', _('Monkey')),
+        ('pig', _('Pig')),
+    ]
     email = models.EmailField(_('email address'))
     user_type = models.CharField(_('user type'), choices=USER_TYPE_CHOICES, max_length=10)
     time_zone = TimeZoneField(default='UTC', choices=[(tz, tz) for tz in pytz.all_timezones])
     phone_number = models.CharField(_('phone number'), max_length=15)
     birthday = models.DateField(_('birthday'))
     description = models.CharField(_('personal description'), max_length=300, blank=True)
+    avatar = models.CharField(_('avatar'), choices=AVATAR_CHOICES, max_length=10, blank=True)
 
     stripeCustomerId = models.CharField(_('stripe customer id'), max_length=300, null=True)
     stripeProductId = models.CharField(_('stripe product id'), max_length=300, null=True)

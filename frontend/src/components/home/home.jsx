@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { deepOrange, deepPurple } from '@material-ui/core/colors';
-import Panda from '../../static/avatars/panda.png';
 import { Switch, Route, Link, } from "react-router-dom";
 import { Menu as MenuIcon} from '@material-ui/icons';
 import {  
@@ -26,7 +25,7 @@ import Calendar from './calendar';
 import ManageUsers from './manageUsers';
 import ClassInfo from './classInfo';
 import axiosInstance from '../../axiosApi';
-import { getUserIdFromToken } from '../../util';
+import { getUserIdFromToken, avatarMapping } from '../../util';
 import Logo from '../../static/success.academy.logo.png';
 
 
@@ -49,15 +48,17 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: deepOrange[500],
   },
   purple: {
+    width: theme.spacing(6),
+    height: theme.spacing(6),
     color: theme.palette.getContrastText(deepPurple[500]),
     backgroundColor: deepPurple[500],
   },
-  avatar: {
+  avatar: props => ({
     width: theme.spacing(6),
     height: theme.spacing(6),
-    backgroundImage: `url(${Panda})`,
+    backgroundImage: `url(${avatarMapping.get(props.avatar)})`,
     backgroundSize: "cover",
-  },
+  }),
   sectionDesktop: {
     display: 'none',
     [theme.breakpoints.up('md')]: {
@@ -209,9 +210,9 @@ export default function Home(props) {
 
   return(
     !isLoaded() ? 
-    <Backdrop className={classes.backdrop} open>
-      <CircularProgress color="inherit" />
-    </Backdrop> :
+      <Backdrop className={classes.backdrop} open>
+        <CircularProgress color="inherit" />
+      </Backdrop> :
       <div id='home'>
         <Box className={classes.root} clone>
           <AppBar position="static" color="primary">
@@ -235,8 +236,7 @@ export default function Home(props) {
                   onClick={handleDesktopMenuOpen}
                   color="inherit"
                 >
-                  <Avatar className={classes.purple}>{`${currentUser.last_name[0]}`.toUpperCase()}</Avatar>
-                  {/* <Avatar className={classes.avatar}> </Avatar> */}
+                  <MyAvatar avatar={currentUser.avatar} initial={currentUser.last_name[0].toUpperCase()} />
                 </IconButton>
               </div>
               {desktopMenu}
@@ -252,7 +252,7 @@ export default function Home(props) {
 
         <Switch>
           <Route exact path="/my-page">
-            <Box mx='auto' width='75%' my={5} minWidth={400}>
+            <Box mx='auto' width='75%' py={5} minWidth={400}>
               <MyPage 
                 currentUser={currentUser} 
                 currentSubscription={currentSubscription} 
@@ -262,7 +262,7 @@ export default function Home(props) {
             </Box>
           </Route>
           <Route exact path="/class-info">
-            <Box mx='auto' width='90%' my={5} minWidth={400}>
+            <Box mx='auto' width='90%' py={5} minWidth={400}>
               <ClassInfo 
                 currentUser={currentUser}
                 currentProduct={currentProduct}
@@ -270,18 +270,18 @@ export default function Home(props) {
             </Box>
           </Route>
           <Route exact path="/announce">
-            <Box mx='auto' width='90%' my={5} minWidth={400}>
+            <Box mx='auto' width='90%' py={5} minWidth={400}>
               <Announce />
             </Box>
           </Route>
           <Route exact path="/calendar">
-            <Box mx='auto' my={5} minWidth={700}>
+            <Box mx='auto' py={5} minWidth={700}>
               <Calendar />
             </Box>
           </Route>
           {currentUser.user_type === 'ADMIN' ? 
             <Route exact path="/manage-users">
-              <Box mx='auto' width='90%' my={5} minWidth={400}>
+              <Box mx='auto' width='90%' py={5} minWidth={400}>
                 <ManageUsers />
               </Box>
             </Route> :
@@ -292,16 +292,24 @@ export default function Home(props) {
   );
 }
 
+export function MyAvatar(props) {
+  const classes = useStyles(props);
+
+  return(
+    props.avatar ?
+    <Avatar className={classes.avatar}> </Avatar> :
+    <Avatar className={classes.purple}>{props.initial}</Avatar>
+  );
+}
+
 export function Announce(props) {
   return(
-    <Grid container spacing={2}>
-      <Paper elevation={24}>
-        <Box p={3}>
-          <MaterialLink href='http://staffvoice.mercy-education.com' target='_blank' rel='noopener noreferrer' color='secondary'>
-            指導報告へ
-          </MaterialLink>
-        </Box>
-      </Paper>
-    </Grid>
+    <Paper elevation={24}>
+      <Box p={3}>
+        <Button variant='outlined' color='secondary' target='_blank' rel='noopener noreferrer' href='http://staffvoice.mercy-education.com' fullWidth>
+          指導報告へ
+        </Button>
+      </Box>
+    </Paper>
   );
 }

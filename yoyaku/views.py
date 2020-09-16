@@ -62,7 +62,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 stripe.Customer.modify(customer.id,
                                        invoice_settings={'default_payment_method': request.data['paymentMethodId']})
 
-                trial_days = 7
+                trial_days = 30
                 utc_now = datetime.now(timezone.utc)
                 trial_end_datetime = utc_now + relativedelta.relativedelta(days=trial_days)
                 datetime_next_month_first = utc_now + relativedelta.relativedelta(months=1)

@@ -62,16 +62,16 @@ export default function ClassInfo(props) {
 
   return(
     <div>
-      <Typography variant='h6' display='block' gutterBottom>クラスのルール</Typography>
+      <Typography variant='h6' display='block' color='primary' gutterBottom>クラスのルール</Typography>
       {rules.map(line => 
-        <Typography variant='body1' color='textSecondary'>{line}</Typography>
+        <Typography key={line} variant='body1' color='textSecondary'>{line}</Typography>
       )}
       <Typography display='block' variant='caption' color='textSecondary' gutterBottom>何かご事情がある場合は保護者の方からご相談下さい。info@mercy-education.com</Typography>
-      <Button variant='outlined' className={classes.sectionEnd} color='secondary' href='http://mercy-education.com/FREE/cn2/2020-08-17.html' 
+      <Button variant='contained' className={classes.sectionEnd} color='secondary' href='http://mercy-education.com/FREE/cn2/2020-08-17.html' 
       target='_blank' rel='noopener noreferrer'>
         時間割り
       </Button>
-      <Typography variant='h6' display='block'>ZOOM ID</Typography>
+      <Typography variant='h6' display='block' color='primary'>ZOOM ID</Typography>
       {showContent ? 
         <TableContainer component={Paper} elevation={24} className={classes.sectionEnd}>
           <Table className={classes.table}>
@@ -103,7 +103,7 @@ export default function ClassInfo(props) {
         </TableContainer> :
         <Typography display='block'>サブスクリプションありません</Typography>
       }
-      <Typography variant='h6' display='block'>プリント</Typography>
+      <Typography variant='h6' display='block' color='primary'>プリント</Typography>
       <Paper elevation={24}>
         <Box p={3}>
           {showContent ? 
