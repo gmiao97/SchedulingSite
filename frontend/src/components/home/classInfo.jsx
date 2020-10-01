@@ -28,6 +28,11 @@ const useStyles = makeStyles(theme => ({
     border: 0,
     height: 400,
   },
+  timetable: {
+    width: '100%',
+    border: 0,
+    height: 200,
+  }
 }));
 
 
@@ -67,10 +72,17 @@ export default function ClassInfo(props) {
         <Typography key={line} variant='body1' color='textSecondary'>{line}</Typography>
       )}
       <Typography display='block' variant='caption' color='textSecondary' gutterBottom>何かご事情がある場合は保護者の方からご相談下さい。info@mercy-education.com</Typography>
-      <Button variant='contained' className={classes.sectionEnd} color='secondary' href='http://mercy-education.com/FREE/cn2/2020-08-17.html' 
-      target='_blank' rel='noopener noreferrer'>
-        時間割り
-      </Button>
+      <Typography variant='h6' display='block' color='primary' gutterBottom>時間割り</Typography>
+      <Paper elevation={24}>
+        <Box p={3}>
+          <iframe className={classes.timetable} src="https://drive.google.com/embeddedfolderview?id=1z5WUmx_lFVRy3YbmtEUH-tIqrwsaP8au#list">
+            <Button variant='contained' className={classes.sectionEnd} color='secondary' href='https://drive.google.com/drive/u/0/folders/1z5WUmx_lFVRy3YbmtEUH-tIqrwsaP8au' 
+            target='_blank' rel='noopener noreferrer'>
+              時間割り
+            </Button>
+          </iframe>
+        </Box>
+      </Paper>
       <Typography variant='h6' display='block' color='primary'>ZOOM ID</Typography>
       {showContent ? 
         <TableContainer component={Paper} elevation={24} className={classes.sectionEnd}>
