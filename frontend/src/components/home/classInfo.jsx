@@ -45,15 +45,15 @@ export default function ClassInfo(props) {
   let rows = [];
   if (showContent) {
     rows = rows.concat([
-      createData('通常フリーレッスン（月～金）', 'https://us04web.zoom.us/j/77084078128?pwd=bFJJeEFEa0ZoTlhTZm9za3VZT2sxdz09', '770 8407 8128', '9191'),
-      createData('フリーレッスン中学生', 'https://us04web.zoom.us/j/79279262394?pwd=L3ZrTFFhR0QrazVhM2ZzeHQ3b2FHQT09', '792 7926 2394', '9191'),
+      createData('通常フリーレッスン（月～金）', 'https://us04web.zoom.us/j/72594230736?pwd=a2lRejBGckFhdDc0R1NEbnNEYkJIQT09', '725 9423 0736', '7878'),
+      createData('フリーレッスン中学生', 'https://us04web.zoom.us/j/79927191833?pwd=cFhqV3EzRGE4c2J2d3Z4eGpWUkptZz09', '799 2719 1833', '7878'),
       createData('初心者クラス', 'https://us02web.zoom.us/j/83515032396?pwd=dkNIeWI5QTVaU3JxL1h2TXYwa0xzUT09', '835 1503 2396', '121212'),
     ]);
     if (props.currentUser.user_type !== 'STUDENT' || props.currentProduct.name.includes('未就学児')) {
-      rows.push(createData('未就学児クラス', 'https://us04web.zoom.us/j/73536479876?pwd=M1J0d09KWWRaZFIrYzgxd3lvL0oxZz09', '735 3647 9876', '1231'));
+      rows.push(createData('未就学児クラス', 'https://us04web.zoom.us/j/73756888936?pwd=QS9XNVphcmRPN1lhNlhrZWJDRmZDdz09', '737 5688 8936', '7878'));
     }
     if (props.currentUser.user_type !== 'STUDENT' || props.currentProduct.name.includes('土日')) {
-      rows.push(createData('土日クラス', 'https://us04web.zoom.us/j/73872618641?pwd=Qm5oVWpOdGorUlZ2bS8rY29WS2xzdz09', '738 7261 8641', '9876'));
+      rows.push(createData('土日クラス', 'https://us04web.zoom.us/j/76565882440?pwd=cXZrOFVWY3N1L1o2bUNrcjlSU0FyZz09', '765 6588 2440', '7878'));
     }
   }
 
@@ -84,6 +84,8 @@ export default function ClassInfo(props) {
         </Box>
       </Paper>
       <Typography variant='h6' display='block' color='primary'>ZOOM ID</Typography>
+      <Typography variant='subtitle1' display='block' color='primary'>日本時間　10月2日～11月1日</Typography>
+      <Typography variant='subtitle1' display='block' color='primary'>アメリカ　10月1日～10月末日</Typography>
       {showContent ? 
         <TableContainer component={Paper} elevation={24} className={classes.sectionEnd}>
           <Table className={classes.table}>
