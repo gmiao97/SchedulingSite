@@ -17,11 +17,17 @@ $img-path: '~react-widgets/lib/img';
 }
 
 #landing {
-  // background-color: #ffcccc;
-  height: 100%;
-  // background-image: url('./static/classroom2.jpg');
-  background: linear-gradient( rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.25) ), url('./static/classroom2.jpg');
+  min-height: 100%;
+  background: linear-gradient( rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.25) ), url('./static/apple.jpg');
   background-size: cover;
+  background-attachment: scroll;
+}
+
+#home {
+  min-height: 100%;
+  background: linear-gradient( rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.25) ), url('./static/apple.jpg');
+  background-size: cover;
+  background-attachment: scroll;
 }
 
 html, body, #root, #app {

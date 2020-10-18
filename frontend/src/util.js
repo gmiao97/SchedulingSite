@@ -1,6 +1,27 @@
 import { createBrowserHistory } from 'history';
 import moment from 'moment-timezone';
 
+import Bear from './static/avatars/bear.png';
+import Cat from './static/avatars/cat.png';
+import Deer from './static/avatars/deer.png';
+import Dog from './static/avatars/dog.png';
+import Fox from './static/avatars/fox.png';
+import Giraffe from './static/avatars/giraffe.png';
+import Gorilla from './static/avatars/gorilla.png';
+import Koala from './static/avatars/koala.png';
+import Llama from './static/avatars/llama.png';
+import Panda from './static/avatars/panda.png';
+import Pug from './static/avatars/pug.png';
+import Rabbit from './static/avatars/rabbit.png';
+import Raccoon from './static/avatars/raccoon.png';
+import Reindeer from './static/avatars/reindeer.png';
+import Skunk from './static/avatars/skunk.png';
+import Wolf from './static/avatars/wolf.png';
+import Lion from './static/avatars/lion.jpg';
+import Weasel from './static/avatars/weasel.jpg';
+import Monkey from './static/avatars/monkey.jpg';
+import Pig from './static/avatars/pig.jpg';
+
 export const history = createBrowserHistory({forceRefresh: true});
 
 export const timeZoneNames = moment.tz.names().filter(tz => tz !== 'Asia/Qostanay').map(tz => tz.replace('_', ' ')); // TODO Asia/Qostanay isn't in pytz timezones
@@ -21,6 +42,29 @@ export const gradeMappings = new Map([
   [11, '高２'],
   [12, '高３'],
   [13, '高４'],
+]);
+
+export const avatarMapping = new Map([
+  ['bear', Bear],
+  ['cat', Cat],
+  ['deer', Deer],
+  ['dog', Dog],
+  ['fox', Fox],
+  ['giraffe', Giraffe],
+  ['gorilla', Gorilla],
+  ['koala', Koala],
+  ['llama', Llama],
+  ['panda', Panda],
+  ['pug', Pug],
+  ['rabbit', Rabbit],
+  ['raccoon', Raccoon],
+  ['reindeer', Reindeer],
+  ['skunk', Skunk],
+  ['wolf', Wolf],
+  ['lion', Lion],
+  ['weasel', Weasel],
+  ['monkey', Monkey],
+  ['pig', Pig],
 ]);
 
 // TODO redirect to login if no token

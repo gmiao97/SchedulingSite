@@ -41,8 +41,8 @@ class MyUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = MyUser
         fields = ['id', 'first_name', 'last_name', 'email', 'username', 'password', 'user_type', 'time_zone', 'phone_number',
-                  'birthday', 'description', 'stripeCustomerId', 'stripeProductId', 'stripeSubscriptionId', 'stripeSubscriptionProvision',
-                  'student_profile', 'teacher_profile', 'student_id', 'teacher_id']
+                  'birthday', 'description', 'avatar', 'stripeCustomerId', 'stripeProductId', 'stripeSubscriptionId',
+                  'stripeSubscriptionProvision', 'student_profile', 'teacher_profile', 'student_id', 'teacher_id']
         extra_kwargs = {'password': {'write_only': True, 'required': False}, 'username': {'required': False}}
 
     def create(self, validated_data):
@@ -92,6 +92,7 @@ class MyUserSerializer(serializers.ModelSerializer):
         instance.phone_number = validated_data.get('phone_number', instance.phone_number)
         instance.birthday = validated_data.get('birthday', instance.birthday)
         instance.description = validated_data.get('description', instance.description)
+        instance.avatar = validated_data.get('avatar', instance.avatar)
         instance.save()
 
         stripe.Customer.modify(

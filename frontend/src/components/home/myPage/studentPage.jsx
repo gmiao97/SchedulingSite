@@ -11,10 +11,17 @@ import {
   Snackbar,
   Divider,
   TextField,
+  ButtonGroup,
+  IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from '@material-ui/core';
 
+import { MyAvatar } from '../home';
 import axiosInstance from '../../../axiosApi';
-import { gradeMappings, timeZoneNames, getUserIdFromToken } from '../../../util';
+import { gradeMappings, timeZoneNames, getUserIdFromToken, avatarMapping } from '../../../util';
 import ChangePassword from './changePassword';
 
 
@@ -54,7 +61,7 @@ export function Subscription(props) {
     window.location.assign(response.data.url);
   }
 
-  if (props.currentProduct.error || props.currentSubscription.error) {
+  if (!props.currentUser.stripeSubscriptionProvision) {
     return(
       <div>
         <Typography variant='h6' color='textSecondary' display='block' gutterBottom>
@@ -96,6 +103,7 @@ export function Subscription(props) {
 export default function StudentProfile(props) {
   const classes = useStyles();
   const [edit, setEdit] = useState(false);
+  const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
   const [changePassword, setChangePassword] = useState(false);
   const [dateError, setDateError] = useState(false);
   const [usernameList, setUsernameList] = useState([]);
@@ -105,6 +113,7 @@ export default function StudentProfile(props) {
     first_name: props.currentUser.first_name,
     last_name: props.currentUser.last_name,
     description: props.currentUser.description,
+    avatar: props.currentUser.avatar,
     time_zone: props.currentUser.time_zone.replace('_', ' '), 
     phone_number: props.currentUser.phone_number, 
     birthday: props.currentUser.birthday,
@@ -114,10 +123,8 @@ export default function StudentProfile(props) {
     },
     student_id: props.currentUser.student_profile.id,
   });
-  const schoolGrades = [];
-  for (let grade of gradeMappings) {
-    schoolGrades.push(grade);
-  }
+  const schoolGrades = Array.from(gradeMappings.entries());
+  const avatars = Array.from(avatarMapping.keys());
 
   useEffect(() => {
     getUsernameList();
@@ -162,6 +169,7 @@ export default function StudentProfile(props) {
       first_name: props.currentUser.first_name,
       last_name: props.currentUser.last_name, 
       description: props.currentUser.description,
+      avatar: props.currentUser.avatar,
       time_zone: props.currentUser.time_zone.replace('_', ' '), 
       phone_number: props.currentUser.phone_number, 
       birthday: props.currentUser.birthday,
@@ -199,6 +207,11 @@ export default function StudentProfile(props) {
     return(
       <form id='editStudentProfile' onSubmit={handleSubmit}>
         <MyGrid container spacing={3} className={classes.sectionEnd}>
+          <MyGrid item xs={12}>
+            <IconButton onClick={() => setAvatarDialogOpen(true)}>
+              <MyAvatar avatar={editForm.avatar} initial={props.currentUser.last_name[0].toUpperCase()} />
+            </IconButton>
+          </MyGrid>
           <MyGrid item xs={12}>
             <TextField id='username' name='username' type='text' label='ユーザー名' value={editForm.username} onChange={handleChange} required fullWidth variant='filled'
             error={usernameTaken()} helperText={usernameTaken() ? 'そのユーザー名はすでに使われています' : '半角英数・記号'} />
@@ -280,6 +293,34 @@ export default function StudentProfile(props) {
         <Button type='submit' variant='contained' color='primary' disabled={dateError || usernameTaken()}>
           提出
         </Button>
+
+        <Dialog open={avatarDialogOpen} onClose={() => setAvatarDialogOpen(false)}>
+          <DialogTitle>アバターを選択</DialogTitle>
+          <DialogContent>
+            {avatars.map(avatar => 
+              <IconButton 
+                onClick={() => {
+                  setEditForm({...editForm, avatar: avatar});
+                  setAvatarDialogOpen(false);
+                }}
+                key={avatar}
+              >
+                <MyAvatar avatar={avatar} />
+              </IconButton>
+            )}
+            <IconButton onClick={() => {
+              setEditForm({...editForm, avatar: ''});
+              setAvatarDialogOpen(false);
+            }}>
+              <MyAvatar initial={props.currentUser.last_name[0].toUpperCase()} />
+            </IconButton>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setAvatarDialogOpen(false)} color="primary">
+              キャンセル
+            </Button>
+          </DialogActions>
+        </Dialog>
       </form>
     );
   }
@@ -287,21 +328,28 @@ export default function StudentProfile(props) {
   return(
     <div>
       <Grid container justify='space-between'>
-        <Grid container justify='flex-end'>
-          <Button 
-            type="button" 
-            size='small' 
-            color='primary' 
-            onClick={() => {
-              setEdit(true);
-              resetEditForm();
-            }}
-          >
-            プロフィール編集
-          </Button>
-          <Button type="button" size='small' color='primary' onClick={() => setChangePassword(true)}>
-            パスワード変更
-          </Button>
+        <Grid container justify='space-between' spacing={2}>
+          <Grid item>
+            <MyAvatar avatar={props.currentUser.avatar} initial={props.currentUser.last_name[0].toUpperCase()} />
+          </Grid>
+          <Grid item>
+            <ButtonGroup variant="text" color="primary">
+              <Button 
+                type="button" 
+                size='small' 
+                color='primary' 
+                onClick={() => {
+                  setEdit(true);
+                  resetEditForm();
+                }}
+              >
+                プロフィール編集
+              </Button>
+              <Button type="button" size='small' color='primary' onClick={() => setChangePassword(true)}>
+                パスワード変更
+              </Button>
+            </ButtonGroup>
+          </Grid>
         </Grid>
         <Typography variant='h5' color='textSecondary' display='block' gutterBottom>
           {`${props.currentUser.last_name} ${props.currentUser.first_name}様`}
