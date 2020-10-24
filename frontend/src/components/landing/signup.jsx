@@ -5,6 +5,7 @@ import { styled, makeStyles } from '@material-ui/core/styles';
 import { KeyboardDatePicker } from '@material-ui/pickers';
 import { Autocomplete, Alert } from '@material-ui/lab'
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
+import { Check, Close, InfoOutlined } from '@material-ui/icons';
 import {
   Box,
   Grid,
@@ -32,6 +33,7 @@ import {
   Link as MaterialLink,
   Checkbox,
   IconButton,
+  InputAdornment,
 } from '@material-ui/core';
 
 import axiosInstance from '../../axiosApi';
@@ -83,11 +85,13 @@ export default function Signup(props) {
   const [backdropOpen, setBackdropOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [passwordMatch, setPasswordMatch] = useState('');
+  const [referralCode, setReferralCode] = useState('');
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [cardEntered, setCardEntered] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [dateError, setDateError] = useState(false);
   const [usernameList, setUsernameList] = useState([]);
+  const [referralCodeList, setReferralCodeList] = useState([]);
   const [signupForm, setSignupForm] = useState({
     username: '',
     email: '',
@@ -103,6 +107,7 @@ export default function Signup(props) {
       school_name: '',
       school_grade: -1,
       referrer: '',
+      should_pay_signup_fee: true,
     },
     teacher_profile: {
       association: '',
@@ -121,9 +126,18 @@ export default function Signup(props) {
     getUsernameList();
   }, [signupForm.username]);
 
+  useEffect(() => {
+    getReferralCodeList();
+  }, []);
+
   const getUsernameList = async () => {
     const response = await axiosInstance.get('/yoyaku/users/username_list/');
     setUsernameList(response.data);
+  }
+
+  const getReferralCodeList = async () => {
+    const response = await axiosInstance.get('/yoyaku/users/referral_code_list/');
+    setReferralCodeList(response.data);
   }
 
   const handleChange = event => {
@@ -209,6 +223,10 @@ export default function Signup(props) {
           time_zone: signupForm.time_zone.replace(' ', '_'),
           paymentMethodId: paymentMethodId,
           priceId: selectedPrice,
+          student_profile: {
+            ...signupForm.student_profile,
+            should_pay_signup_fee: !referralCodeList.includes(referralCode),
+          },
         });
       } else {
         response = await axiosInstance.post('/yoyaku/users/', {
@@ -241,12 +259,15 @@ export default function Signup(props) {
         student_profile: {
           school_name: '',
           school_grade: '-1',
+          referrer: '',
+          should_pay_signup_fee: true,
         },
         teacher_profile: {
           association: '',
         },
       });
       setPasswordMatch('');
+      setReferralCode('');
     } catch(err) {
       if (err instanceof SetupIntentError) {
         console.error('[SetupIntentError]', err);
@@ -307,11 +328,27 @@ export default function Signup(props) {
       case 1:
         return(
           <form id="signupForm" onSubmit={handleNextStep}>
-            {signupForm.user_type === "STUDENT" ? 
+            <StudentSignup 
+              usernameList={usernameList}
+              referralCodeList={referralCodeList}
+              passwordMatch={passwordMatch}
+              setPasswordMatch={setPasswordMatch}
+              referralCode={referralCode}
+              setReferralCode={setReferralCode}
+              onChange={handleChange}
+              onStudentChange={handleChangeStudentProfile}
+              signupForm={signupForm}
+              setSignupForm={setSignupForm}
+              onDateChange={handleDateChange}
+            />
+            {/* {signupForm.user_type === "STUDENT" ? 
               <StudentSignup 
                 usernameList={usernameList}
+                referralCodeList={referralCodeList}
                 passwordMatch={passwordMatch}
                 setPasswordMatch={setPasswordMatch}
+                referralCode={referralCode}
+                setReferralCode={setReferralCode}
                 onChange={handleChange}
                 onStudentChange={handleChangeStudentProfile}
                 signupForm={signupForm}
@@ -328,7 +365,7 @@ export default function Signup(props) {
                 setSignupForm={setSignupForm}
                 onDateChange={handleDateChange}
               />
-            }
+            } */}
           </form>
         );
       case 2:
@@ -342,6 +379,7 @@ export default function Signup(props) {
               setCardEntered={setCardEntered}
               agreed={agreed}
               setAgreed={setAgreed}
+              isReferral={referralCodeList.includes(referralCode)}
             /> :
             <Typography className={classes.stepContent} color="textSecondary" component='div'>
               プロフィール情報を確認して<Typography display="inline" color="secondary">先生</Typography>として登録
@@ -390,9 +428,21 @@ export default function Signup(props) {
         );
       case 2:
         return(
-          <Button variant="contained" color="primary" type="button" onClick={handleSubmit} disabled={!agreed || (signupForm.user_type === 'STUDENT' && !cardEntered)}>
-            登録
-          </Button>
+          <span>
+            <Button variant="contained" color="primary" type="button" onClick={handleSubmit} disabled={!agreed || (signupForm.user_type === 'STUDENT' && !cardEntered)}>
+              登録
+            </Button>
+            {referralCodeList.includes(referralCode) ? 
+              <Typography color='textSecondary' variant='caption'>
+                <Check color='secondary' fontSize='small' />
+                紹介コードあり
+              </Typography> : 
+              <Typography color='textSecondary' variant='caption'>
+                <InfoOutlined color='secondary' fontSize='small' />
+                紹介コードなし
+              </Typography>
+            }
+          </span>
         );
       default:
         return 'Unknown stepIndex';
@@ -596,73 +646,92 @@ export function StudentSignup(props) {
       <MyGrid item xs={12} sm={6}>
         <TextField id='referrer' name='referrer' type='text' label='紹介者' value={props.signupForm.student_profile.referrer} onChange={props.onStudentChange} fullWidth />
       </MyGrid>
-    </MyGrid>
-  );
-}
-
-
-export function TeacherSignup(props) {
-  const classes = useStyles();
-  
-  return(
-    <MyGrid container spacing={3} className={classes.sectionEnd}>
-      <MyGrid item xs={12}>
-        <TextField id='username' name='username' type='text' label='ユーザー名' value={props.signupForm.username} onChange={props.onChange} required fullWidth variant='filled' 
-        error={props.usernameList.includes(props.signupForm.username)} helperText={props.usernameList.includes(props.signupForm.username) ? 'そのユーザー名はすでに使われています' : '半角英数・記号'} />
-      </MyGrid>
       <MyGrid item xs={12} sm={6}>
-        <TextField id='password' name='password' type='password' label='パスワード' value={props.signupForm.password} onChange={props.onChange} required fullWidth variant='filled'
-        helperText='半角英数・記号（e.g. !@#%*.）７文字以上' />
-      </MyGrid>
-      <MyGrid item xs={12} sm={6}>
-        <TextField id='confirmPassword' name='confirmPassword' type='password' label='パスワード確認' value={props.passwordMatch} 
-        onChange={e => props.setPasswordMatch(e.target.value)} required fullWidth variant='filled' error={props.passwordMatch !== props.signupForm.password} />
-      </MyGrid>
-      <MyGrid item xs={12} sm={6}>
-        <TextField id='last_name' name='last_name' type='text' label='姓' value={props.signupForm.last_name} onChange={props.onChange} required fullWidth />
-      </MyGrid>
-      <MyGrid item xs={12} sm={6}>
-        <TextField id='first_name' name='first_name' type='text' label='名' value={props.signupForm.first_name} onChange={props.onChange} required fullWidth />
-      </MyGrid>
-      <MyGrid item xs={12} sm={6}>
-        <KeyboardDatePicker
-          id='birthday'
-          name='birthday'
-          variant='inline'
-          label="生年月日"
-          value={props.signupForm.birthday}
-          onChange={date => props.onDateChange('birthday', date)}
-          format='YYYY-MM-DD'
-          invalidDateMessage='正しい日にちを入力して下さい'
-          maxDateMessage='正しい日にちを入力して下さい'
-          minDateMessage='正しい日にちを入力して下さい'
-        />
-      </MyGrid>
-      <MyGrid item xs={12} sm={6}>
-        <TextField id='email' name='email' type='email' label='メールアドレス' value={props.signupForm.email} onChange={props.onChange} required fullWidth />
-      </MyGrid>
-      <MyGrid item xs={12} sm={6}>
-        <TextField id='phone_number' name='phone_number' type='text' label='電話番号' value={props.signupForm.phone_number} onChange={props.onChange} required fullWidth />
-      </MyGrid>
-      <MyGrid item xs={12} sm={6}>
-        <TextField id='association' name='association' type='text' label='所属' value={props.signupForm.teacher_profile.association} onChange={props.onTeacherChange} required fullWidth />
-      </MyGrid>
-      <MyGrid item xs={12} sm={6}>
-        <Autocomplete
-          id='time_zone'
-          name='time_zone'
-          options={timeZoneNames}
-          value={props.signupForm.time_zone}
-          onChange={(event, value) => {
-            props.setSignupForm({
-              ...props.signupForm,
-              time_zone: value,
-            });
+        <TextField 
+          id='received_referral_code' 
+          name='received_referral_code' 
+          type='text' 
+          label='紹介コード' 
+          value={props.referralCode} 
+          error={props.referralCode.length !== 0 && !props.referralCodeList.includes(props.referralCode)}
+          helperText={props.referralCode.length !== 0 && !props.referralCodeList.includes(props.referralCode) ? 'そのコード見つかりませんでした' : null}
+          onChange={e => props.setReferralCode(e.target.value)}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                {props.referralCodeList.includes(props.referralCode) ? <Check color='secondary' /> : null}
+              </InputAdornment>
+            ),
           }}
-          renderInput={(params) => <TextField {...params} label="地域/タイムゾーン" />}
-          disableClearable
         />
       </MyGrid>
     </MyGrid>
   );
 }
+
+
+// export function TeacherSignup(props) {
+//   const classes = useStyles();
+  
+//   return(
+//     <MyGrid container spacing={3} className={classes.sectionEnd}>
+//       <MyGrid item xs={12}>
+//         <TextField id='username' name='username' type='text' label='ユーザー名' value={props.signupForm.username} onChange={props.onChange} required fullWidth variant='filled' 
+//         error={props.usernameList.includes(props.signupForm.username)} helperText={props.usernameList.includes(props.signupForm.username) ? 'そのユーザー名はすでに使われています' : '半角英数・記号'} />
+//       </MyGrid>
+//       <MyGrid item xs={12} sm={6}>
+//         <TextField id='password' name='password' type='password' label='パスワード' value={props.signupForm.password} onChange={props.onChange} required fullWidth variant='filled'
+//         helperText='半角英数・記号（e.g. !@#%*.）７文字以上' />
+//       </MyGrid>
+//       <MyGrid item xs={12} sm={6}>
+//         <TextField id='confirmPassword' name='confirmPassword' type='password' label='パスワード確認' value={props.passwordMatch} 
+//         onChange={e => props.setPasswordMatch(e.target.value)} required fullWidth variant='filled' error={props.passwordMatch !== props.signupForm.password} />
+//       </MyGrid>
+//       <MyGrid item xs={12} sm={6}>
+//         <TextField id='last_name' name='last_name' type='text' label='姓' value={props.signupForm.last_name} onChange={props.onChange} required fullWidth />
+//       </MyGrid>
+//       <MyGrid item xs={12} sm={6}>
+//         <TextField id='first_name' name='first_name' type='text' label='名' value={props.signupForm.first_name} onChange={props.onChange} required fullWidth />
+//       </MyGrid>
+//       <MyGrid item xs={12} sm={6}>
+//         <KeyboardDatePicker
+//           id='birthday'
+//           name='birthday'
+//           variant='inline'
+//           label="生年月日"
+//           value={props.signupForm.birthday}
+//           onChange={date => props.onDateChange('birthday', date)}
+//           format='YYYY-MM-DD'
+//           invalidDateMessage='正しい日にちを入力して下さい'
+//           maxDateMessage='正しい日にちを入力して下さい'
+//           minDateMessage='正しい日にちを入力して下さい'
+//         />
+//       </MyGrid>
+//       <MyGrid item xs={12} sm={6}>
+//         <TextField id='email' name='email' type='email' label='メールアドレス' value={props.signupForm.email} onChange={props.onChange} required fullWidth />
+//       </MyGrid>
+//       <MyGrid item xs={12} sm={6}>
+//         <TextField id='phone_number' name='phone_number' type='text' label='電話番号' value={props.signupForm.phone_number} onChange={props.onChange} required fullWidth />
+//       </MyGrid>
+//       <MyGrid item xs={12} sm={6}>
+//         <TextField id='association' name='association' type='text' label='所属' value={props.signupForm.teacher_profile.association} onChange={props.onTeacherChange} required fullWidth />
+//       </MyGrid>
+//       <MyGrid item xs={12} sm={6}>
+//         <Autocomplete
+//           id='time_zone'
+//           name='time_zone'
+//           options={timeZoneNames}
+//           value={props.signupForm.time_zone}
+//           onChange={(event, value) => {
+//             props.setSignupForm({
+//               ...props.signupForm,
+//               time_zone: value,
+//             });
+//           }}
+//           renderInput={(params) => <TextField {...params} label="地域/タイムゾーン" />}
+//           disableClearable
+//         />
+//       </MyGrid>
+//     </MyGrid>
+//   );
+// }

@@ -38,7 +38,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         permission_classes = []
-        if self.action in ('create', 'username_list'):
+        if self.action in ('create', 'username_list', 'referral_code_list'):
             permission_classes = [AllowAny]
         elif self.action in ('retrieve', 'update', 'partial_update', 'events', 'change_password'):
             permission_classes = [IsLoggedInUserOrAdmin]
@@ -96,15 +96,15 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             self.perform_create(serializer)
 
-        mail.send_mail(
-            'Success Academy - {} {}様登録確認しました'.format(request.data['last_name'], request.data['first_name']),
-            'ご登録ありがとうございます。\n{} {}様のログイン情報は以下のとおりです。\nユーザーID：{}\nパスワード：{}\n\n'
-            '以下のページにログインしてクラスZoom情報を確認できます。\n{}\n\n＊このアドレスは送信専用です。ご返信いただいても回答はいたしかねます。'.format(
-                request.data['last_name'], request.data['first_name'], request.data['username'], '*****', settings.BASE_URL),
-            None,
-            [request.data['email'], 'success.academy.us@gmail.com'],
-            fail_silently=False,
-        )
+        # mail.send_mail(
+        #     'Success Academy - {} {}様登録確認しました'.format(request.data['last_name'], request.data['first_name']),
+        #     'ご登録ありがとうございます。\n{} {}様のログイン情報は以下のとおりです。\nユーザーID：{}\nパスワード：{}\n\n'
+        #     '以下のページにログインしてクラスZoom情報を確認できます。\n{}\n\n＊このアドレスは送信専用です。ご返信いただいても回答はいたしかねます。'.format(
+        #         request.data['last_name'], request.data['first_name'], request.data['username'], '*****', settings.BASE_URL),
+        #     None,
+        #     [request.data['email'], 'success.academy.us@gmail.com'],
+        #     fail_silently=False,
+        # )
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -127,6 +127,14 @@ class UserViewSet(viewsets.ModelViewSet):
         for user in users:
             username_list.append(user.username)
         return Response(username_list)
+
+    @action(detail=False)
+    def referral_code_list(self, request):
+        users = MyUser.objects.all()
+        referral_code_list = []
+        for user in users:
+            referral_code_list.append(user.referral_code)
+        return Response(referral_code_list)
 
     @action(detail=True)
     def events(self, request, pk=None):
@@ -367,7 +375,7 @@ class StripePriceList(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, format=None):
-        r = stripe.Price.list(active=True, expand=['data.product'])
+        r = stripe.Price.list(active=True, type='recurring', expand=['data.product'])
         return Response(r)
 
 
@@ -466,6 +474,9 @@ class StripeWebhook(APIView):
             user.stripeSubscriptionId = subscription['id']
             user.stripeProductId = subscription['items']['data'][0]['price']['product']
             user.save()
+        elif event.type == 'customer.subscription.trial_will_end':
+            print('customer.subscription.trial_will_end')
+            subscription = event.data.object
         elif event.type == 'customer.subscription.updated':
             print('customer.subscription.updated')
             subscription = event.data.object
@@ -477,6 +488,20 @@ class StripeWebhook(APIView):
             user.stripeSubscriptionId = subscription['id']
             user.stripeProductId = subscription['items']['data'][0]['price']['product']
             user.save()
+
+            previous = event.data.previous_attributes
+            if previous['status'] == 'trialing' and subscription['status'] in ('active', 'past_due') and user.student_profile.should_pay_signup_fee:
+                signup_fee_id = stripe.Price.list(active=True, type='one_time')['data'][0]['id']
+                stripe.InvoiceItem.create(
+                    customer=subscription['customer'],
+                    price=signup_fee_id,
+                )
+                stripe.Invoice.create(
+                    customer=subscription['customer'],
+                    auto_advance=True
+                )
+                user.student_profile.should_pay_signup_fee = False
+                user.student_profile.save()
         elif event.type == 'customer.subscription.deleted':
             print('customer.subscription.deleted')
             subscription = event.data.object

@@ -104,6 +104,7 @@ export default function StudentProfile(props) {
   const classes = useStyles();
   const [edit, setEdit] = useState(false);
   const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
+  const [referralDialogOpen, setReferralDialogOpen] = useState(false);
   const [changePassword, setChangePassword] = useState(false);
   const [dateError, setDateError] = useState(false);
   const [usernameList, setUsernameList] = useState([]);
@@ -361,6 +362,9 @@ export default function StudentProfile(props) {
           <LocationOn /> {props.currentUser.time_zone.replace('_', ' ')}
         </Typography>
       </Grid>
+      <Button size='small' color='secondary' onClick={() => setReferralDialogOpen(true)}>
+        紹介コードを見る
+      </Button>
       <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
         ユーザー名・
         <Typography variant='body2' color='textPrimary' display='inline'>
@@ -414,6 +418,13 @@ export default function StudentProfile(props) {
           {props.currentUser.phone_number}
         </Typography>
       </Typography>
+
+      <Dialog open={referralDialogOpen} onClose={() => setReferralDialogOpen(false)}>
+        <DialogTitle>紹介コード</DialogTitle>
+        <DialogContent>
+          <Typography>{props.currentUser.referral_code}</Typography>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -77,6 +77,7 @@ class MyUser(AbstractUser):
     birthday = models.DateField(_('birthday'))
     description = models.CharField(_('personal description'), max_length=300, blank=True)
     avatar = models.CharField(_('avatar'), choices=AVATAR_CHOICES, max_length=10, blank=True)
+    referral_code = models.CharField(_('referral code'), max_length=8, unique=True)
 
     stripeCustomerId = models.CharField(_('stripe customer id'), max_length=300, null=True)
     stripeProductId = models.CharField(_('stripe product id'), max_length=300, null=True)
@@ -114,6 +115,7 @@ class StudentProfile(models.Model):
     school_name = models.CharField(_('school name'), max_length=200)
     school_grade = models.IntegerField(_('school grade'), choices=SCHOOL_GRADE_CHOICES)
     referrer = models.CharField(_('referrer'), max_length=20, blank=True)
+    should_pay_signup_fee = models.BooleanField(default=False)
 
 
 class TeacherProfile(models.Model):
