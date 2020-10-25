@@ -5,7 +5,8 @@ import { styled, makeStyles } from '@material-ui/core/styles';
 import { KeyboardDatePicker } from '@material-ui/pickers';
 import { Autocomplete, Alert } from '@material-ui/lab'
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
-import { Check, Close, InfoOutlined } from '@material-ui/icons';
+import { green } from '@material-ui/core/colors';
+import { Check } from '@material-ui/icons';
 import {
   Box,
   Grid,
@@ -117,7 +118,7 @@ export default function Signup(props) {
     email: "",
   });
 
-  const studentSteps = ['ユーザータイプを選択', 'プロフィール設定', '支払い情報'];
+  const studentSteps = ['ユーザータイプを選択', 'プロフィール設定', '紹介コード確認', '支払い情報'];
   const teacherSteps = ['ユーザータイプを選択', 'プロフィール設定', '確認'];
   const steps = signupForm.user_type === "STUDENT" ? studentSteps : teacherSteps;
 
@@ -223,10 +224,6 @@ export default function Signup(props) {
           time_zone: signupForm.time_zone.replace(' ', '_'),
           paymentMethodId: paymentMethodId,
           priceId: selectedPrice,
-          student_profile: {
-            ...signupForm.student_profile,
-            should_pay_signup_fee: !referralCodeList.includes(referralCode),
-          },
         });
       } else {
         response = await axiosInstance.post('/yoyaku/users/', {
@@ -369,6 +366,45 @@ export default function Signup(props) {
           </form>
         );
       case 2:
+        return (
+          <MyGrid container spacing={3} className={classes.sectionEnd}>
+            <MyGrid item xs={12}>
+              <Typography color='textSecondary' variant='subtitle1'>紹介コードありますか？紹介された方は入会費が免除になります。</Typography>
+            </MyGrid>
+            <MyGrid item xs={12} sm={6}>
+              <TextField id='referrer' name='referrer' type='text' label='紹介者' value={signupForm.student_profile.referrer} onChange={handleChangeStudentProfile} fullWidth />
+            </MyGrid>
+            <MyGrid item xs={12} sm={6}>
+              <TextField 
+                id='received_referral_code' 
+                name='received_referral_code' 
+                type='text' 
+                label='紹介コード' 
+                value={referralCode} 
+                error={referralCode.length !== 0 && !referralCodeList.includes(referralCode)}
+                helperText={referralCode.length !== 0 && !referralCodeList.includes(referralCode) ? 'そのコード見つかりませんでした' : null}
+                onChange={e => {
+                  setReferralCode(e.target.value);
+                  setSignupForm({
+                    ...signupForm,
+                    student_profile: {
+                      ...signupForm.student_profile,
+                      should_pay_signup_fee: !referralCodeList.includes(e.target.value),
+                    },
+                  });
+                }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      {referralCodeList.includes(referralCode) ? <Check color='secondary' style={{ color: green[500] }} /> : null}
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </MyGrid>
+          </MyGrid>
+        );
+      case 3:
         return(
           signupForm.user_type === "STUDENT" ?
             <StripeSubscriptionCheckout 
@@ -428,21 +464,15 @@ export default function Signup(props) {
         );
       case 2:
         return(
-          <span>
-            <Button variant="contained" color="primary" type="button" onClick={handleSubmit} disabled={!agreed || (signupForm.user_type === 'STUDENT' && !cardEntered)}>
-              登録
-            </Button>
-            {referralCodeList.includes(referralCode) ? 
-              <Typography color='textSecondary' variant='caption'>
-                <Check color='secondary' fontSize='small' />
-                紹介コードあり
-              </Typography> : 
-              <Typography color='textSecondary' variant='caption'>
-                <InfoOutlined color='secondary' fontSize='small' />
-                紹介コードなし
-              </Typography>
-            }
-          </span>
+          <Button variant="contained" color="primary" type="button" onClick={handleNextStep}>
+            次へ
+          </Button>
+        );
+      case 3:
+        return(
+          <Button variant="contained" color="primary" type="button" onClick={handleSubmit} disabled={!agreed || (signupForm.user_type === 'STUDENT' && !cardEntered)}>
+            登録
+          </Button>
         );
       default:
         return 'Unknown stepIndex';
@@ -641,28 +671,6 @@ export function StudentSignup(props) {
           }}
           renderInput={(params) => <TextField {...params} label="地域/タイムゾーン" />}
           disableClearable
-        />
-      </MyGrid>
-      <MyGrid item xs={12} sm={6}>
-        <TextField id='referrer' name='referrer' type='text' label='紹介者' value={props.signupForm.student_profile.referrer} onChange={props.onStudentChange} fullWidth />
-      </MyGrid>
-      <MyGrid item xs={12} sm={6}>
-        <TextField 
-          id='received_referral_code' 
-          name='received_referral_code' 
-          type='text' 
-          label='紹介コード' 
-          value={props.referralCode} 
-          error={props.referralCode.length !== 0 && !props.referralCodeList.includes(props.referralCode)}
-          helperText={props.referralCode.length !== 0 && !props.referralCodeList.includes(props.referralCode) ? 'そのコード見つかりませんでした' : null}
-          onChange={e => props.setReferralCode(e.target.value)}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                {props.referralCodeList.includes(props.referralCode) ? <Check color='secondary' /> : null}
-              </InputAdornment>
-            ),
-          }}
         />
       </MyGrid>
     </MyGrid>
