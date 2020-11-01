@@ -45,15 +45,15 @@ export default function ClassInfo(props) {
   let rows = [];
   if (showContent) {
     rows = rows.concat([
-      createData('通常フリーレッスン（月～金）', 'https://us04web.zoom.us/j/72594230736?pwd=a2lRejBGckFhdDc0R1NEbnNEYkJIQT09', '725 9423 0736', '7878'),
-      createData('フリーレッスン中学生', 'https://us04web.zoom.us/j/79927191833?pwd=cFhqV3EzRGE4c2J2d3Z4eGpWUkptZz09', '799 2719 1833', '7878'),
+      createData('通常フリーレッスン（月～金）', 'https://us04web.zoom.us/j/73764547990?pwd=bCtnOUlNRjNsamloNDNKZHE2c2pBdz09', '737 6454 7990', '9090'),
+      createData('フリーレッスン中学生', 'https://us04web.zoom.us/j/79057541307?pwd=K3BrMzFYSkxsRlZadUM2dFdFWUROdz09', '790 5754 1307', '9090'),
       createData('初心者クラス', 'https://us02web.zoom.us/j/83515032396?pwd=dkNIeWI5QTVaU3JxL1h2TXYwa0xzUT09', '835 1503 2396', '121212'),
     ]);
     if (props.currentUser.user_type !== 'STUDENT' || props.currentProduct.name.includes('未就学児')) {
-      rows.push(createData('未就学児クラス', 'https://us04web.zoom.us/j/73756888936?pwd=QS9XNVphcmRPN1lhNlhrZWJDRmZDdz09', '737 5688 8936', '7878'));
+      rows.push(createData('未就学児クラス', 'https://us04web.zoom.us/j/72820034193?pwd=Y2U3T2xEM1dMRzd3ZThGaE9mUVN1QT09', '728 2003 4193', '9090'));
     }
     if (props.currentUser.user_type !== 'STUDENT' || props.currentProduct.name.includes('土日')) {
-      rows.push(createData('土日クラス', 'https://us04web.zoom.us/j/76565882440?pwd=cXZrOFVWY3N1L1o2bUNrcjlSU0FyZz09', '765 6588 2440', '7878'));
+      rows.push(createData('土日クラス', 'https://us04web.zoom.us/j/76783951896?pwd=WmZONURnL3dUeDNYSVY3RmFwSlVUQT09', '767 8395 1896', '9090'));
     }
   }
 
