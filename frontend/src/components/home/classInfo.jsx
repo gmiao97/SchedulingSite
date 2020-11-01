@@ -84,8 +84,8 @@ export default function ClassInfo(props) {
         </Box>
       </Paper>
       <Typography variant='h6' display='block' color='primary'>ZOOM ID</Typography>
-      <Typography variant='subtitle1' display='block' color='primary'>日本時間　10月2日～11月1日</Typography>
-      <Typography variant='subtitle1' display='block' color='primary'>アメリカ　10月1日～10月末日</Typography>
+      <Typography variant='subtitle1' display='block' color='primary'>日本時間　11月2日～12月1日</Typography>
+      <Typography variant='subtitle1' display='block' color='primary'>アメリカ　11月1日～11月末日</Typography>
       {showContent ? 
         <TableContainer component={Paper} elevation={24} className={classes.sectionEnd}>
           <Table className={classes.table}>
