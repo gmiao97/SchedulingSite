@@ -96,15 +96,15 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             self.perform_create(serializer)
 
-        # mail.send_mail(
-        #     'Success Academy - {} {}様登録確認しました'.format(request.data['last_name'], request.data['first_name']),
-        #     'ご登録ありがとうございます。\n{} {}様のログイン情報は以下のとおりです。\nユーザーID：{}\nパスワード：{}\n\n'
-        #     '以下のページにログインしてクラスZoom情報を確認できます。\n{}\n\n＊このアドレスは送信専用です。ご返信いただいても回答はいたしかねます。'.format(
-        #         request.data['last_name'], request.data['first_name'], request.data['username'], '*****', settings.BASE_URL),
-        #     None,
-        #     [request.data['email'], 'success.academy.us@gmail.com'],
-        #     fail_silently=False,
-        # )
+        mail.send_mail(
+            'Success Academy - {} {}様登録確認しました'.format(request.data['last_name'], request.data['first_name']),
+            'ご登録ありがとうございます。\n{} {}様のログイン情報は以下のとおりです。\nユーザーID：{}\nパスワード：{}\n\n'
+            '以下のページにログインしてクラスZoom情報を確認できます。\n{}\n\n＊このアドレスは送信専用です。ご返信いただいても回答はいたしかねます。'.format(
+                request.data['last_name'], request.data['first_name'], request.data['username'], '*****', settings.BASE_URL),
+            None,
+            [request.data['email'], 'success.academy.us@gmail.com'],
+            fail_silently=False,
+        )
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 

@@ -191,7 +191,7 @@ export default function StripeSubscriptionCheckout(props) {
           <Card variant='outlined'>
             <CardContent>
               <Typography color='textPrimary' variant='body1' display='block' gutterBottom>
-                30日の無料トライアル期間後の一回目の請求は以下の通り
+                30日無料トライアル期間後の一回目の請求は以下の通りです
               </Typography>
               <Typography color='textSecondary' variant='body2' display='inline' className={props.isReferral ? classes.strikethrough : null}>
                 入会費：＄100
@@ -207,7 +207,7 @@ export default function StripeSubscriptionCheckout(props) {
                 選択されたプランの月額
               </Typography>
               <Typography color='textPrimary' variant='body1' display='block'>
-                それから毎月選択されたプランの月額を請求させていただきます
+                翌月以降は、選択されたプランの月額を請求させていただきます
               </Typography>
             </CardContent>
           </Card>
