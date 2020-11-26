@@ -21,7 +21,7 @@ import {
 
 import { MyAvatar } from '../home';
 import axiosInstance from '../../../axiosApi';
-import { gradeMappings, timeZoneNames, getUserIdFromToken, avatarMapping } from '../../../util';
+import { gradeMappings, timeZoneNames, getUserIdFromToken, avatarMapping, referralMessage } from '../../../util';
 import ChangePassword from './changePassword';
 
 
@@ -104,6 +104,7 @@ export default function StudentProfile(props) {
   const classes = useStyles();
   const [edit, setEdit] = useState(false);
   const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
+  const [referralDialogOpen, setReferralDialogOpen] = useState(false);
   const [changePassword, setChangePassword] = useState(false);
   const [dateError, setDateError] = useState(false);
   const [usernameList, setUsernameList] = useState([]);
@@ -361,6 +362,9 @@ export default function StudentProfile(props) {
           <LocationOn /> {props.currentUser.time_zone.replace('_', ' ')}
         </Typography>
       </Grid>
+      <Button size='small' color='secondary' variant='contained' className={classes.sectionEnd} onClick={() => setReferralDialogOpen(true)}>
+        紹介コードを見る
+      </Button>
       <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
         ユーザー名・
         <Typography variant='body2' color='textPrimary' display='inline'>
@@ -414,6 +418,20 @@ export default function StudentProfile(props) {
           {props.currentUser.phone_number}
         </Typography>
       </Typography>
+
+      <Dialog open={referralDialogOpen} onClose={() => setReferralDialogOpen(false)}>
+        <DialogTitle>紹介コード（以下の文章をコピペしてシェアしてください！）</DialogTitle>
+        <DialogContent>
+          <Typography>
+            →紹介コード『{props.currentUser.referral_code}』
+          </Typography>
+          {referralMessage.map(line => 
+            <Typography>
+              {line}
+            </Typography>  
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

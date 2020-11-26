@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { CardElement } from '@stripe/react-stripe-js';
+import { green } from '@material-ui/core/colors';
+import { Check } from '@material-ui/icons';
 import { 
   Typography,
   Button,
@@ -20,6 +22,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Card,
+  CardContent,
 } from '@material-ui/core';
 
 import axiosInstance from '../axiosApi';
@@ -33,6 +37,9 @@ const useStyles = makeStyles(theme => ({
   cardSection: {
     maxWidth: 500,
     margin: 'auto',
+  },
+  strikethrough: {
+    textDecoration: 'line-through',
   },
 }));
 
@@ -105,7 +112,7 @@ export default function StripeSubscriptionCheckout(props) {
         <div>
           <FormControl component='fieldset'>
             <FormLabel component='legend'>プランを選択して下さい</FormLabel>
-            <RadioGroup id='selectedPrice' name="selectedPrice" value={props.selectedPrice} onChange={e => {props.setSelectedPrice(e.target.value)}}>
+            <RadioGroup id='selectedPrice' name="selectedPrice" value={props.selectedPrice} onChange={e => props.setSelectedPrice(e.target.value)}>
               {priceList.map(price => 
                 <FormControlLabel 
                   key={price.id}
@@ -148,7 +155,7 @@ export default function StripeSubscriptionCheckout(props) {
             </Grid>
 
             <Grid item xs={12}>
-              <Button variant="outlined" color="primary" size='small' onClick={() => setDialogOpen(true)}>
+              <Button variant='outlined' color='secondary' size='small' onClick={() => setDialogOpen(true)}>
                 利用規約
               </Button>
               <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
@@ -172,7 +179,6 @@ export default function StripeSubscriptionCheckout(props) {
                 labelPlacement="end"
               />
             </Grid>
-
           </Grid>
           <Grid id='cardSection' container justify='center' spacing={1}>
             <Grid item xs={12}>
@@ -182,6 +188,29 @@ export default function StripeSubscriptionCheckout(props) {
               <Typography variant='caption' color='error' display='block' align='center'>{cardInputError}</Typography>
             </Grid>
           </Grid>
+          <Card variant='outlined'>
+            <CardContent>
+              <Typography color='textPrimary' variant='body1' display='block' gutterBottom>
+                30日無料トライアル期間後の一回目の請求は以下の通りです
+              </Typography>
+              <Typography color='textSecondary' variant='body2' display='inline' className={props.isReferral ? classes.strikethrough : null}>
+                入会費：＄100
+              </Typography>
+              {props.isReferral ?
+                <Typography color='textSecondary' variant='caption' display='inline'>
+                  <Check color='secondary' fontSize='small' style={{ color: green[500] }} />
+                  紹介で免除
+                </Typography> :
+                null
+              }
+              <Typography color='textSecondary' variant='body2' gutterBottom>
+                選択されたプランの月額
+              </Typography>
+              <Typography color='textPrimary' variant='body1' display='block'>
+                翌月以降は、選択されたプランの月額を請求させていただきます
+              </Typography>
+            </CardContent>
+          </Card>
         </div>
       }
     </div>

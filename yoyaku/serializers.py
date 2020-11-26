@@ -1,5 +1,6 @@
 import pytz
 from django.core import mail
+from django.utils.crypto import get_random_string
 from rest_framework import serializers
 from rest_framework.fields import FileField
 from django.conf import settings
@@ -14,7 +15,7 @@ stripe.api_key = settings.STRIPE_SECRET
 class StudentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentProfile
-        fields = ['id', 'school_name', 'school_grade', 'referrer']
+        fields = ['id', 'school_name', 'school_grade', 'referrer', 'should_pay_signup_fee']
 
 
 class TeacherProfileSerializer(serializers.ModelSerializer):
@@ -41,9 +42,9 @@ class MyUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = MyUser
         fields = ['id', 'first_name', 'last_name', 'email', 'username', 'password', 'user_type', 'time_zone', 'phone_number',
-                  'birthday', 'description', 'avatar', 'stripeCustomerId', 'stripeProductId', 'stripeSubscriptionId',
+                  'birthday', 'description', 'avatar', 'referral_code', 'stripeCustomerId', 'stripeProductId', 'stripeSubscriptionId',
                   'stripeSubscriptionProvision', 'student_profile', 'teacher_profile', 'student_id', 'teacher_id']
-        extra_kwargs = {'password': {'write_only': True, 'required': False}, 'username': {'required': False}}
+        extra_kwargs = {'password': {'write_only': True, 'required': False}, 'username': {'required': False}, 'referral_code': {'required': False}}
 
     def create(self, validated_data):
         student_profile = validated_data.pop('student_profile', None)
@@ -67,6 +68,7 @@ class MyUserSerializer(serializers.ModelSerializer):
                 ['success.academy.us@gmail.com'],
                 fail_silently=False,
             )
+        validated_data['referral_code'] = get_random_string(length=8)
         user = self.Meta.model(**validated_data)
         user.set_password(password)
         user.save()
