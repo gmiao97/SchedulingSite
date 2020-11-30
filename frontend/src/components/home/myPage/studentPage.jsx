@@ -423,7 +423,7 @@ export default function StudentProfile(props) {
         <DialogTitle>紹介コード（以下の文章をコピペしてシェアしてください！）</DialogTitle>
         <DialogContent>
           <Typography>
-            →紹介コード『{props.currentUser.referral_code}』
+            →紹介コード『<Typography display='inline' color='secondary'>{props.currentUser.referral_code}</Typography>』
           </Typography>
           {referralMessage.map(line => 
             <Typography>
