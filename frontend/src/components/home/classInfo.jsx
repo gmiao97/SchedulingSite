@@ -45,15 +45,15 @@ export default function ClassInfo(props) {
   let rows = [];
   if (showContent) {
     rows = rows.concat([
-      createData('通常フリーレッスン（月～金）', 'https://us04web.zoom.us/j/71390033650?pwd=TFpLdmxWUnZlYjh2VVdYV1FXK3RCZz09', '713 9003 3650', '8787'),
-      createData('フリーレッスン中学生', 'https://us04web.zoom.us/j/71890737747?pwd=ZFFiRWoyR1NsTUsrZEFRYzJCMjdBdz09', '718 9073 7747', '8787'),
+      createData('通常フリーレッスン（月～金）', 'https://us04web.zoom.us/j/79135219967?pwd=QkNldG4zK1FXUFI4ZFZyZGJhRHNyQT09', '791 3521 9967', '5656'),
+      createData('フリーレッスン中学生', 'https://us04web.zoom.us/j/76278477003?pwd=Y3J1L0xjdFJCeFZLNGhjaDBhdXQ0UT09', '762 7847 7003', '5656'),
       createData('初心者クラス', 'https://us02web.zoom.us/j/83515032396?pwd=dkNIeWI5QTVaU3JxL1h2TXYwa0xzUT09', '835 1503 2396', '121212'),
     ]);
     if (props.currentUser.user_type !== 'STUDENT' || props.currentProduct.name.includes('未就学児')) {
-      rows.push(createData('未就学児クラス', 'https://us04web.zoom.us/j/77786417164?pwd=eUtmK3ZOK0EyUE85STIwUlhYbmg4UT09', '777 8641 7164', '8787'));
+      rows.push(createData('未就学児クラス', 'https://us04web.zoom.us/j/73881305403?pwd=YXRWakVQYTNGS21SeXJnK3pXWXI1UT09', '738 8130 5403', '5656'));
     }
     if (props.currentUser.user_type !== 'STUDENT' || props.currentProduct.name.includes('土日')) {
-      rows.push(createData('土日クラス', 'https://us04web.zoom.us/j/79350626908?pwd=ZXEwL0Z1bDkvazF3VG8rZnYvYVdaZz09', '793 5062 6908', '8787'));
+      rows.push(createData('土日クラス', 'https://us04web.zoom.us/j/75710108047?pwd=VlBIY3RjcFpPOVlIczMrY0VmMnBNUT09', '757 1010 8047', '5656'));
     }
   }
 
@@ -84,8 +84,8 @@ export default function ClassInfo(props) {
         </Box>
       </Paper>
       <Typography variant='h6' display='block' color='primary'>ZOOM ID</Typography>
-      <Typography variant='subtitle1' display='block' color='primary'>日本時間　12月2日～1月1日</Typography>
-      <Typography variant='subtitle1' display='block' color='primary'>アメリカ　12月1日～12月末日</Typography>
+      <Typography variant='subtitle1' display='block' color='primary'>日本時間　1月2日～2月1日</Typography>
+      <Typography variant='subtitle1' display='block' color='primary'>アメリカ　1月1日～1月末日</Typography>
       {showContent ? 
         <TableContainer component={Paper} elevation={24} className={classes.sectionEnd}>
           <Table className={classes.table}>
