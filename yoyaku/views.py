@@ -477,6 +477,16 @@ class StripeWebhook(APIView):
         elif event.type == 'customer.subscription.trial_will_end':
             print('customer.subscription.trial_will_end')
             subscription = event.data.object
+            user = MyUser.objects.get(stripeCustomerId=subscription['customer'])
+            if user.student_profile.should_pay_signup_fee:
+                mail.send_mail(
+                    'Success Academy - {} {}様　トライアル期間がまもなく終了します'.format(request.data['last_name'], request.data['first_name']),
+                    '30日のトライアル期間が3日後に終了します。$100の入会費を3日後に請求させていただきます。'
+                    '\nご不明な点があればいつでもご連絡ください。\n\nSuccess Academy 南\n\nマイページ：{}'.format(settings.BASE_URL),
+                    None,
+                    [request.data['email'], 'success.academy.us@gmail.com'],
+                    fail_silently=False,
+                )
         elif event.type == 'customer.subscription.updated':
             print('customer.subscription.updated')
             subscription = event.data.object
@@ -490,7 +500,7 @@ class StripeWebhook(APIView):
             user.save()
 
             previous = event.data.previous_attributes
-            if previous['status'] == 'trialing' and subscription['status'] in ('active', 'past_due') and user.student_profile.should_pay_signup_fee:
+            if previous.get('status') == 'trialing' and subscription['status'] in ('active', 'past_due') and user.student_profile.should_pay_signup_fee:
                 signup_fee_id = stripe.Price.list(active=True, type='one_time')['data'][0]['id']
                 stripe.InvoiceItem.create(
                     customer=subscription['customer'],

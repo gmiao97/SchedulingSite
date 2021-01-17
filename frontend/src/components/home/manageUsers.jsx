@@ -136,6 +136,7 @@ export default function ManageUsers(props) {
         columns={[
           {title: 'ID', field: 'id', type: 'numeric', filtering: false},
           {title: 'ユーザー名', field: 'username', filtering: false},
+          {title: '入会日', field: 'date_joined', filtering: false},
           {title: 'ユーザータイプ', field: 'user_type'},
           {title: 'タイムゾーン', field: 'time_zone'},
           {title: '姓', field: 'last_name', filtering: false},
@@ -207,6 +208,14 @@ export function StudentDetails(props) {
             紹介者・
             <Typography variant='body2' color='textPrimary' display='inline'>
               {props.data.student_profile.referrer}
+            </Typography>
+          </Typography>
+        </Grid>
+        <Grid item>
+          <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+            入会費・
+            <Typography variant='body2' color='textPrimary' display='inline'>
+              {props.data.student_profile.should_pay_signup_fee ? '未払い' : '紹介/支払い済み'}
             </Typography>
           </Typography>
         </Grid>
