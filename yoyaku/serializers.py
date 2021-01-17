@@ -43,7 +43,7 @@ class MyUserSerializer(serializers.ModelSerializer):
         model = MyUser
         fields = ['id', 'first_name', 'last_name', 'email', 'username', 'password', 'user_type', 'time_zone', 'phone_number',
                   'birthday', 'description', 'avatar', 'referral_code', 'stripeCustomerId', 'stripeProductId', 'stripeSubscriptionId',
-                  'stripeSubscriptionProvision', 'student_profile', 'teacher_profile', 'student_id', 'teacher_id']
+                  'stripeSubscriptionProvision', 'student_profile', 'teacher_profile', 'student_id', 'teacher_id', 'date_joined']
         extra_kwargs = {'password': {'write_only': True, 'required': False}, 'username': {'required': False}, 'referral_code': {'required': False}}
 
     def create(self, validated_data):
