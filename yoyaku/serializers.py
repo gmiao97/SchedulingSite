@@ -6,7 +6,7 @@ from rest_framework.fields import FileField
 from django.conf import settings
 import stripe
 
-from .models import StudentProfile, TeacherProfile, Recurrence, Event, Subject, MyUser
+from .models import StudentProfile, TeacherProfile, Recurrence, Event, Subject, MyUser, ClassInfo
 
 
 stripe.api_key = settings.STRIPE_SECRET
@@ -150,3 +150,9 @@ class SubjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subject
         fields = ['id', 'subject_name']
+
+
+class ClassInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClassInfo
+        fields = ['id', 'name', 'link', 'meeting_id', 'password']

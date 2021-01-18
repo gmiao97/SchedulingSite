@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
+import MaterialTable from 'material-table';
+import { tableIcons } from '../../util';
+import axiosInstance from '../../axiosApi';
 import {  
   Grid,
   Typography,
@@ -38,8 +41,19 @@ const useStyles = makeStyles(theme => ({
 
 export default function ClassInfo(props) {
   const classes = useStyles();
-
+  const [classInfo, setClassInfo] = useState([]);
+  const [loading, setLoading] = useState(true);
   const showContent = props.currentUser.user_type !== 'STUDENT' || props.currentUser.stripeSubscriptionProvision;
+
+  useEffect(() => {
+    getClassInfo();
+  }, []);
+
+  const getClassInfo = async () => {
+    let response = await axiosInstance.get(`/yoyaku/class-info/`);
+    setClassInfo(response.data);
+    setLoading(false);
+  }
 
   const createData = (name, link, meetingId, password) => ({name, link, meetingId, password});
   let rows = [];
@@ -84,38 +98,55 @@ export default function ClassInfo(props) {
         </Box>
       </Paper>
       <Typography variant='h6' display='block' color='primary'>ZOOM ID</Typography>
-      <Typography variant='subtitle1' display='block' color='primary'>日本時間　1月2日～2月1日</Typography>
-      <Typography variant='subtitle1' display='block' color='primary'>アメリカ　1月1日～1月末日</Typography>
+      <Typography variant='subtitle1' display='block' color='primary'>日本時間　今月2日～来月1日</Typography>
+      <Typography variant='subtitle1' display='block' color='primary'>アメリカ　今月1日～今月末日</Typography>
       {showContent ? 
-        <TableContainer component={Paper} elevation={24} className={classes.sectionEnd}>
-          <Table className={classes.table}>
-            <TableHead>
-              <TableRow>
-                <TableCell>レッスン</TableCell>
-                <TableCell>リンク</TableCell>
-                <TableCell>ミーティングID</TableCell>
-                <TableCell>パスワード</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map(row =>
-                <TableRow key={row.name}>
-                  <TableCell component="th" scope="row">
-                    {row.name}
-                  </TableCell>
-                  <TableCell>
-                    <MaterialLink href={row.link} target='_blank' rel='noopener noreferrer' color='secondary'>
-                      参加する
-                    </MaterialLink>
-                  </TableCell>
-                  <TableCell>{row.meetingId}</TableCell>
-                  <TableCell>{row.password}</TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer> :
-        <Typography display='block'>サブスクリプションありません</Typography>
+        <MaterialTable 
+          title='ZOOM情報'
+          data={classInfo}
+          isLoading={loading}
+          icons={tableIcons}
+          localization={{
+            pagination: {
+              labelDisplayedRows: '{count}の{from}-{to}',
+              labelRowsSelect: '行',
+            },
+            toolbar: {
+              nRowsSelected: '{0}行を選択',
+              searchTooltip: '検索',
+              searchPlaceholder: '検索',
+            },
+            header: {
+              actions: 'アクション',
+            },
+            body: {
+              emptyDataSourceMessage: 'ZOOM情報がありません',
+              deleteTooltip: '削除',
+              filterRow: {
+                  filterTooltip: 'フィルター',
+              },
+              editRow: {
+                deleteText: '削除を確認しますか？'
+              },
+            },
+          }}
+          columns={[
+            {title: 'ID', field: 'id', hidden: true},
+            {title: 'レッスン', field: 'name', filtering: false},
+            {title: 'リンク', field: 'link', filtering: false},
+            {title: 'ミーティングID', field: 'meeting_id', filtering: false},
+            {title: 'パスワード', field: 'password', filtering: false},
+          ]}
+          editable={props.currentUser.user_type === 'ADMIN' ? 
+            {
+              onRowAdd: newData => axiosInstance.post(`/yoyaku/class-info/`, newData).then(getClassInfo),
+              onRowUpdate: newData => axiosInstance.put(`/yoyaku/class-info/${newData.id}/`, newData).then(getClassInfo),
+              onRowDelete: oldData => axiosInstance.delete(`/yoyaku/class-info/${oldData.id}/`).then(getClassInfo),
+            } :
+            null
+          }
+        /> :
+        <Typography display='block' variant='body1' color='textSecondary'>サブスクリプションありません</Typography>
       }
       <Typography variant='h6' display='block' color='primary'>プリント</Typography>
       <Paper elevation={24}>
@@ -127,7 +158,7 @@ export default function ClassInfo(props) {
                 Googleドライブへ
               </Button>
             </iframe> :
-            <Typography display='block'>サブスクリプションありません</Typography>
+            <Typography display='block' variant='body1' color='textSecondary'>サブスクリプションありません</Typography>
           }
         </Box>
       </Paper>

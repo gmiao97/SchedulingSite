@@ -24,12 +24,24 @@ import requests
 import stripe
 import json
 
-from .models import MyUser, Recurrence, Event, Subject
-from .serializers import MyUserSerializer, RecurrenceSerializer, EventSerializer, EventReadSerializer, SubjectSerializer
+from .models import MyUser, Recurrence, Event, Subject, ClassInfo
+from .serializers import MyUserSerializer, RecurrenceSerializer, EventSerializer, EventReadSerializer, SubjectSerializer, ClassInfoSerializer
 from .permissions import IsAdminUser, IsLoggedInUserOrAdmin, IsLoggedInTeacherUser, IsLoggedInUserAndEventOwner
 
 
 stripe.api_key = settings.STRIPE_SECRET
+
+
+class ClassInfoViewSet(viewsets.ModelViewSet):
+    queryset = ClassInfo.objects.all()
+    serializer_class = ClassInfoSerializer
+
+    def get_permissions(self):
+        if self.action in ('list', 'retrieve'):
+            permission_classes = [IsLoggedInUserOrAdmin]
+        else:
+            permission_classes = [IsAdminUser]
+        return [permission() for permission in permission_classes]
 
 
 class UserViewSet(viewsets.ModelViewSet):
