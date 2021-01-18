@@ -48,12 +48,6 @@ export default function ManageUsers(props) {
         data={users}
         icons={tableIcons}
         isLoading={loading}
-        options={{
-          // filtering: true,
-          // headerStyle: {
-          //   backgroundColor: '#0074D4',
-          // }
-        }}
         onRowClick={(event, rowData, togglePanel) => togglePanel()}
         detailPanel={rowData => {
           if (rowData.user_type === 'STUDENT') {
@@ -88,23 +82,21 @@ export default function ManageUsers(props) {
           body: {
             emptyDataSourceMessage: 'ユーザーデータがありません',
             deleteTooltip: '削除',
-            filterRow: {
-                filterTooltip: 'フィルター',
-            },
+            editTooltip: '編集',
             editRow: {
               deleteText: '削除を確認しますか？'
             },
           },
         }}
         columns={[
-          {title: 'ID', field: 'id', type: 'numeric', filtering: false},
-          {title: 'ユーザー名', field: 'username', filtering: false},
-          {title: '入会日', field: 'date_joined', filtering: false},
+          {title: 'ID', field: 'id', type: 'numeric'},
+          {title: 'ユーザー名', field: 'username'},
+          {title: '入会日', field: 'date_joined'},
           {title: 'ユーザータイプ', field: 'user_type'},
           {title: 'タイムゾーン', field: 'time_zone'},
-          {title: '姓', field: 'last_name', filtering: false},
-          {title: '名', field: 'first_name', filtering: false},
-          {title: 'メールアドレス', field: 'email', filtering: false},
+          {title: '姓', field: 'last_name'},
+          {title: '名', field: 'first_name'},
+          {title: 'メールアドレス', field: 'email'},
         ]}
       />
     </div>

@@ -4,16 +4,9 @@ import MaterialTable from 'material-table';
 import { tableIcons } from '../../util';
 import axiosInstance from '../../axiosApi';
 import {  
-  Grid,
   Typography,
   Box,
   Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Link as MaterialLink,
   Button,
 } from '@material-ui/core';
@@ -67,6 +60,7 @@ export default function ClassInfo(props) {
     } else {
       classInfoToAdd = response.data;
     }
+    classInfoToAdd.sort((a, b) => a.id - b.id);
     setClassInfo(classInfoToAdd);
     setLoading(false);
   }
@@ -106,6 +100,10 @@ export default function ClassInfo(props) {
           data={classInfo}
           isLoading={loading}
           icons={tableIcons}
+          options={{
+            sorting: false,
+            search: false,
+          }}
           localization={{
             pagination: {
               labelDisplayedRows: '{count}の{from}-{to}',
@@ -113,8 +111,6 @@ export default function ClassInfo(props) {
             },
             toolbar: {
               nRowsSelected: '{0}行を選択',
-              searchTooltip: '検索',
-              searchPlaceholder: '検索',
             },
             header: {
               actions: 'アクション',
@@ -122,9 +118,8 @@ export default function ClassInfo(props) {
             body: {
               emptyDataSourceMessage: 'ZOOM情報がありません',
               deleteTooltip: '削除',
-              filterRow: {
-                  filterTooltip: 'フィルター',
-              },
+              addTooltip: '追加',
+              editTooltip: '編集',
               editRow: {
                 deleteText: '削除を確認しますか？'
               },
@@ -133,10 +128,14 @@ export default function ClassInfo(props) {
           columns={[
             {title: 'ID', field: 'id', hidden: true},
             {title: 'アクセス', field: 'access', hidden: props.currentUser.user_type !== 'ADMIN', lookup: {all: '全員', weekend: '土日', preschool: '未就学児'}},
-            {title: 'レッスン', field: 'name', filtering: false},
-            {title: 'リンク', field: 'link', filtering: false},
-            {title: 'ミーティングID', field: 'meeting_id', filtering: false},
-            {title: 'パスワード', field: 'password', filtering: false},
+            {title: 'レッスン', field: 'name'},
+            {title: 'リンク', field: 'link', render: rowData => 
+              <MaterialLink href={rowData.link} target='_blank' rel='noopener noreferrer' color='secondary'>
+                参加する
+              </MaterialLink>
+            },
+            {title: 'ミーティングID', field: 'meeting_id'},
+            {title: 'パスワード', field: 'password'},
           ]}
           editable={props.currentUser.user_type === 'ADMIN' ? 
             {
