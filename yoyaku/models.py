@@ -161,7 +161,14 @@ class Event(models.Model):
 
 
 class ClassInfo(models.Model):
+    ACCESS_CHOICES = [
+        ('all', _('all')),
+        ('weekend', _('weekend')),
+        ('preschool', _('preschool')),
+    ]
+
     name = models.CharField(_('name'), max_length=200)
     link = models.CharField(_('link'), max_length=200)
     meeting_id = models.CharField(_('meeting id'), max_length=200)
     password = models.CharField(_('password'), max_length=200)
+    access = models.CharField(_('access'), choices=ACCESS_CHOICES, max_length=20)

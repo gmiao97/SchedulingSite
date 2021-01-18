@@ -51,24 +51,24 @@ export default function ClassInfo(props) {
 
   const getClassInfo = async () => {
     let response = await axiosInstance.get(`/yoyaku/class-info/`);
-    setClassInfo(response.data);
+    let classInfoToAdd = [];
+    if (props.currentUser.user_type === 'STUDENT') {
+      for (let info of response.data) {
+        if (info.access === 'preschool' && props.currentProduct.name.includes('未就学児')) {
+          classInfoToAdd.push(info);
+        }
+        if (info.access === 'weekend' && props.currentProduct.name.includes('土日')) {
+          classInfoToAdd.push(info);
+        } 
+        if (info.access === 'all') {
+          classInfoToAdd.push(info);
+        }
+      }
+    } else {
+      classInfoToAdd = response.data;
+    }
+    setClassInfo(classInfoToAdd);
     setLoading(false);
-  }
-
-  const createData = (name, link, meetingId, password) => ({name, link, meetingId, password});
-  let rows = [];
-  if (showContent) {
-    rows = rows.concat([
-      createData('通常フリーレッスン（月～金）', 'https://us04web.zoom.us/j/79135219967?pwd=QkNldG4zK1FXUFI4ZFZyZGJhRHNyQT09', '791 3521 9967', '5656'),
-      createData('フリーレッスン中学生', 'https://us04web.zoom.us/j/76278477003?pwd=Y3J1L0xjdFJCeFZLNGhjaDBhdXQ0UT09', '762 7847 7003', '5656'),
-      createData('初心者クラス', 'https://us02web.zoom.us/j/83515032396?pwd=dkNIeWI5QTVaU3JxL1h2TXYwa0xzUT09', '835 1503 2396', '121212'),
-    ]);
-    if (props.currentUser.user_type !== 'STUDENT' || props.currentProduct.name.includes('未就学児')) {
-      rows.push(createData('未就学児クラス', 'https://us04web.zoom.us/j/73881305403?pwd=YXRWakVQYTNGS21SeXJnK3pXWXI1UT09', '738 8130 5403', '5656'));
-    }
-    if (props.currentUser.user_type !== 'STUDENT' || props.currentProduct.name.includes('土日')) {
-      rows.push(createData('土日クラス', 'https://us04web.zoom.us/j/75710108047?pwd=VlBIY3RjcFpPOVlIczMrY0VmMnBNUT09', '757 1010 8047', '5656'));
-    }
   }
 
   const rules = [
@@ -132,6 +132,7 @@ export default function ClassInfo(props) {
           }}
           columns={[
             {title: 'ID', field: 'id', hidden: true},
+            {title: 'アクセス', field: 'access', hidden: props.currentUser.user_type !== 'ADMIN', lookup: {all: '全員', weekend: '土日', preschool: '未就学児'}},
             {title: 'レッスン', field: 'name', filtering: false},
             {title: 'リンク', field: 'link', filtering: false},
             {title: 'ミーティングID', field: 'meeting_id', filtering: false},

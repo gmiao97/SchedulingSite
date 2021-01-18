@@ -155,4 +155,4 @@ class SubjectSerializer(serializers.ModelSerializer):
 class ClassInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClassInfo
-        fields = ['id', 'name', 'link', 'meeting_id', 'password']
+        fields = ['id', 'name', 'link', 'meeting_id', 'password', 'access']
