@@ -159,3 +159,9 @@ class Event(models.Model):
     file = models.FileField(upload_to='hsw14yh841sr/public/media/eventFiles/', null=True)
     color = models.CharField(_('color'), max_length=10, default='blue')
 
+
+class ClassInfo(models.Model):
+    name = models.CharField(_('name'), max_length=200)
+    link = models.CharField(_('link'), max_length=200)
+    meeting_id = models.CharField(_('meeting id'), max_length=200)
+    password = models.CharField(_('password'), max_length=200)

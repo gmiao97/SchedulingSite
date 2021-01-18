@@ -5,12 +5,13 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 from .views import UserViewSet, EventViewSet, SubjectListByTeacher, TeacherListBySubject, ValidateToken, \
     StripePriceList, StripeProduct, StripeSubscription, StripeSetupIntent, StripeCustomerPortal, StripeWebhook, \
-    LogoutAndBlacklistRefreshTokenForUserView, PasswordReset
+    LogoutAndBlacklistRefreshTokenForUserView, PasswordReset, ClassInfoViewSet
 
 
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'events', EventViewSet)
+router.register(r'class-info', ClassInfoViewSet)
 
 urlpatterns = [
     url(r'^', include(router.urls)),
