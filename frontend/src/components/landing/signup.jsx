@@ -110,17 +110,12 @@ export default function Signup(props) {
       referrer: '',
       should_pay_signup_fee: true,
     },
-    teacher_profile: {
-      association: '',
-    },
   });
   const [newUserInfo, setNewUserInfo] = useState({
     email: "",
   });
 
-  const studentSteps = ['ユーザータイプを選択', 'プロフィール設定', '紹介コード確認', '支払い情報'];
-  const teacherSteps = ['ユーザータイプを選択', 'プロフィール設定', '確認'];
-  const steps = signupForm.user_type === "STUDENT" ? studentSteps : teacherSteps;
+  const steps = ['プロフィール設定', '紹介コード確認', '支払い情報'];
 
 
   useEffect(() => {
@@ -185,26 +180,10 @@ export default function Signup(props) {
     });
   }
 
-  const handleChangeTeacherProfile = event => {
-    setSignupForm({
-      ...signupForm,
-      teacher_profile: {
-        ...signupForm.teacher_profile,
-        [event.target.name]: event.target.value,
-      },
-    });
-  }
-
   // TODO error handling and validation
   const handleSubmit = async () => {
     if (!stripe || !elements) {
       return;
-    }
-    
-    if (signupForm.user_type === 'STUDENT') {
-      delete signupForm.teacher_profile;
-    } else {
-      delete signupForm.student_profile;
     }
 
     if (!signupForm.password) { 
@@ -259,9 +238,6 @@ export default function Signup(props) {
           referrer: '',
           should_pay_signup_fee: true,
         },
-        teacher_profile: {
-          association: '',
-        },
       });
       setPasswordMatch('');
       setReferralCode('');
@@ -314,16 +290,6 @@ export default function Signup(props) {
     switch (stepIndex) {
       case 0:
         return(
-          <FormControl component="fieldset">
-            <FormLabel component="legend">ユーザータイプを選択して下さい</FormLabel>
-            <RadioGroup id="user_type" name="user_type" value={signupForm.user_type} onChange={handleChange}>
-              <FormControlLabel value="STUDENT" control={<Radio />} label="生徒" />
-              <FormControlLabel value="TEACHER" control={<Radio />} label="先生" disabled />
-            </RadioGroup>
-          </FormControl>
-        );
-      case 1:
-        return(
           <form id="signupForm" onSubmit={handleNextStep}>
             <StudentSignup 
               usernameList={usernameList}
@@ -338,34 +304,9 @@ export default function Signup(props) {
               setSignupForm={setSignupForm}
               onDateChange={handleDateChange}
             />
-            {/* {signupForm.user_type === "STUDENT" ? 
-              <StudentSignup 
-                usernameList={usernameList}
-                referralCodeList={referralCodeList}
-                passwordMatch={passwordMatch}
-                setPasswordMatch={setPasswordMatch}
-                referralCode={referralCode}
-                setReferralCode={setReferralCode}
-                onChange={handleChange}
-                onStudentChange={handleChangeStudentProfile}
-                signupForm={signupForm}
-                setSignupForm={setSignupForm}
-                onDateChange={handleDateChange}
-              /> :
-              <TeacherSignup
-                usernameList={usernameList}
-                passwordMatch={passwordMatch}
-                setPasswordMatch={setPasswordMatch}
-                onChange={handleChange}
-                onTeacherChange={handleChangeTeacherProfile}
-                signupForm={signupForm}
-                setSignupForm={setSignupForm}
-                onDateChange={handleDateChange}
-              />
-            } */}
           </form>
         );
-      case 2:
+      case 1:
         return (
           <MyGrid container spacing={3} className={classes.sectionEnd}>
             <MyGrid item xs={12}>
@@ -404,22 +345,18 @@ export default function Signup(props) {
             </MyGrid>
           </MyGrid>
         );
-      case 3:
+      case 2:
         return(
-          signupForm.user_type === "STUDENT" ?
-            <StripeSubscriptionCheckout 
-              selectedPrice={selectedPrice}
-              setSelectedPrice={setSelectedPrice}
-              setError={setError}
-              setErrorSnackbarOpen={setErrorSnackbarOpen}
-              setCardEntered={setCardEntered}
-              agreed={agreed}
-              setAgreed={setAgreed}
-              isReferral={referralCodeList.includes(referralCode)}
-            /> :
-            <Typography className={classes.stepContent} color="textSecondary" component='div'>
-              プロフィール情報を確認して<Typography display="inline" color="secondary">先生</Typography>として登録
-            </Typography>
+          <StripeSubscriptionCheckout 
+            selectedPrice={selectedPrice}
+            setSelectedPrice={setSelectedPrice}
+            setError={setError}
+            setErrorSnackbarOpen={setErrorSnackbarOpen}
+            setCardEntered={setCardEntered}
+            agreed={agreed}
+            setAgreed={setAgreed}
+            isReferral={referralCodeList.includes(referralCode)}
+          /> 
         );
       default:
         return 'Unknown stepIndex';
@@ -429,12 +366,6 @@ export default function Signup(props) {
   const getStepButton = stepIndex => {
     switch (stepIndex) {
       case 0:
-        return(
-          <Button variant="contained" color="primary" type="button" onClick={handleNextStep}>
-            次へ
-          </Button>
-        );
-      case 1:
         let nextDisabled = false;
         let tooltipMessage = '';
         if (dateError) {
@@ -462,15 +393,15 @@ export default function Signup(props) {
             </span>
           </Tooltip>
         );
-      case 2:
+      case 1:
         return(
           <Button variant="contained" color="primary" type="button" onClick={handleNextStep}>
             次へ
           </Button>
         );
-      case 3:
+      case 2:
         return(
-          <Button variant="contained" color="primary" type="button" onClick={handleSubmit} disabled={!agreed || (signupForm.user_type === 'STUDENT' && !cardEntered)}>
+          <Button variant="contained" color="primary" type="button" onClick={handleSubmit} disabled={!agreed || !cardEntered}>
             登録
           </Button>
         );
@@ -539,41 +470,17 @@ export function StudentSignup(props) {
   const avatars = Array.from(avatarMapping.keys());
 
   const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
 
   return(
     <MyGrid container spacing={3} className={classes.sectionEnd}>
       <MyGrid item xs={12}>
-        <div>
-          <Button variant="outlined" color="secondary" size='small' onClick={() => setDialogOpen(true)}>
-            未就学児クラスご希望の方はこちらをクリックして下さい
-          </Button>
-          <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-            <DialogTitle>未就学児クラス希望の方</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                許可されたクラス番号をお持ちですか？お持ちでない方は下記のフォームから申請して下さい。
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <MaterialLink 
-                href='https://docs.google.com/forms/d/e/1FAIpQLSejTfHCqYgJSySdlYnb6I_xTJpyAEl8B0MUAq5WqEPDpbl3OQ/viewform'
-                target='_blank'
-                rel='noopener noreferrer'
-                color='secondary'
-              >
-                未就学児クラス希望フォームへ
-              </MaterialLink>
-            </DialogActions>
-          </Dialog>
-        </div>
       </MyGrid>
       <MyGrid item xs={12} sm={2}>
         <IconButton onClick={() => setAvatarDialogOpen(true)}>
           <MyAvatar avatar={props.signupForm.avatar} />
         </IconButton>
         <Dialog open={avatarDialogOpen} onClose={() => setAvatarDialogOpen(false)}>
-          <DialogTitle>アバターを選択</DialogTitle>
+          <DialogTitle>アバター選択</DialogTitle>
           <DialogContent>
             {avatars.map(avatar => 
               <IconButton 
@@ -677,69 +584,3 @@ export function StudentSignup(props) {
   );
 }
 
-
-// export function TeacherSignup(props) {
-//   const classes = useStyles();
-  
-//   return(
-//     <MyGrid container spacing={3} className={classes.sectionEnd}>
-//       <MyGrid item xs={12}>
-//         <TextField id='username' name='username' type='text' label='ユーザー名' value={props.signupForm.username} onChange={props.onChange} required fullWidth variant='filled' 
-//         error={props.usernameList.includes(props.signupForm.username)} helperText={props.usernameList.includes(props.signupForm.username) ? 'そのユーザー名はすでに使われています' : '半角英数・記号'} />
-//       </MyGrid>
-//       <MyGrid item xs={12} sm={6}>
-//         <TextField id='password' name='password' type='password' label='パスワード' value={props.signupForm.password} onChange={props.onChange} required fullWidth variant='filled'
-//         helperText='半角英数・記号（e.g. !@#%*.）７文字以上' />
-//       </MyGrid>
-//       <MyGrid item xs={12} sm={6}>
-//         <TextField id='confirmPassword' name='confirmPassword' type='password' label='パスワード確認' value={props.passwordMatch} 
-//         onChange={e => props.setPasswordMatch(e.target.value)} required fullWidth variant='filled' error={props.passwordMatch !== props.signupForm.password} />
-//       </MyGrid>
-//       <MyGrid item xs={12} sm={6}>
-//         <TextField id='last_name' name='last_name' type='text' label='姓' value={props.signupForm.last_name} onChange={props.onChange} required fullWidth />
-//       </MyGrid>
-//       <MyGrid item xs={12} sm={6}>
-//         <TextField id='first_name' name='first_name' type='text' label='名' value={props.signupForm.first_name} onChange={props.onChange} required fullWidth />
-//       </MyGrid>
-//       <MyGrid item xs={12} sm={6}>
-//         <KeyboardDatePicker
-//           id='birthday'
-//           name='birthday'
-//           variant='inline'
-//           label="生年月日"
-//           value={props.signupForm.birthday}
-//           onChange={date => props.onDateChange('birthday', date)}
-//           format='YYYY-MM-DD'
-//           invalidDateMessage='正しい日にちを入力して下さい'
-//           maxDateMessage='正しい日にちを入力して下さい'
-//           minDateMessage='正しい日にちを入力して下さい'
-//         />
-//       </MyGrid>
-//       <MyGrid item xs={12} sm={6}>
-//         <TextField id='email' name='email' type='email' label='メールアドレス' value={props.signupForm.email} onChange={props.onChange} required fullWidth />
-//       </MyGrid>
-//       <MyGrid item xs={12} sm={6}>
-//         <TextField id='phone_number' name='phone_number' type='text' label='電話番号' value={props.signupForm.phone_number} onChange={props.onChange} required fullWidth />
-//       </MyGrid>
-//       <MyGrid item xs={12} sm={6}>
-//         <TextField id='association' name='association' type='text' label='所属' value={props.signupForm.teacher_profile.association} onChange={props.onTeacherChange} required fullWidth />
-//       </MyGrid>
-//       <MyGrid item xs={12} sm={6}>
-//         <Autocomplete
-//           id='time_zone'
-//           name='time_zone'
-//           options={timeZoneNames}
-//           value={props.signupForm.time_zone}
-//           onChange={(event, value) => {
-//             props.setSignupForm({
-//               ...props.signupForm,
-//               time_zone: value,
-//             });
-//           }}
-//           renderInput={(params) => <TextField {...params} label="地域/タイムゾーン" />}
-//           disableClearable
-//         />
-//       </MyGrid>
-//     </MyGrid>
-//   );
-// }
