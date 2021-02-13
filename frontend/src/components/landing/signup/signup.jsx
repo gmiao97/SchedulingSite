@@ -89,6 +89,9 @@ export default function Signup(props) {
   const [dateError, setDateError] = useState(false);
   const [usernameList, setUsernameList] = useState([]);
   const [referralCodeList, setReferralCodeList] = useState([]);
+  const [weekend, setWeekend] = useState(false);
+  const [preschool, setPreschool] = useState(false);
+  const [stripePrices, setStripePrices] = useState({});
   const [signupForm, setSignupForm] = useState({
     username: '',
     email: '',
@@ -120,7 +123,35 @@ export default function Signup(props) {
 
   useEffect(() => {
     getReferralCodeList();
+    getPlans();
   }, []);
+
+  useEffect(() => {
+    if (weekend && preschool) {
+      setSelectedPrice(stripePrices['mpw']);
+    } else if (weekend) {
+      setSelectedPrice(stripePrices['mw']);
+    } else if (preschool) {
+      setSelectedPrice(stripePrices['mp']);
+    } else {
+      setSelectedPrice(stripePrices['m']);
+    }
+  }, [weekend, preschool, stripePrices]);
+
+  const getPlans = async () => {
+    try {
+      const priceResponse = await axiosInstance.get('/yoyaku/stripe-prices/');
+      var stripePriceMap = {};
+      for (const price of priceResponse.data.data) {
+        stripePriceMap[price.metadata.identifier] = price.id;
+      }
+      setStripePrices(stripePriceMap);
+    } catch(err) {
+      console.error(err.stack);
+      setError('サブスクリプションプランの読み込みできませんでした。アドミンに連絡してください。');
+      setErrorSnackbarOpen(true);
+    }
+  }
 
   const getUsernameList = async () => {
     const response = await axiosInstance.get('/yoyaku/users/username_list/');
@@ -350,6 +381,10 @@ export default function Signup(props) {
             setErrorSnackbarOpen={setErrorSnackbarOpen}
             agreed={agreed}
             setAgreed={setAgreed}
+            weekend={weekend}
+            setWeekend={setWeekend}
+            preschool={preschool}
+            setPreschool={setPreschool}
           />
         );
       case 3:

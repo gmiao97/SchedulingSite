@@ -39,7 +39,7 @@ export default function ClassInfo(props) {
   const showContent = props.currentUser.user_type !== 'STUDENT' || props.currentUser.stripeSubscriptionProvision;
 
   useEffect(() => {
-    getClassInfo();
+    showContent && getClassInfo();
   }, []);
 
   const getClassInfo = async () => {
@@ -146,7 +146,11 @@ export default function ClassInfo(props) {
             null
           }
         /> :
-        <Typography display='block' variant='body1' color='textSecondary'>サブスクリプションありません</Typography>
+        <Paper elevation={24}>
+          <Box p={3}>
+            <Typography display='block' variant='body1' color='textSecondary'>サブスクリプションがありません（月会費を払っていません）</Typography>
+          </Box>
+        </Paper>
       }
       <Typography variant='h6' display='block' color='primary'>プリント</Typography>
       <Paper elevation={24}>
@@ -158,7 +162,7 @@ export default function ClassInfo(props) {
                 Googleドライブへ
               </Button>
             </iframe> :
-            <Typography display='block' variant='body1' color='textSecondary'>サブスクリプションありません</Typography>
+            <Typography display='block' variant='body1' color='textSecondary'>サブスクリプションがありません（月会費を払っていません）</Typography>
           }
         </Box>
       </Paper>

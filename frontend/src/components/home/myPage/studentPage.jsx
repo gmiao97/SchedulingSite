@@ -65,7 +65,7 @@ export function Subscription(props) {
     return(
       <div>
         <Typography variant='h6' color='textSecondary' display='block' gutterBottom>
-          サブスクリプションはありません。
+          サブスクリプションがありません（月会費を払っていません）
         </Typography>
         <Button variant='contained' color='secondary' type='button' onClick={handleStripeCustomerPortalRedirect}>
           プランと支払い方法の管理
@@ -425,8 +425,8 @@ export default function StudentProfile(props) {
           <Typography>
             →紹介コード『<Typography display='inline' color='secondary'>{props.currentUser.referral_code}</Typography>』
           </Typography>
-          {referralMessage.map(line => 
-            <Typography>
+          {referralMessage.map((line, index) => 
+            <Typography key={index}>
               {line}
             </Typography>  
           )}

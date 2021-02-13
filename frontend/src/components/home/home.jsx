@@ -119,8 +119,8 @@ export default function Home(props) {
       setCurrentSubscription(subscriptionResponse.data);
       setCurrentProduct(productResponse.data);
     } else {
-      setCurrentSubscription({error: 'サブスクリプションがありません'});
-      setCurrentProduct({error: 'サブスクリプションがありません'});
+      setCurrentSubscription({});
+      setCurrentProduct({});
     }
   }
 

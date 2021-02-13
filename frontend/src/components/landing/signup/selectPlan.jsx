@@ -40,49 +40,13 @@ const useStyles = makeStyles(theme => ({
 
 export default function SelectPlan(props) {
   const classes = useStyles();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [stripePrices, setStripePrices] = useState({});
-  const [weekend, setWeekend] = useState(false);
-  const [preschool, setPreschool] = useState(false);
-
-  useEffect(() => {
-    getPlans();
-  }, []);
-
-  useEffect(() => {
-    if (weekend && preschool) {
-      props.setSelectedPrice(stripePrices['mpw']);
-    } else if (weekend) {
-      props.setSelectedPrice(stripePrices['mw']);
-    } else if (preschool) {
-      props.setSelectedPrice(stripePrices['mp']);
-    } else {
-      props.setSelectedPrice(stripePrices['m']);
-    }
-  }, [weekend, preschool]);
-
-  const getPlans = async () => {
-    try {
-      const priceResponse = await axiosInstance.get('/yoyaku/stripe-prices/');
-      var stripePriceMap = {};
-      for (const price of priceResponse.data.data) {
-        stripePriceMap[price.metadata.identifier] = price.id;
-      }
-      setStripePrices(stripePriceMap);
-      props.setSelectedPrice(stripePriceMap['m']);
-    } catch(err) {
-      console.error(err.stack);
-      props.setError('サブスクリプションプランの読み込みできませんでした。アドミンに連絡してください。');
-      props.setErrorSnackbarOpen(true);
-    }
-  }
-
+  const [dialogOpen, setDialogOpen] = useState(false);  
 
   const handlePlanChange = event => {
     if (event.target.name === 'weekend') {
-      setWeekend(event.target.checked);
+      props.setWeekend(event.target.checked);
     } else if (event.target.name === 'preschool') {
-      setPreschool(event.target.checked);
+      props.setPreschool(event.target.checked);
     }
   }
 
@@ -97,13 +61,13 @@ export default function SelectPlan(props) {
             <FormLabel component="legend">追加クラスを選んでください</FormLabel>
             <FormGroup>
               <FormControlLabel
-                control={<Checkbox checked={weekend} onChange={handlePlanChange} name="weekend" />}
+                control={<Checkbox checked={props.weekend} onChange={handlePlanChange} name="weekend" />}
                 label={
                   <Typography variant='subtitle2' color='textSecondary'>土日クラス・+$10</Typography>
                 }
               />
               <FormControlLabel
-                control={<Checkbox checked={preschool} onChange={handlePlanChange} name="preschool" />}
+                control={<Checkbox checked={props.preschool} onChange={handlePlanChange} name="preschool" />}
                 label={
                   <Typography variant='subtitle2' color='textSecondary'>未就学児クラス・+$10</Typography>
                 }
@@ -128,9 +92,9 @@ export default function SelectPlan(props) {
                 null
               }
               <Typography variant='body2' color='textSecondary'>
-                {weekend && preschool ? 
+                {props.weekend && props.preschool ? 
                   <Typography variant='body2' color='textSecondary' display='inline'>・$50</Typography> :
-                  !(weekend || preschool) ?
+                  !(props.weekend || props.preschool) ?
                     <Typography variant='body2' color='textSecondary' display='inline'>・$30</Typography> :
                     <Typography variant='body2' color='textSecondary' display='inline'>・$40</Typography>
                 }
