@@ -492,11 +492,11 @@ class StripeWebhook(APIView):
             user = MyUser.objects.get(stripeCustomerId=subscription['customer'])
             if user.student_profile.should_pay_signup_fee:
                 mail.send_mail(
-                    'Success Academy - {} {}様　トライアル期間がまもなく終了します'.format(request.data['last_name'], request.data['first_name']),
+                    'Success Academy - {} {}様　トライアル期間がまもなく終了します'.format(user.last_name, user.first_name),
                     '30日のトライアル期間が3日後に終了します。$100の入会費を3日後に請求させていただきます。'
                     '\nご不明な点があればいつでもご連絡ください。\n\nSuccess Academy 南\n\nマイページ：{}'.format(settings.BASE_URL),
                     None,
-                    [request.data['email'], 'success.academy.us@gmail.com'],
+                    [user.email],
                     fail_silently=False,
                 )
         elif event.type == 'customer.subscription.updated':

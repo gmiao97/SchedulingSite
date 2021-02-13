@@ -20,26 +20,19 @@ import {
   Stepper,
   Step,
   StepLabel,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  FormControl,
-  FormLabel,
   Tooltip,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
-  Link as MaterialLink,
-  Checkbox,
   IconButton,
   InputAdornment,
 } from '@material-ui/core';
 
-import axiosInstance from '../../axiosApi';
-import StripeSubscriptionCheckout from '../stripeSubscriptionCheckout';
-import { MyAvatar } from '../home/home';
+import axiosInstance from '../../../axiosApi';
+import StripeSubscriptionCheckout from '../../stripeSubscriptionCheckout';
+import SelectPlan from './selectPlan';
+import { MyAvatar } from '../../home/home';
 import { 
   gradeMappings, 
   timeZoneNames, 
@@ -47,7 +40,7 @@ import {
   AccountRegistrationError, 
   CardError,
   SetupIntentError,
-} from '../../util';
+} from '../../../util';
 
 
 const MyGrid = styled(Grid)({
@@ -68,6 +61,9 @@ const useStyles = makeStyles(theme => ({
   stepContent: {
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
+  },
+  strikethrough: {
+    textDecoration: 'line-through',
   },
 }));
 
@@ -115,7 +111,7 @@ export default function Signup(props) {
     email: "",
   });
 
-  const steps = ['プロフィール設定', '紹介コード確認', '支払い情報'];
+  const steps = ['プロフィール設定', '紹介コード確認', 'プラン選択', '支払い情報'];
 
 
   useEffect(() => {
@@ -347,15 +343,20 @@ export default function Signup(props) {
         );
       case 2:
         return(
-          <StripeSubscriptionCheckout 
-            selectedPrice={selectedPrice}
+          <SelectPlan 
             setSelectedPrice={setSelectedPrice}
+            isReferral={referralCodeList.includes(referralCode)}
             setError={setError}
             setErrorSnackbarOpen={setErrorSnackbarOpen}
-            setCardEntered={setCardEntered}
             agreed={agreed}
             setAgreed={setAgreed}
-            isReferral={referralCodeList.includes(referralCode)}
+          />
+        );
+      case 3:
+        return(
+          <StripeSubscriptionCheckout 
+            selectedPrice={selectedPrice}
+            setCardEntered={setCardEntered}
           /> 
         );
       default:
@@ -401,7 +402,13 @@ export default function Signup(props) {
         );
       case 2:
         return(
-          <Button variant="contained" color="primary" type="button" onClick={handleSubmit} disabled={!agreed || !cardEntered}>
+          <Button variant="contained" color="primary" type="button" onClick={handleNextStep} disabled={!agreed}>
+            次へ
+          </Button>
+        );
+      case 3:
+        return(
+          <Button variant="contained" color="primary" type="button" onClick={handleSubmit} disabled={!cardEntered}>
             登録
           </Button>
         );
@@ -461,7 +468,7 @@ export default function Signup(props) {
       </Backdrop>
     </div>
   );
-}       
+}    
 
 
 export function StudentSignup(props) {
@@ -473,8 +480,6 @@ export function StudentSignup(props) {
 
   return(
     <MyGrid container spacing={3} className={classes.sectionEnd}>
-      <MyGrid item xs={12}>
-      </MyGrid>
       <MyGrid item xs={12} sm={2}>
         <IconButton onClick={() => setAvatarDialogOpen(true)}>
           <MyAvatar avatar={props.signupForm.avatar} />
