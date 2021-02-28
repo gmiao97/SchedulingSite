@@ -22,11 +22,12 @@ import {
 
 import MyPage from './myPage/myPage';
 import Calendar from './calendar';
-import ManageUsers from './manageUsers';
+import ManageUsers from './admin/manageUsers';
 import ClassInfo from './classInfo';
 import axiosInstance from '../../axiosApi';
 import { getUserIdFromToken, avatarMapping } from '../../util';
 import Logo from '../../static/success.academy.logo.png';
+import ManagePreschool from './admin/managePreschool';
 
 
 const useStyles = makeStyles(theme => ({
@@ -169,9 +170,14 @@ export default function Home(props) {
         マイページ
       </MenuItem>
       {currentUser && currentUser.user_type === 'ADMIN' ?
-        <MenuItem onClick={handleMobileMenuClose} component={Link} to="/manage-users">
-          ユーザー管理
-        </MenuItem> :
+        <div style={{display: 'inherit'}}>
+          <MenuItem onClick={handleMobileMenuClose} component={Link} to="/manage-users">
+            ユーザー管理
+          </MenuItem>
+          <MenuItem onClick={handleMobileMenuClose} component={Link} to="/manage-preschool">
+            未就学児クラス管理
+          </MenuItem>
+        </div> :
         null
       }
       {/* <MenuItem onClick={handleMobileMenuClose} component={Link} to="/calendar">
@@ -227,7 +233,10 @@ export default function Home(props) {
               <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/announce">指導報告</Button>
               <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/my-page">マイページ</Button>
               {currentUser.user_type === 'ADMIN' ?
-                <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/manage-users">ユーザー管理</Button> :
+                <div style={{display: 'inherit'}}>
+                  <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/manage-users">ユーザー管理</Button>
+                  <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/manage-preschool">未就学児クラス管理</Button>
+                </div> :
                 null
               }
               {/* <Button className={classes.sectionDesktop} color="inherit" component={Link} to="/calendar">Calendar</Button> */}
@@ -280,11 +289,18 @@ export default function Home(props) {
             </Box>
           </Route>
           {currentUser.user_type === 'ADMIN' ? 
-            <Route exact path="/manage-users">
-              <Box mx='auto' width='90%' py={5} minWidth={400}>
-                <ManageUsers />
-              </Box>
-            </Route> :
+            <div>
+              <Route exact path="/manage-users">
+                <Box mx='auto' width='90%' py={5} minWidth={400}>
+                  <ManageUsers />
+                </Box>
+              </Route>
+              <Route exact path="/manage-preschool">
+                <Box mx='auto' width='90%' py={5} minWidth={400}>
+                  <ManagePreschool />
+                </Box>
+              </Route>
+            </div> :
             null
           }
         </Switch>

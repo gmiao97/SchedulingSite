@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { styled, makeStyles } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 import { Check } from '@material-ui/icons';
+import { Autocomplete } from '@material-ui/lab';
 import {
   Grid,
   Typography,
@@ -18,9 +19,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
+  TextField,
 } from '@material-ui/core';
 
-import axiosInstance from '../../../axiosApi';
 import { userAgreement } from '../../../util';
 
 
@@ -57,7 +58,7 @@ export default function SelectPlan(props) {
           <Typography variant='subtitle1' color='textPrimary'>月会費（ミニマムコース）・$30</Typography>
         </MyGrid>
         <MyGrid item xs={12}>
-          <FormControl component="fieldset" className={classes.formControl}>
+          <FormControl component="fieldset" className={classes.formControl} fullWidth>
             <FormLabel component="legend">追加クラスを選んでください</FormLabel>
             <FormGroup>
               <FormControlLabel
@@ -66,12 +67,32 @@ export default function SelectPlan(props) {
                   <Typography variant='subtitle2' color='textSecondary'>土日クラス・+$10</Typography>
                 }
               />
-              <FormControlLabel
-                control={<Checkbox checked={props.preschool} onChange={handlePlanChange} name="preschool" />}
-                label={
-                  <Typography variant='subtitle2' color='textSecondary'>未就学児クラス・+$10</Typography>
-                }
-              />
+              <MyGrid container spacing={3} className={classes.sectionEnd}>
+                <MyGrid item xs={6}>
+                  <FormControlLabel
+                    control={<Checkbox checked={props.preschool} onChange={handlePlanChange} name="preschool" />}
+                    label={
+                      <Typography variant='subtitle2' color='textSecondary'>未就学児クラス・+$10</Typography>
+                    }
+                  />
+                </MyGrid>
+                <MyGrid item xs={6}>
+                  <Autocomplete
+                    id='preschool'
+                    name='preschool'
+                    options={props.preschoolInfo}
+                    getOptionLabel={(option) => option.size < option.limit ? `${option.name}（空席${option.limit-option.size}名様` : `${option.name}（満員）`}
+                    value={props.preschoolId}
+                    onChange={(event, value) => {
+                      props.setPreschoolId(value);
+                    }}
+                    renderInput={params => <TextField {...params} label="参加したい時間帯" />}
+                    disableClearable
+                    disabled={!props.preschool}
+                    getOptionDisabled={option => option.size >= option.limit}
+                  />
+                </MyGrid>
+              </MyGrid>
             </FormGroup>
             <Divider />
             <FormHelperText>
@@ -100,7 +121,6 @@ export default function SelectPlan(props) {
                 }
                 の月額（日割り）
               </Typography>
-          
             </FormHelperText>
           </FormControl>
         </MyGrid>

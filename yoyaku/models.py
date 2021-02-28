@@ -85,12 +85,17 @@ class MyUser(AbstractUser):
     stripeSubscriptionProvision = models.BooleanField(default=False)
 
     # USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['email', 'user_type', 'time_zone', 'phone_number', 'birthday', 'description', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ['email', 'user_type', 'time_zone', 'phone_number', 'birthday', 'description', 'first_name', 'last_name', 'referral_code']
 
     objects = MyUserManager()
 
     def __str__(self):
         return "{} {} ({:05})".format(self.first_name, self.last_name, self.id)
+
+
+class PreschoolClass(models.Model):
+    name = models.CharField(_('preschool class name'), max_length=300)
+    limit = models.IntegerField(_('max class size'))
 
 
 class StudentProfile(models.Model):
@@ -116,6 +121,7 @@ class StudentProfile(models.Model):
     school_grade = models.IntegerField(_('school grade'), choices=SCHOOL_GRADE_CHOICES)
     referrer = models.CharField(_('referrer'), max_length=20, blank=True)
     should_pay_signup_fee = models.BooleanField(default=False)
+    preschool = models.ForeignKey(PreschoolClass, on_delete=models.SET_NULL, null=True, blank=True, related_name='student')
 
 
 class TeacherProfile(models.Model):

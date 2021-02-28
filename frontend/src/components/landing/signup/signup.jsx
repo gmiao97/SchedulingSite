@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useHistory } from "react-router-dom"
+import { useHistory } from 'react-router-dom';
 import moment from 'moment-timezone';
 import { styled, makeStyles } from '@material-ui/core/styles';
 import { KeyboardDatePicker } from '@material-ui/pickers';
-import { Autocomplete, Alert } from '@material-ui/lab'
+import { Autocomplete, Alert } from '@material-ui/lab';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import { green } from '@material-ui/core/colors';
 import { Check } from '@material-ui/icons';
@@ -91,6 +91,8 @@ export default function Signup(props) {
   const [referralCodeList, setReferralCodeList] = useState([]);
   const [weekend, setWeekend] = useState(false);
   const [preschool, setPreschool] = useState(false);
+  const [preschoolInfo, setPreschoolInfo] = useState([]);
+  const [preschoolId, setPreschoolId] = useState(null);
   const [stripePrices, setStripePrices] = useState({});
   const [signupForm, setSignupForm] = useState({
     username: '',
@@ -124,6 +126,7 @@ export default function Signup(props) {
   useEffect(() => {
     getReferralCodeList();
     getPlans();
+    getPreschoolInfo();
   }, []);
 
   useEffect(() => {
@@ -131,10 +134,12 @@ export default function Signup(props) {
       setSelectedPrice(stripePrices['mpw']);
     } else if (weekend) {
       setSelectedPrice(stripePrices['mw']);
+      setPreschoolId(null);
     } else if (preschool) {
       setSelectedPrice(stripePrices['mp']);
     } else {
       setSelectedPrice(stripePrices['m']);
+      setPreschoolId(null);
     }
   }, [weekend, preschool, stripePrices]);
 
@@ -151,6 +156,15 @@ export default function Signup(props) {
       setError('サブスクリプションプランの読み込みできませんでした。アドミンに連絡してください。');
       setErrorSnackbarOpen(true);
     }
+  }
+
+  const getPreschoolInfo = async () => {
+    const response = await axiosInstance.get(`/yoyaku/preschool-info/`);
+    for (let d of response.data) {
+      const classSizeResponse = await axiosInstance.get(`/yoyaku/preschool-info/${d.id}/class_size/`);
+      d.size = classSizeResponse.data;
+    }
+    setPreschoolInfo(response.data);
   }
 
   const getUsernameList = async () => {
@@ -230,6 +244,10 @@ export default function Signup(props) {
           time_zone: signupForm.time_zone.replace(' ', '_'),
           paymentMethodId: paymentMethodId,
           priceId: selectedPrice,
+          student_profile: {
+            ...signupForm.student_profile,
+            preschool: preschoolId === null ? null : preschoolId.id,
+          },
         });
       } else {
         response = await axiosInstance.post('/yoyaku/users/', {
@@ -385,6 +403,9 @@ export default function Signup(props) {
             setWeekend={setWeekend}
             preschool={preschool}
             setPreschool={setPreschool}
+            preschoolInfo={preschoolInfo}
+            preschoolId={preschoolId}
+            setPreschoolId={setPreschoolId}
           />
         );
       case 3:
@@ -436,10 +457,24 @@ export default function Signup(props) {
           </Button>
         );
       case 2:
+        let nextDisabled2 = false;
+        let tooltipMessage2 = '';
+        if (preschool && preschoolId === null) {
+          nextDisabled2 = true;
+          tooltipMessage2 = '未就学児クラスの参加したい時間帯を選んでください';
+        }
+        if (!agreed) {
+          nextDisabled2 = true;
+          tooltipMessage2 = '利用契約に同意してください';
+        }
         return(
-          <Button variant="contained" color="primary" type="button" onClick={handleNextStep} disabled={!agreed}>
-            次へ
-          </Button>
+          <Tooltip title={tooltipMessage2}>
+            <span>
+              <Button variant="contained" color="primary" type="button" onClick={handleNextStep} disabled={nextDisabled2}>
+                次へ
+              </Button>
+            </span>
+          </Tooltip>
         );
       case 3:
         return(

@@ -24,8 +24,8 @@ import requests
 import stripe
 import json
 
-from .models import MyUser, Recurrence, Event, Subject, ClassInfo
-from .serializers import MyUserSerializer, RecurrenceSerializer, EventSerializer, EventReadSerializer, SubjectSerializer, ClassInfoSerializer
+from .models import MyUser, Recurrence, Event, Subject, ClassInfo, PreschoolClass
+from .serializers import MyUserSerializer, RecurrenceSerializer, EventSerializer, EventReadSerializer, SubjectSerializer, ClassInfoSerializer, PreschoolClassSerializer
 from .permissions import IsAdminUser, IsLoggedInUserOrAdmin, IsLoggedInTeacherUser, IsLoggedInUserAndEventOwner
 
 
@@ -42,6 +42,24 @@ class ClassInfoViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = [IsAdminUser]
         return [permission() for permission in permission_classes]
+
+
+class PreschoolClassViewSet(viewsets.ModelViewSet):
+    queryset = PreschoolClass.objects.all()
+    serializer_class = PreschoolClassSerializer
+
+    def get_permissions(self):
+        if self.action in ('list', 'retrieve', 'class_size'):
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [IsAdminUser]
+        return [permission() for permission in permission_classes]
+
+    @action(detail=True)
+    def class_size(self, request, pk=None):
+        preschool_class = PreschoolClass.objects.get(pk=pk)
+        size = len(preschool_class.student.all())
+        return Response(size)
 
 
 class UserViewSet(viewsets.ModelViewSet):
