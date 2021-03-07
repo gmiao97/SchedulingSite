@@ -24,7 +24,7 @@ import requests
 import stripe
 import json
 
-from .models import MyUser, Recurrence, Event, Subject, ClassInfo, PreschoolClass
+from .models import MyUser, Recurrence, Event, Subject, ClassInfo, PreschoolClass, StudentProfile
 from .serializers import MyUserSerializer, RecurrenceSerializer, EventSerializer, EventReadSerializer, SubjectSerializer, ClassInfoSerializer, PreschoolClassSerializer
 from .permissions import IsAdminUser, IsLoggedInUserOrAdmin, IsLoggedInTeacherUser, IsLoggedInUserAndEventOwner
 
@@ -61,6 +61,27 @@ class PreschoolClassViewSet(viewsets.ModelViewSet):
         size = len(preschool_class.student.all())
         return Response(size)
 
+    @action(detail=True)
+    def student_list(self, request, pk=None):
+        students = MyUser.objects.filter(user_type='STUDENT', student_profile__preschool__id=pk)
+        serializer = MyUserSerializer(students, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def add_student(self, request, pk=None):
+        preschool_class = PreschoolClass.objects.get(pk=pk)
+        student_profile = StudentProfile.objects.get(pk=request.data.get('student_profile'))
+        student_profile.preschool = preschool_class
+        student_profile.save()
+        return Response()
+
+    @action(detail=True, methods=['post'])
+    def remove_student(self, request, pk=None):
+        student_profile = StudentProfile.objects.get(pk=pk)
+        student_profile.preschool = None
+        student_profile.save()
+        return Response()
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = MyUser.objects.all()
@@ -74,7 +95,7 @@ class UserViewSet(viewsets.ModelViewSet):
             permission_classes = [IsLoggedInUserOrAdmin]
         elif self.action == 'list' or self.action == 'destroy':
             permission_classes = [IsAdminUser]
-        elif self.action in ('student_list', 'teacher_list'):
+        elif self.action in ('student_list', 'teacher_list', 'student_not_preschool_list'):
             permission_classes = [IsLoggedInTeacherUser | IsAdminUser]
         return [permission() for permission in permission_classes]
 
@@ -147,6 +168,12 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False)
     def student_list(self, request):
         students = MyUser.objects.filter(user_type='STUDENT')
+        serializer = MyUserSerializer(students, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False)
+    def student_not_preschool_list(self, request):
+        students = MyUser.objects.filter(user_type='STUDENT', student_profile__preschool__isnull=True)
         serializer = MyUserSerializer(students, many=True)
         return Response(serializer.data)
 

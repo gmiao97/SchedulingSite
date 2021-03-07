@@ -81,7 +81,7 @@ export default function SelectPlan(props) {
                     id='preschool'
                     name='preschool'
                     options={props.preschoolInfo}
-                    getOptionLabel={(option) => option.size < option.limit ? `${option.name}（空席${option.limit-option.size}名様` : `${option.name}（満員）`}
+                    getOptionLabel={(option) => option.size < option.limit ? `${option.name}（空席${option.limit-option.size}名様）` : `${option.name}（満員）`}
                     value={props.preschoolId}
                     onChange={(event, value) => {
                       props.setPreschoolId(value);
@@ -97,7 +97,7 @@ export default function SelectPlan(props) {
             <Divider />
             <FormHelperText>
               <Typography variant='subtitle1' color='textSecondary'>請求詳細</Typography>
-              <Typography variant='body2' color='textPrimary'>今日</Typography>
+              <Typography variant='body2' color='textPrimary'>本日</Typography>
               <Typography variant='body2' color='textSecondary'>・$0（30日間の無料トライアル）</Typography>
               <Typography variant='body2' color='textPrimary'>
                 30日後
