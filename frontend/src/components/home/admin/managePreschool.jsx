@@ -35,6 +35,7 @@ const useStyles = makeStyles(theme => ({
   list: {
     height: 200,
     maxHeight: 200,
+    overflow: 'auto',
   }
 }));
 
@@ -199,7 +200,7 @@ export default function ManagePreschool(props) {
             <Grid item xs={12} sm={6}>
               <Paper elevation={24}>
                 <Box p={3}>
-                  <Typography>{`${c.name} - ${c.size}`}</Typography>
+                  <Typography>{`${c.name} - ${c.size}人`}</Typography>
                   <IconButton edge="end" onClick={() => setAddStudentDialogOpen(true)}>
                     <Add />
                   </IconButton>
@@ -208,7 +209,7 @@ export default function ManagePreschool(props) {
                       <div>
                       <ListItem>
                         <ListItemText 
-                          primary={`${student.last_name}, ${student.first_name}人`}
+                          primary={`${student.last_name}, ${student.first_name}`}
                         />
                         <ListItemSecondaryAction>
                           <IconButton 
