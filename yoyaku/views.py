@@ -24,8 +24,8 @@ import requests
 import stripe
 import json
 
-from .models import MyUser, Recurrence, Event, Subject, ClassInfo
-from .serializers import MyUserSerializer, RecurrenceSerializer, EventSerializer, EventReadSerializer, SubjectSerializer, ClassInfoSerializer
+from .models import MyUser, Recurrence, Event, Subject, ClassInfo, PreschoolClass, StudentProfile
+from .serializers import MyUserSerializer, RecurrenceSerializer, EventSerializer, EventReadSerializer, SubjectSerializer, ClassInfoSerializer, PreschoolClassSerializer
 from .permissions import IsAdminUser, IsLoggedInUserOrAdmin, IsLoggedInTeacherUser, IsLoggedInUserAndEventOwner
 
 
@@ -44,6 +44,45 @@ class ClassInfoViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
 
+class PreschoolClassViewSet(viewsets.ModelViewSet):
+    queryset = PreschoolClass.objects.all()
+    serializer_class = PreschoolClassSerializer
+
+    def get_permissions(self):
+        if self.action in ('list', 'retrieve', 'class_size'):
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [IsAdminUser]
+        return [permission() for permission in permission_classes]
+
+    @action(detail=True)
+    def class_size(self, request, pk=None):
+        preschool_class = PreschoolClass.objects.get(pk=pk)
+        size = len(preschool_class.student.all())
+        return Response(size)
+
+    @action(detail=True)
+    def student_list(self, request, pk=None):
+        students = MyUser.objects.filter(user_type='STUDENT', student_profile__preschool__id=pk)
+        serializer = MyUserSerializer(students, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def add_student(self, request, pk=None):
+        preschool_class = PreschoolClass.objects.get(pk=pk)
+        student_profile = StudentProfile.objects.get(pk=request.data.get('student_profile'))
+        student_profile.preschool = preschool_class
+        student_profile.save()
+        return Response()
+
+    @action(detail=True, methods=['post'])
+    def remove_student(self, request, pk=None):
+        student_profile = StudentProfile.objects.get(pk=pk)
+        student_profile.preschool = None
+        student_profile.save()
+        return Response()
+
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = MyUser.objects.all()
     serializer_class = MyUserSerializer
@@ -56,7 +95,7 @@ class UserViewSet(viewsets.ModelViewSet):
             permission_classes = [IsLoggedInUserOrAdmin]
         elif self.action == 'list' or self.action == 'destroy':
             permission_classes = [IsAdminUser]
-        elif self.action in ('student_list', 'teacher_list'):
+        elif self.action in ('student_list', 'teacher_list', 'student_not_preschool_list'):
             permission_classes = [IsLoggedInTeacherUser | IsAdminUser]
         return [permission() for permission in permission_classes]
 
@@ -129,6 +168,12 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False)
     def student_list(self, request):
         students = MyUser.objects.filter(user_type='STUDENT')
+        serializer = MyUserSerializer(students, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False)
+    def student_not_preschool_list(self, request):
+        students = MyUser.objects.filter(user_type='STUDENT', student_profile__preschool__isnull=True)
         serializer = MyUserSerializer(students, many=True)
         return Response(serializer.data)
 
@@ -492,11 +537,11 @@ class StripeWebhook(APIView):
             user = MyUser.objects.get(stripeCustomerId=subscription['customer'])
             if user.student_profile.should_pay_signup_fee:
                 mail.send_mail(
-                    'Success Academy - {} {}様　トライアル期間がまもなく終了します'.format(request.data['last_name'], request.data['first_name']),
+                    'Success Academy - {} {}様　トライアル期間がまもなく終了します'.format(user.last_name, user.first_name),
                     '30日のトライアル期間が3日後に終了します。$100の入会費を3日後に請求させていただきます。'
                     '\nご不明な点があればいつでもご連絡ください。\n\nSuccess Academy 南\n\nマイページ：{}'.format(settings.BASE_URL),
                     None,
-                    [request.data['email'], 'success.academy.us@gmail.com'],
+                    [user.email],
                     fail_silently=False,
                 )
         elif event.type == 'customer.subscription.updated':

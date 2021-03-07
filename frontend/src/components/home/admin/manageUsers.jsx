@@ -6,8 +6,8 @@ import {
   Box,
   Grid,
 } from '@material-ui/core';
-import axiosInstance from '../../axiosApi';
-import { gradeMappings, tableIcons } from '../../util';
+import axiosInstance from '../../../axiosApi';
+import { gradeMappings, tableIcons } from '../../../util';
 
 
 const useStyles = makeStyles(theme => ({
