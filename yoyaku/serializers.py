@@ -6,7 +6,7 @@ from rest_framework.fields import FileField
 from django.conf import settings
 import stripe
 
-from .models import StudentProfile, TeacherProfile, Recurrence, Event, Subject, MyUser
+from .models import StudentProfile, TeacherProfile, Recurrence, Event, Subject, MyUser, ClassInfo, PreschoolClass
 
 
 stripe.api_key = settings.STRIPE_SECRET
@@ -15,7 +15,7 @@ stripe.api_key = settings.STRIPE_SECRET
 class StudentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentProfile
-        fields = ['id', 'school_name', 'school_grade', 'referrer', 'should_pay_signup_fee']
+        fields = ['id', 'school_name', 'school_grade', 'referrer', 'should_pay_signup_fee', 'preschool']
 
 
 class TeacherProfileSerializer(serializers.ModelSerializer):
@@ -43,7 +43,7 @@ class MyUserSerializer(serializers.ModelSerializer):
         model = MyUser
         fields = ['id', 'first_name', 'last_name', 'email', 'username', 'password', 'user_type', 'time_zone', 'phone_number',
                   'birthday', 'description', 'avatar', 'referral_code', 'stripeCustomerId', 'stripeProductId', 'stripeSubscriptionId',
-                  'stripeSubscriptionProvision', 'student_profile', 'teacher_profile', 'student_id', 'teacher_id']
+                  'stripeSubscriptionProvision', 'student_profile', 'teacher_profile', 'student_id', 'teacher_id', 'date_joined']
         extra_kwargs = {'password': {'write_only': True, 'required': False}, 'username': {'required': False}, 'referral_code': {'required': False}}
 
     def create(self, validated_data):
@@ -150,3 +150,15 @@ class SubjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subject
         fields = ['id', 'subject_name']
+
+
+class ClassInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClassInfo
+        fields = ['id', 'name', 'link', 'meeting_id', 'password', 'access']
+
+
+class PreschoolClassSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PreschoolClass
+        fields = ['id', 'name', 'limit', 'comment']

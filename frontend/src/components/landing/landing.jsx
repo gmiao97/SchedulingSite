@@ -12,7 +12,7 @@ import {
 } from '@material-ui/core';
 
 import Login, { PasswordReset } from './login';
-import Signup from './signup';
+import Signup from './signup/signup';
 import Logo from '../../static/success.academy.logo.png';
 
 

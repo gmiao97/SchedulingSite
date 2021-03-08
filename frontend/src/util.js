@@ -1,3 +1,4 @@
+import React, { forwardRef } from 'react';
 import { createBrowserHistory } from 'history';
 import moment from 'moment-timezone';
 
@@ -22,9 +23,47 @@ import Weasel from './static/avatars/weasel.jpg';
 import Monkey from './static/avatars/monkey.jpg';
 import Pig from './static/avatars/pig.jpg';
 
+import { 
+  AddBox,
+  Check,
+  Clear,
+  DeleteOutline,
+  ChevronLeft,
+  ChevronRight,
+  Edit,
+  SaveAlt,
+  FilterList,
+  FirstPage,
+  LastPage,
+  Search,
+  ArrowDownward,
+  Remove,
+  ViewColumn,
+} from '@material-ui/icons';
+
 export const history = createBrowserHistory({forceRefresh: true});
 
 export const timeZoneNames = moment.tz.names().filter(tz => tz !== 'Asia/Qostanay').map(tz => tz.replace('_', ' ')); // TODO Asia/Qostanay isn't in pytz timezones
+
+export const tableIcons = {
+  Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
+  Check: forwardRef((props, ref) => <Check {...props} ref={ref} />),
+  Clear: forwardRef((props, ref) => <Clear {...props} ref={ref} />),
+  Delete: forwardRef((props, ref) => <DeleteOutline {...props} ref={ref} />),
+  DetailPanel: forwardRef((props, ref) => <ChevronRight {...props} ref={ref} />),
+  Edit: forwardRef((props, ref) => <Edit {...props} ref={ref} />),
+  Export: forwardRef((props, ref) => <SaveAlt {...props} ref={ref} />),
+  Filter: forwardRef((props, ref) => <FilterList {...props} ref={ref} />),
+  FirstPage: forwardRef((props, ref) => <FirstPage {...props} ref={ref} />),
+  LastPage: forwardRef((props, ref) => <LastPage {...props} ref={ref} />),
+  NextPage: forwardRef((props, ref) => <ChevronRight {...props} ref={ref} />),
+  PreviousPage: forwardRef((props, ref) => <ChevronLeft {...props} ref={ref} />),
+  ResetSearch: forwardRef((props, ref) => <Clear {...props} ref={ref} />),
+  Search: forwardRef((props, ref) => <Search {...props} ref={ref} />),
+  SortArrow: forwardRef((props, ref) => <ArrowDownward {...props} ref={ref} />),
+  ThirdStateCheck: forwardRef((props, ref) => <Remove {...props} ref={ref} />),
+  ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />)
+};
 
 export const gradeMappings = new Map([
   [-1, '未就学'],
@@ -252,13 +291,7 @@ export const referralMessage = [
 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
 '【会員登録手順】',
 '.',
-'(1)（未就学児クラスもご希望の方対象。未就学児クラスをご希望でない方は（２）にスキップ。）',
-'会員登録前に、未就学児予約フォームを提出し、「許可されたクラス番号」を取得してください。',
-'「許可されたクラス番号」をお申込み時にコピペできるように、番号が記載されたメールをご準備ください。',
-'➡️未就学児のご希望フォームはこちら',
-'https://forms.gle/Uo7bpqWUowWw9FtAA',
-'.',
-'(2)会員登録は下記のページより、お願いします。',
+'会員登録は下記のページより、お願いします。',
 'https://yoyakusite.herokuapp.com/',
 '（お子様1人一つずつ、アカウント登録ください。ユーザーIDとパスワードは自由に設定できます。半角英数7文字以上）',
 '.',
@@ -269,5 +302,5 @@ export const referralMessage = [
 'http://mercy-education.com/FREE/cn2/2020-07-14-3.html',
 '➡️お支払の方法について',
 'http://mercy-education.com/FREE/cn2/2020-08-18.html',
-'➡️9月からの入会についてFAQ',
+'➡️入会についてFAQ',
 'http://mercy-education.com/FREE/cn2/2020-08-28-2.html'];

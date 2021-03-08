@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
+import MaterialTable from 'material-table';
+import { tableIcons } from '../../util';
+import axiosInstance from '../../axiosApi';
 import {  
-  Grid,
   Typography,
   Box,
   Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Link as MaterialLink,
   Button,
 } from '@material-ui/core';
@@ -38,23 +34,35 @@ const useStyles = makeStyles(theme => ({
 
 export default function ClassInfo(props) {
   const classes = useStyles();
-
+  const [classInfo, setClassInfo] = useState([]);
+  const [loading, setLoading] = useState(true);
   const showContent = props.currentUser.user_type !== 'STUDENT' || props.currentUser.stripeSubscriptionProvision;
 
-  const createData = (name, link, meetingId, password) => ({name, link, meetingId, password});
-  let rows = [];
-  if (showContent) {
-    rows = rows.concat([
-      createData('通常フリーレッスン（月～金）', 'https://us04web.zoom.us/j/71390033650?pwd=TFpLdmxWUnZlYjh2VVdYV1FXK3RCZz09', '713 9003 3650', '8787'),
-      createData('フリーレッスン中学生', 'https://us04web.zoom.us/j/71890737747?pwd=ZFFiRWoyR1NsTUsrZEFRYzJCMjdBdz09', '718 9073 7747', '8787'),
-      createData('初心者クラス', 'https://us02web.zoom.us/j/83515032396?pwd=dkNIeWI5QTVaU3JxL1h2TXYwa0xzUT09', '835 1503 2396', '121212'),
-    ]);
-    if (props.currentUser.user_type !== 'STUDENT' || props.currentProduct.name.includes('未就学児')) {
-      rows.push(createData('未就学児クラス', 'https://us04web.zoom.us/j/77786417164?pwd=eUtmK3ZOK0EyUE85STIwUlhYbmg4UT09', '777 8641 7164', '8787'));
+  useEffect(() => {
+    showContent && getClassInfo();
+  }, []);
+
+  const getClassInfo = async () => {
+    let response = await axiosInstance.get(`/yoyaku/class-info/`);
+    let classInfoToAdd = [];
+    if (props.currentUser.user_type === 'STUDENT') {
+      for (let info of response.data) {
+        if (info.access === 'preschool' && props.currentProduct.name.includes('未就学児')) {
+          classInfoToAdd.push(info);
+        }
+        if (info.access === 'weekend' && props.currentProduct.name.includes('土日')) {
+          classInfoToAdd.push(info);
+        } 
+        if (info.access === 'all') {
+          classInfoToAdd.push(info);
+        }
+      }
+    } else {
+      classInfoToAdd = response.data;
     }
-    if (props.currentUser.user_type !== 'STUDENT' || props.currentProduct.name.includes('土日')) {
-      rows.push(createData('土日クラス', 'https://us04web.zoom.us/j/79350626908?pwd=ZXEwL0Z1bDkvazF3VG8rZnYvYVdaZz09', '793 5062 6908', '8787'));
-    }
+    classInfoToAdd.sort((a, b) => a.id - b.id);
+    setClassInfo(classInfoToAdd);
+    setLoading(false);
   }
 
   const rules = [
@@ -84,38 +92,65 @@ export default function ClassInfo(props) {
         </Box>
       </Paper>
       <Typography variant='h6' display='block' color='primary'>ZOOM ID</Typography>
-      <Typography variant='subtitle1' display='block' color='primary'>日本時間　12月2日～1月1日</Typography>
-      <Typography variant='subtitle1' display='block' color='primary'>アメリカ　12月1日～12月末日</Typography>
+      <Typography variant='subtitle1' display='block' color='primary'>日本時間　今月2日～来月1日</Typography>
+      <Typography variant='subtitle1' display='block' color='primary'>アメリカ　今月1日～今月末日</Typography>
       {showContent ? 
-        <TableContainer component={Paper} elevation={24} className={classes.sectionEnd}>
-          <Table className={classes.table}>
-            <TableHead>
-              <TableRow>
-                <TableCell>レッスン</TableCell>
-                <TableCell>リンク</TableCell>
-                <TableCell>ミーティングID</TableCell>
-                <TableCell>パスワード</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map(row =>
-                <TableRow key={row.name}>
-                  <TableCell component="th" scope="row">
-                    {row.name}
-                  </TableCell>
-                  <TableCell>
-                    <MaterialLink href={row.link} target='_blank' rel='noopener noreferrer' color='secondary'>
-                      参加する
-                    </MaterialLink>
-                  </TableCell>
-                  <TableCell>{row.meetingId}</TableCell>
-                  <TableCell>{row.password}</TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer> :
-        <Typography display='block'>サブスクリプションありません</Typography>
+        <MaterialTable 
+          title='ZOOM情報'
+          data={classInfo}
+          isLoading={loading}
+          icons={tableIcons}
+          options={{
+            sorting: false,
+            search: false,
+          }}
+          localization={{
+            pagination: {
+              labelDisplayedRows: '{count}の{from}-{to}',
+              labelRowsSelect: '行',
+            },
+            toolbar: {
+              nRowsSelected: '{0}行を選択',
+            },
+            header: {
+              actions: 'アクション',
+            },
+            body: {
+              emptyDataSourceMessage: 'ZOOM情報がありません',
+              deleteTooltip: '削除',
+              addTooltip: '追加',
+              editTooltip: '編集',
+              editRow: {
+                deleteText: '削除を確認しますか？'
+              },
+            },
+          }}
+          columns={[
+            {title: 'ID', field: 'id', hidden: true},
+            {title: 'アクセス', field: 'access', hidden: props.currentUser.user_type !== 'ADMIN', lookup: {all: '全員', weekend: '土日', preschool: '未就学児'}},
+            {title: 'レッスン', field: 'name'},
+            {title: 'リンク', field: 'link', render: rowData => 
+              <MaterialLink href={rowData.link} target='_blank' rel='noopener noreferrer' color='secondary'>
+                参加する
+              </MaterialLink>
+            },
+            {title: 'ミーティングID', field: 'meeting_id'},
+            {title: 'パスワード', field: 'password'},
+          ]}
+          editable={props.currentUser.user_type === 'ADMIN' ? 
+            {
+              onRowAdd: newData => axiosInstance.post(`/yoyaku/class-info/`, newData).then(getClassInfo),
+              onRowUpdate: newData => axiosInstance.put(`/yoyaku/class-info/${newData.id}/`, newData).then(getClassInfo),
+              onRowDelete: oldData => axiosInstance.delete(`/yoyaku/class-info/${oldData.id}/`).then(getClassInfo),
+            } :
+            null
+          }
+        /> :
+        <Paper elevation={24}>
+          <Box p={3}>
+            <Typography display='block' variant='body1' color='textSecondary'>サブスクリプションがありません（月会費を払っていません）</Typography>
+          </Box>
+        </Paper>
       }
       <Typography variant='h6' display='block' color='primary'>プリント</Typography>
       <Paper elevation={24}>
@@ -127,7 +162,7 @@ export default function ClassInfo(props) {
                 Googleドライブへ
               </Button>
             </iframe> :
-            <Typography display='block'>サブスクリプションありません</Typography>
+            <Typography display='block' variant='body1' color='textSecondary'>サブスクリプションがありません（月会費を払っていません）</Typography>
           }
         </Box>
       </Paper>

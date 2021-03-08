@@ -85,12 +85,18 @@ class MyUser(AbstractUser):
     stripeSubscriptionProvision = models.BooleanField(default=False)
 
     # USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['email', 'user_type', 'time_zone', 'phone_number', 'birthday', 'description', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ['email', 'user_type', 'time_zone', 'phone_number', 'birthday', 'description', 'first_name', 'last_name', 'referral_code']
 
     objects = MyUserManager()
 
     def __str__(self):
         return "{} {} ({:05})".format(self.first_name, self.last_name, self.id)
+
+
+class PreschoolClass(models.Model):
+    name = models.CharField(_('preschool class name'), max_length=300)
+    limit = models.IntegerField(_('max class size'))
+    comment = models.CharField(_('preschool class comment'), max_length=255, blank=True)
 
 
 class StudentProfile(models.Model):
@@ -116,6 +122,7 @@ class StudentProfile(models.Model):
     school_grade = models.IntegerField(_('school grade'), choices=SCHOOL_GRADE_CHOICES)
     referrer = models.CharField(_('referrer'), max_length=20, blank=True)
     should_pay_signup_fee = models.BooleanField(default=False)
+    preschool = models.ForeignKey(PreschoolClass, on_delete=models.SET_NULL, null=True, blank=True, related_name='student')
 
 
 class TeacherProfile(models.Model):
@@ -159,3 +166,16 @@ class Event(models.Model):
     file = models.FileField(upload_to='hsw14yh841sr/public/media/eventFiles/', null=True)
     color = models.CharField(_('color'), max_length=10, default='blue')
 
+
+class ClassInfo(models.Model):
+    ACCESS_CHOICES = [
+        ('all', _('all')),
+        ('weekend', _('weekend')),
+        ('preschool', _('preschool')),
+    ]
+
+    name = models.CharField(_('name'), max_length=200)
+    link = models.CharField(_('link'), max_length=200)
+    meeting_id = models.CharField(_('meeting id'), max_length=200)
+    password = models.CharField(_('password'), max_length=200)
+    access = models.CharField(_('access'), choices=ACCESS_CHOICES, max_length=20)

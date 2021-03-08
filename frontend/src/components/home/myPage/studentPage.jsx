@@ -65,7 +65,7 @@ export function Subscription(props) {
     return(
       <div>
         <Typography variant='h6' color='textSecondary' display='block' gutterBottom>
-          サブスクリプションはありません。
+          サブスクリプションがありません（月会費を払っていません）
         </Typography>
         <Button variant='contained' color='secondary' type='button' onClick={handleStripeCustomerPortalRedirect}>
           プランと支払い方法の管理
@@ -108,6 +108,7 @@ export default function StudentProfile(props) {
   const [changePassword, setChangePassword] = useState(false);
   const [dateError, setDateError] = useState(false);
   const [usernameList, setUsernameList] = useState([]);
+  const [preschoolInfo, setPreschoolInfo] = useState('');
   const [editForm, setEditForm] = useState({
     username: props.currentUser.username,
     email: props.currentUser.email,
@@ -128,12 +129,21 @@ export default function StudentProfile(props) {
   const avatars = Array.from(avatarMapping.keys());
 
   useEffect(() => {
+    getPreschoolInfo();
+  }, []);
+
+  useEffect(() => {
     getUsernameList();
   }, [editForm.username]);
 
   const getUsernameList = async () => {
     const response = await axiosInstance.get('/yoyaku/users/username_list/');
     setUsernameList(response.data);
+  }
+
+  const getPreschoolInfo = async () => {
+    const response = await axiosInstance.get(`/yoyaku/preschool-info/${props.currentUser.student_profile.preschool}/`);
+    setPreschoolInfo(response.data.name);
   }
 
   const usernameTaken = () => usernameList.includes(editForm.username) && editForm.username !== props.currentUser.username;
@@ -225,7 +235,7 @@ export default function StudentProfile(props) {
           </MyGrid>
           <MyGrid item xs={12}>
             <TextField id='description' name='description' type='text' label='自己紹介' value={editForm.description} onChange={handleChange} variant='outlined' 
-            inputProps={{maxLength: 300}} helperText='300文字数制限' multiline fullWidth />
+            inputProps={{maxLength: 255}} helperText='300文字数制限' multiline fullWidth />
           </MyGrid>
           <MyGrid item xs={12} sm={5}>
             <TextField id='school_name' name='school_name' type='text' label='生徒学校名' value={editForm.student_profile.school_name} onChange={handleChangeStudentProfile} required fullWidth />
@@ -395,6 +405,15 @@ export default function StudentProfile(props) {
           {gradeMappings.get(props.currentUser.student_profile.school_grade)}
         </Typography>
       </Typography>
+      {props.currentUser.student_profile.preschool ? 
+        <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+          未就学児クラス・
+          <Typography variant='body2' color='textPrimary' display='inline'>
+            {preschoolInfo}
+          </Typography>
+        </Typography> :
+        null
+      }
       <Divider />
       <Typography variant='subtitle1' color='textSecondary' display='block' gutterBottom>
         自己紹介
@@ -425,8 +444,8 @@ export default function StudentProfile(props) {
           <Typography>
             →紹介コード『<Typography display='inline' color='secondary'>{props.currentUser.referral_code}</Typography>』
           </Typography>
-          {referralMessage.map(line => 
-            <Typography>
+          {referralMessage.map((line, index) => 
+            <Typography key={index}>
               {line}
             </Typography>  
           )}
