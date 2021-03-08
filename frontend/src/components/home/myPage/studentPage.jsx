@@ -108,6 +108,7 @@ export default function StudentProfile(props) {
   const [changePassword, setChangePassword] = useState(false);
   const [dateError, setDateError] = useState(false);
   const [usernameList, setUsernameList] = useState([]);
+  const [preschoolInfo, setPreschoolInfo] = useState('');
   const [editForm, setEditForm] = useState({
     username: props.currentUser.username,
     email: props.currentUser.email,
@@ -128,12 +129,21 @@ export default function StudentProfile(props) {
   const avatars = Array.from(avatarMapping.keys());
 
   useEffect(() => {
+    getPreschoolInfo();
+  }, []);
+
+  useEffect(() => {
     getUsernameList();
   }, [editForm.username]);
 
   const getUsernameList = async () => {
     const response = await axiosInstance.get('/yoyaku/users/username_list/');
     setUsernameList(response.data);
+  }
+
+  const getPreschoolInfo = async () => {
+    const response = await axiosInstance.get(`/yoyaku/preschool-info/${props.currentUser.student_profile.preschool}/`);
+    setPreschoolInfo(response.data.name);
   }
 
   const usernameTaken = () => usernameList.includes(editForm.username) && editForm.username !== props.currentUser.username;
@@ -395,6 +405,15 @@ export default function StudentProfile(props) {
           {gradeMappings.get(props.currentUser.student_profile.school_grade)}
         </Typography>
       </Typography>
+      {props.currentUser.student_profile.preschool ? 
+        <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
+          未就学児クラス・
+          <Typography variant='body2' color='textPrimary' display='inline'>
+            {preschoolInfo}
+          </Typography>
+        </Typography> :
+        null
+      }
       <Divider />
       <Typography variant='subtitle1' color='textSecondary' display='block' gutterBottom>
         自己紹介
