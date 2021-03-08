@@ -161,4 +161,4 @@ class ClassInfoSerializer(serializers.ModelSerializer):
 class PreschoolClassSerializer(serializers.ModelSerializer):
     class Meta:
         model = PreschoolClass
-        fields = ['id', 'name', 'limit']
+        fields = ['id', 'name', 'limit', 'comment']

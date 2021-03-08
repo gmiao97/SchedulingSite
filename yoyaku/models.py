@@ -96,6 +96,7 @@ class MyUser(AbstractUser):
 class PreschoolClass(models.Model):
     name = models.CharField(_('preschool class name'), max_length=300)
     limit = models.IntegerField(_('max class size'))
+    comment = models.CharField(_('preschool class comment'), max_length=255, blank=True)
 
 
 class StudentProfile(models.Model):

@@ -235,7 +235,7 @@ export default function StudentProfile(props) {
           </MyGrid>
           <MyGrid item xs={12}>
             <TextField id='description' name='description' type='text' label='自己紹介' value={editForm.description} onChange={handleChange} variant='outlined' 
-            inputProps={{maxLength: 300}} helperText='300文字数制限' multiline fullWidth />
+            inputProps={{maxLength: 255}} helperText='300文字数制限' multiline fullWidth />
           </MyGrid>
           <MyGrid item xs={12} sm={5}>
             <TextField id='school_name' name='school_name' type='text' label='生徒学校名' value={editForm.student_profile.school_name} onChange={handleChangeStudentProfile} required fullWidth />
