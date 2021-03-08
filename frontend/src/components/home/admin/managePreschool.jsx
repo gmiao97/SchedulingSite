@@ -33,12 +33,9 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(2),
   },
   list: {
-
+    height: 200,
+    maxHeight: 200,
     overflow: 'auto',
-  },
-  classInfo: {
-    height: 300,
-    maxHeight: 300,
   },
 }));
 
@@ -202,7 +199,7 @@ export default function ManagePreschool(props) {
           </Dialog>
           {classes.map(c => 
             <Grid item xs={12} sm={6}>
-              <Paper elevation={24} className={styleClasses.classInfo}>
+              <Paper elevation={24}>
                 <Box p={3}>
                   <Typography>{`${c.name} - ${c.size}人`}</Typography>
                   <Typography color='textSecondary' variant='subtitle1'>{c.comment}</Typography>
