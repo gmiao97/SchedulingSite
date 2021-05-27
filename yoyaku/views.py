@@ -154,7 +154,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 request.data['last_name'], request.data['first_name'], request.data['username'], '*****', settings.BASE_URL),
             None,
             [request.data['email'], 'success.academy.us@gmail.com'],
-            fail_silently=False,
+            fail_silently=True,
         )
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
