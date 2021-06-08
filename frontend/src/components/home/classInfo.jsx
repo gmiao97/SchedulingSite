@@ -66,20 +66,25 @@ export default function ClassInfo(props) {
   }
 
   const rules = [
-    'ZOOMの名前を、自分の名前に設定しましょう。',
-    '参加するときは、ビデオをオンにしましょう。',
-    '見学のときは、名前を『見学・○○（なまえ）』に変えましょう。',
-    '先生の許可なしに、お話をするのはやめましょう。',
-    '他のお友達の迷惑になるような事は、やめましょう。注意してもやめないときは、退出してもらう場合があります。',
+    '・ZOOMの名前を、自分の名前（フルネーム）に設定しましょう。',
+    '・参加するときは、ビデオをオンにしましょう。',
+    '・見学のときは、名前を『見学・○○（なまえ）』に変えましょう。',
+    '・先生の許可なしに、お話をするのはやめましょう。',
+    '・他のお友達の迷惑になるような事は、やめましょう。注意してもやめないときは、退出してもらう場合があります。',
+    '・授業開始から５分経っても誰も生徒が来ない場合はそのクラスはクローズします。',
   ];
 
   return(
     <div>
       <Typography variant='h6' display='block' color='primary' gutterBottom>クラスのルール</Typography>
-      {rules.map(line => 
-        <Typography key={line} variant='body1' color='textSecondary'>{line}</Typography>
-      )}
-      <Typography display='block' variant='caption' color='textSecondary' gutterBottom>何かご事情がある場合は保護者の方からご相談下さい。info@mercy-education.com</Typography>
+      <Paper elevation={24}>
+        <Box p={3}>
+          {rules.map(line => 
+            <Typography key={line} variant='body1' color='textSecondary'>{line}</Typography>
+          )}
+          <Typography display='block' variant='caption' color='textSecondary' gutterBottom>何かご事情がある場合は保護者の方からご相談下さい。info@mercy-education.com</Typography>
+        </Box>
+      </Paper>
       <Typography variant='h6' display='block' color='primary' gutterBottom>時間割り</Typography>
       <Paper elevation={24}>
         <Box p={3}>

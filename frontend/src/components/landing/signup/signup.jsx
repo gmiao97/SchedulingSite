@@ -301,8 +301,8 @@ export default function Signup(props) {
         setWarningSnackbarOpen(true);
       } else {
         console.log(err);
-        setError("登録できませんでした。サポートに連絡して下さい。");
-        setErrorSnackbarOpen(true);
+        setWarning("登録できましたが登録確認メールは送信されませんでした。ログインできない場合は　info@mercy-education.com　に連絡してください。");
+        setWarningSnackbarOpen(true);
       }
     } finally {
       setBackdropOpen(false);
