@@ -61,12 +61,12 @@ export default function SelectPlan(props) {
           <FormControl component="fieldset" className={classes.formControl} fullWidth>
             <FormLabel component="legend">追加クラスを選んでください</FormLabel>
             <FormGroup>
-              <FormControlLabel
+              {/* <FormControlLabel
                 control={<Checkbox checked={props.weekend} onChange={handlePlanChange} name="weekend" />}
                 label={
                   <Typography variant='subtitle2' color='textSecondary'>土日クラス・+$10</Typography>
                 }
-              />
+              /> */}
               <MyGrid container spacing={3} className={classes.sectionEnd}>
                 <MyGrid item xs={6}>
                   <FormControlLabel
