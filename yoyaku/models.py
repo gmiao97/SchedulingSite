@@ -117,11 +117,18 @@ class StudentProfile(models.Model):
         (12, _('高３')),
         (13, _('高４')),
     ]
+    SIGNUP_FEE_CHOICES = [
+        ('pay_full', _('pay_full')),
+        ('paid_full', _('paid_full')),
+        ('pay_10', _('pay_10')),
+        ('paid_10', _('paid_10')),
+        ('referral', _('referral')),
+    ]
     user = models.OneToOneField(MyUser, on_delete=models.CASCADE, related_name='student_profile')
     school_name = models.CharField(_('school name'), max_length=200)
     school_grade = models.IntegerField(_('school grade'), choices=SCHOOL_GRADE_CHOICES)
     referrer = models.CharField(_('referrer'), max_length=20, blank=True)
-    should_pay_signup_fee = models.BooleanField(default=False)
+    should_pay_signup_fee = models.CharField(_('pay sign up'), choices=SIGNUP_FEE_CHOICES, default='referral', max_length=30)
     preschool = models.ForeignKey(PreschoolClass, on_delete=models.SET_NULL, null=True, blank=True, related_name='student')
 
 

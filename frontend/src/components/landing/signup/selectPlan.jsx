@@ -102,13 +102,20 @@ export default function SelectPlan(props) {
               <Typography variant='body2' color='textPrimary'>
                 30日後
               </Typography>
-              <Typography variant='body2' color='textSecondary' className={props.isReferral ? classes.strikethrough : null}>
+              <Typography variant='body2' color='textSecondary' className={props.signupFeeStatus !== 'pay_full' ? classes.strikethrough : null}>
                 ・入会費（$100）
               </Typography>
-              {props.isReferral ?
+              {props.signupFeeStatus === 'referral' ?
                 <Typography variant='caption' color='textSecondary'>
                   <Check color='secondary' fontSize='small' style={{ color: green[500] }} />
                   紹介
+                </Typography> :
+                null
+              }
+              {props.signupFeeStatus === 'pay_10' ?
+                <Typography variant='caption' color='textSecondary'>
+                  <Check color='secondary' fontSize='small' style={{ color: green[500] }} />
+                  $10（アンバサダー）
                 </Typography> :
                 null
               }
