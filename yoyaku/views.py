@@ -154,7 +154,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 request.data['last_name'], request.data['first_name'], request.data['username'], '*****', settings.BASE_URL),
             None,
             [request.data['email'], 'success.academy.us@gmail.com'],
-            fail_silently=True,
+            fail_silently=False,
         )
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -535,10 +535,19 @@ class StripeWebhook(APIView):
             print('customer.subscription.trial_will_end')
             subscription = event.data.object
             user = MyUser.objects.get(stripeCustomerId=subscription['customer'])
-            if user.student_profile.should_pay_signup_fee:
+            if user.student_profile.should_pay_signup_fee == 'pay_full':
                 mail.send_mail(
                     'Success Academy - {} {}様　トライアル期間がまもなく終了します'.format(user.last_name, user.first_name),
                     '30日のトライアル期間が3日後に終了します。$100の入会費を3日後に請求させていただきます。'
+                    '\nご不明な点があればいつでもご連絡ください。\n\nSuccess Academy 南\n\nマイページ：{}'.format(settings.BASE_URL),
+                    None,
+                    [user.email],
+                    fail_silently=False,
+                )
+            if user.student_profile.should_pay_signup_fee == 'pay_10':
+                mail.send_mail(
+                    'Success Academy - {} {}様　トライアル期間がまもなく終了します'.format(user.last_name, user.first_name),
+                    '30日のトライアル期間が3日後に終了します。$10の入会費を3日後に請求させていただきます。'
                     '\nご不明な点があればいつでもご連絡ください。\n\nSuccess Academy 南\n\nマイページ：{}'.format(settings.BASE_URL),
                     None,
                     [user.email],
@@ -557,18 +566,35 @@ class StripeWebhook(APIView):
             user.save()
 
             previous = event.data.previous_attributes
-            if previous.get('status') == 'trialing' and subscription['status'] in ('active', 'past_due') and user.student_profile.should_pay_signup_fee:
+
+            if previous.get('status') == 'trialing' and subscription['status'] in ('active', 'past_due'):
                 signup_fee_id = stripe.Price.list(active=True, type='one_time')['data'][0]['id']
-                stripe.InvoiceItem.create(
-                    customer=subscription['customer'],
-                    price=signup_fee_id,
-                )
-                stripe.Invoice.create(
-                    customer=subscription['customer'],
-                    auto_advance=True
-                )
-                user.student_profile.should_pay_signup_fee = False
-                user.student_profile.save()
+                if user.student_profile.should_pay_signup_fee == 'pay_full':
+                    stripe.InvoiceItem.create(
+                        customer=subscription['customer'],
+                        price=signup_fee_id,
+                    )
+                    stripe.Invoice.create(
+                        customer=subscription['customer'],
+                        auto_advance=True
+                    )
+                    user.student_profile.should_pay_signup_fee = 'paid_full'
+                    user.student_profile.save()
+                if user.student_profile.should_pay_signup_fee == 'pay_10':
+                    stripe.InvoiceItem.create(
+                        customer=subscription['customer'],
+                        price=signup_fee_id,
+                        discounts=[{
+                            'coupon': 'ambassador',
+                        }],
+                    )
+                    stripe.Invoice.create(
+                        customer=subscription['customer'],
+                        auto_advance=True
+                    )
+                    user.student_profile.should_pay_signup_fee = 'paid_10'
+                    user.student_profile.save()
+
         elif event.type == 'customer.subscription.deleted':
             print('customer.subscription.deleted')
             subscription = event.data.object

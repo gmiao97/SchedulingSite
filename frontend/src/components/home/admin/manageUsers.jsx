@@ -106,6 +106,21 @@ export default function ManageUsers(props) {
 export function StudentDetails(props) {
   const classes = useStyles();
 
+  const getSignupFeeStatus = status => {
+    switch (status) {
+      case 'pay_full':
+        return '$100未払い';
+      case 'paid_full':
+        return '$100支払い済み';
+      case 'pay_10':
+        return '$10未払い（アンバサダー）';
+      case 'paid_10':
+        return '$10支払い済み（アンバサダー）';
+      case 'referral':
+        return '紹介';
+    }
+  }
+
   return(
     <Box m={2}>
       <Grid container spacing={4} justify='space-around'>
@@ -169,7 +184,7 @@ export function StudentDetails(props) {
           <Typography variant='subtitle2' color='textSecondary' display='block' gutterBottom>
             入会費・
             <Typography variant='body2' color='textPrimary' display='inline'>
-              {props.data.student_profile.should_pay_signup_fee ? '未払い' : '紹介/支払い済み'}
+              {getSignupFeeStatus(props.data.student_profile.should_pay_signup_fee)}
             </Typography>
           </Typography>
         </Grid>

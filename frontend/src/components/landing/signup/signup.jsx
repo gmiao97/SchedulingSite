@@ -109,7 +109,7 @@ export default function Signup(props) {
       school_name: '',
       school_grade: -1,
       referrer: '',
-      should_pay_signup_fee: true,
+      should_pay_signup_fee: 'pay_full',
     },
   });
   const [newUserInfo, setNewUserInfo] = useState({
@@ -281,7 +281,7 @@ export default function Signup(props) {
           school_name: '',
           school_grade: '-1',
           referrer: '',
-          should_pay_signup_fee: true,
+          should_pay_signup_fee: 'pay_full',
         },
       });
       setPasswordMatch('');
@@ -301,8 +301,8 @@ export default function Signup(props) {
         setWarningSnackbarOpen(true);
       } else {
         console.log(err);
-        setError("登録できませんでした。サポートに連絡して下さい。");
-        setErrorSnackbarOpen(true);
+        setWarning("登録できました。");
+        setWarningSnackbarOpen(true);
       }
     } finally {
       setBackdropOpen(false);
@@ -328,6 +328,16 @@ export default function Signup(props) {
       throw new CardError(confirmResponse.error.message);
     } else {
       return confirmResponse.setupIntent.payment_method;
+    }
+  }
+
+  const setSignupFeeStatus = code => {
+    if (code === 'GOlCeJbQS') {
+      return 'pay_10';
+    } else if (referralCodeList.includes(code)) {
+      return 'referral';
+    } else {
+      return 'pay_full';
     }
   }
 
@@ -367,22 +377,22 @@ export default function Signup(props) {
                 type='text' 
                 label='紹介コード' 
                 value={referralCode} 
-                error={referralCode.length !== 0 && !referralCodeList.includes(referralCode)}
-                helperText={referralCode.length !== 0 && !referralCodeList.includes(referralCode) ? 'そのコード見つかりませんでした' : null}
+                error={referralCode.length !== 0 && signupForm.student_profile.should_pay_signup_fee === 'pay_full'}
+                helperText={referralCode.length !== 0 && signupForm.student_profile.should_pay_signup_fee === 'pay_full' ? 'そのコード見つかりませんでした' : null}
                 onChange={e => {
                   setReferralCode(e.target.value);
                   setSignupForm({
                     ...signupForm,
                     student_profile: {
                       ...signupForm.student_profile,
-                      should_pay_signup_fee: !referralCodeList.includes(e.target.value),
+                      should_pay_signup_fee: setSignupFeeStatus(e.target.value),
                     },
                   });
                 }}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
-                      {referralCodeList.includes(referralCode) ? <Check color='secondary' style={{ color: green[500] }} /> : null}
+                      {signupForm.student_profile.should_pay_signup_fee !== 'pay_full' ? <Check color='secondary' style={{ color: green[500] }} /> : null}
                     </InputAdornment>
                   ),
                 }}
@@ -394,7 +404,7 @@ export default function Signup(props) {
         return(
           <SelectPlan 
             setSelectedPrice={setSelectedPrice}
-            isReferral={referralCodeList.includes(referralCode)}
+            signupFeeStatus={signupForm.student_profile.should_pay_signup_fee}
             setError={setError}
             setErrorSnackbarOpen={setErrorSnackbarOpen}
             agreed={agreed}
@@ -433,7 +443,7 @@ export default function Signup(props) {
           nextDisabled = true;
           tooltipMessage = 'パスワードが一致していません';
         }
-        if (signupForm.password.length < 8) {
+        if (signupForm.password.length < 7) {
           nextDisabled = true;
           tooltipMessage = 'パスワードは７文字以上入力して下さい';
         }

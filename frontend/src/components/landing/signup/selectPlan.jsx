@@ -61,12 +61,12 @@ export default function SelectPlan(props) {
           <FormControl component="fieldset" className={classes.formControl} fullWidth>
             <FormLabel component="legend">追加クラスを選んでください</FormLabel>
             <FormGroup>
-              <FormControlLabel
+              {/* <FormControlLabel
                 control={<Checkbox checked={props.weekend} onChange={handlePlanChange} name="weekend" />}
                 label={
                   <Typography variant='subtitle2' color='textSecondary'>土日クラス・+$10</Typography>
                 }
-              />
+              /> */}
               <MyGrid container spacing={3} className={classes.sectionEnd}>
                 <MyGrid item xs={6}>
                   <FormControlLabel
@@ -102,13 +102,20 @@ export default function SelectPlan(props) {
               <Typography variant='body2' color='textPrimary'>
                 30日後
               </Typography>
-              <Typography variant='body2' color='textSecondary' className={props.isReferral ? classes.strikethrough : null}>
+              <Typography variant='body2' color='textSecondary' className={props.signupFeeStatus !== 'pay_full' ? classes.strikethrough : null}>
                 ・入会費（$100）
               </Typography>
-              {props.isReferral ?
+              {props.signupFeeStatus === 'referral' ?
                 <Typography variant='caption' color='textSecondary'>
                   <Check color='secondary' fontSize='small' style={{ color: green[500] }} />
                   紹介
+                </Typography> :
+                null
+              }
+              {props.signupFeeStatus === 'pay_10' ?
+                <Typography variant='caption' color='textSecondary'>
+                  <Check color='secondary' fontSize='small' style={{ color: green[500] }} />
+                  $10（アンバサダー）
                 </Typography> :
                 null
               }

@@ -81,6 +81,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'yoyakusite.wsgi.application'
 
+DEFAULT_AUTO_FIELD='django.db.models.AutoField'
+
 # Database
 DATABASES = {'default': dj_database_url.config(conn_max_age=600, ssl_require=True)}
 
@@ -161,10 +163,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_USE_TLS = True
-EMAIL_PORT = 587
 EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
 EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = os.environ['DEFAULT_FROM_EMAIL']
 
 BASE_URL = 'http://localhost:3000'
