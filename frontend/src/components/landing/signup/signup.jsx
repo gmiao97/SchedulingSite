@@ -443,7 +443,7 @@ export default function Signup(props) {
           nextDisabled = true;
           tooltipMessage = 'パスワードが一致していません';
         }
-        if (signupForm.password.length < 8) {
+        if (signupForm.password.length < 7) {
           nextDisabled = true;
           tooltipMessage = 'パスワードは７文字以上入力して下さい';
         }
