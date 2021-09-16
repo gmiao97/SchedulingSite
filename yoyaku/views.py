@@ -23,6 +23,7 @@ import copy
 import requests
 import stripe
 import json
+import sys
 
 from .models import MyUser, Recurrence, Event, Subject, ClassInfo, PreschoolClass, StudentProfile
 from .serializers import MyUserSerializer, RecurrenceSerializer, EventSerializer, EventReadSerializer, SubjectSerializer, ClassInfoSerializer, PreschoolClassSerializer
@@ -142,6 +143,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 if customer:
                     stripe.Customer.delete(customer.id)
                 print(e)
+                sys.stdout.flush()
                 return Response(data={'error': '登録できませんでした。サポートに連絡して下さい。'})
             serializer.save(stripeCustomerId=customer.id)
         else:
