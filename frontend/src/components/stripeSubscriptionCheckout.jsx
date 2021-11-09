@@ -58,6 +58,9 @@ export default function StripeSubscriptionCheckout(props) {
               <CardElement className={classes.cardSection} options={CARD_ELEMENT_OPTIONS} onChange={handleChange} />
             </Grid>
             <Grid item xs={12}>
+              <Typography color='warning' display='block' align='center'>JCBは使えません</Typography>
+            </Grid>
+            <Grid item xs={12}>
               <Typography variant='caption' color='error' display='block' align='center'>{cardInputError}</Typography>
             </Grid>
           </Grid>
