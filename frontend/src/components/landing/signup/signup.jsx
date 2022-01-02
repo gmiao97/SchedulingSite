@@ -249,6 +249,7 @@ export default function Signup(props) {
             preschool: preschoolId === null ? null : preschoolId.id,
           },
         });
+        console.log(response);
       } else {
         response = await axiosInstance.post('/yoyaku/users/', {
           ...signupForm,
@@ -256,7 +257,7 @@ export default function Signup(props) {
         });
       }
 
-      if (response.data.error) {
+      if (response.data && response.data.error) {
         throw new AccountRegistrationError(response.data.error);
       }
       setNewUserInfo({
@@ -332,7 +333,7 @@ export default function Signup(props) {
   }
 
   const setSignupFeeStatus = code => {
-    if (code === '9Uyf7NrT4') {
+    if (code === 'KpgIT8Ha1') {
       return 'pay_10';
     } else if (referralCodeList.includes(code)) {
       return 'referral';
