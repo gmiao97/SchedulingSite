@@ -160,6 +160,7 @@ class UserViewSet(viewsets.ModelViewSet):
         )
         mail.send_mail(
             '会員向けフリーレッスンの参加手順【サクセス・アカデミー】',
+            '{} {}様\n\n'
             'こんにちは。サクセス・アカデミーの南です。\n'
             '会員登録いただきありがとうございました！\n\n'
             '会員向けフリーレッスンの参加手順について、簡単にご説明させていただきます。\n\n'
@@ -190,7 +191,7 @@ class UserViewSet(viewsets.ModelViewSet):
             '--\n'
             'Success Academy  塾長　南　杏樹\n'
             'minami.anju@mercy-education.com\n'
-            'HP：http://mercy-education.com/LP/',
+            'HP：http://mercy-education.com/LP/'.format(request.data['last_name'], request.data['first_name']),
             None,
             [request.data['email'], 'success.academy.us@gmail.com'],
             fail_silently=False,
