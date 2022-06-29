@@ -55,7 +55,7 @@ export default function SelectPlan(props) {
     <div>
       <MyGrid container spacing={3} className={classes.sectionEnd}>
         <MyGrid item xs={12}>
-          <Typography variant='subtitle1' color='textPrimary'>月会費（ミニマムコース）・$30</Typography>
+          <Typography variant='subtitle1' color='textPrimary'>月会費（ミニマムコース）・$40</Typography>
         </MyGrid>
         <MyGrid item xs={12}>
           <FormControl component="fieldset" className={classes.formControl} fullWidth>
@@ -123,8 +123,8 @@ export default function SelectPlan(props) {
                 {props.weekend && props.preschool ? 
                   <Typography variant='body2' color='textSecondary' display='inline'>・$50</Typography> :
                   !(props.weekend || props.preschool) ?
-                    <Typography variant='body2' color='textSecondary' display='inline'>・$30</Typography> :
-                    <Typography variant='body2' color='textSecondary' display='inline'>・$40</Typography>
+                    <Typography variant='body2' color='textSecondary' display='inline'>・$40</Typography> :
+                    <Typography variant='body2' color='textSecondary' display='inline'>・$50</Typography>
                 }
                 の月額（日割り）
               </Typography>
@@ -175,14 +175,12 @@ export default function SelectPlan(props) {
         <Grid item xs={12}>
           <FormControlLabel
             value="end"
-            control={<Checkbox color="primary" checked={props.agreed} onChange={e => props.setAgreed(e.target.checked)} color='secondary' />}
+            control={<Checkbox color="primary" checked={props.agreed} onChange={e => props.setAgreed(e.target.checked)} />}
             label="利用規約に同意します"
             labelPlacement="end"
           />
         </Grid>
       </Grid>
     </div>
-
-    
   );
 }
