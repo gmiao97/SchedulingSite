@@ -25,7 +25,7 @@
     "@testing-library/react": "^9.4.0",
     "@testing-library/user-event": "^7.2.1",
     "availity-reactstrap-validation": "^2.6.1",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "bootstrap": "^4.4.1",
     "classnames": "^2.2.6",
     "fontsource-roboto": "^2.1.4",
