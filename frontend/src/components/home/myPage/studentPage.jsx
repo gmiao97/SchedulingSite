@@ -281,7 +281,7 @@ export default function StudentProfile(props) {
           <MyGrid item xs={12} sm={6}>
             <TextField id='phone_number' name='phone_number' type='text' label='保護者電話番号' value={editForm.phone_number} onChange={handleChange} required fullWidth />
           </MyGrid>
-          <MyGrid item item xs={12} sm={6}>
+          <MyGrid item xs={12} sm={6}>
             <Autocomplete
               id='time_zone'
               name='time_zone'

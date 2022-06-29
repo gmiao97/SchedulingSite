@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "author": "George Miao",
   "private": true,
+  "engines": {
+    "node": "12.16.1"
+  },
   "scripts": {
     "heroku-prebuild": "NODE_ENV=production cd frontend/ && npm install && npm run build && cd .."
   },

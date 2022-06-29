@@ -28,6 +28,9 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.response.use(
   response => response,
   async error => {
+    if (!error.response) {
+      return error;
+    }
     const originalRequest = error.config;
 
     // if refresh token is invalid/expired, backend will return a 403

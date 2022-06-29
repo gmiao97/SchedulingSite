@@ -249,6 +249,7 @@ export default function Signup(props) {
             preschool: preschoolId === null ? null : preschoolId.id,
           },
         });
+        console.log(response);
       } else {
         response = await axiosInstance.post('/yoyaku/users/', {
           ...signupForm,
@@ -256,7 +257,7 @@ export default function Signup(props) {
         });
       }
 
-      if (response.data.error) {
+      if (response.data && response.data.error) {
         throw new AccountRegistrationError(response.data.error);
       }
       setNewUserInfo({
@@ -332,7 +333,7 @@ export default function Signup(props) {
   }
 
   const setSignupFeeStatus = code => {
-    if (code === 'GOlCeJbQS') {
+    if (code === 'cwM6FAnH') {
       return 'pay_10';
     } else if (referralCodeList.includes(code)) {
       return 'referral';
@@ -649,7 +650,7 @@ export function StudentSignup(props) {
       <MyGrid item xs={12} sm={6}>
         <TextField id='phone_number' name='phone_number' type='text' label='保護者電話番号' value={props.signupForm.phone_number} onChange={props.onChange} required fullWidth />
       </MyGrid>
-      <MyGrid item item xs={12} sm={6}>
+      <MyGrid item xs={12} sm={6}>
         <Autocomplete
           id='time_zone'
           name='time_zone'

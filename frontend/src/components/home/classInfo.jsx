@@ -97,8 +97,7 @@ export default function ClassInfo(props) {
         </Box>
       </Paper>
       <Typography variant='h6' display='block' color='primary'>ZOOM ID</Typography>
-      <Typography variant='subtitle1' display='block' color='primary'>日本時間　今月2日～来月1日</Typography>
-      <Typography variant='subtitle1' display='block' color='primary'>アメリカ　今月1日～今月末日</Typography>
+      <Typography variant='subtitle1' display='block' color='primary'>毎週日曜日にパスワードを更新します</Typography>
       {showContent ? 
         <MaterialTable 
           title='ZOOM情報'

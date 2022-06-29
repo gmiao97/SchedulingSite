@@ -23,6 +23,7 @@ import copy
 import requests
 import stripe
 import json
+import sys
 
 from .models import MyUser, Recurrence, Event, Subject, ClassInfo, PreschoolClass, StudentProfile
 from .serializers import MyUserSerializer, RecurrenceSerializer, EventSerializer, EventReadSerializer, SubjectSerializer, ClassInfoSerializer, PreschoolClassSerializer
@@ -142,6 +143,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 if customer:
                     stripe.Customer.delete(customer.id)
                 print(e)
+                sys.stdout.flush()
                 return Response(data={'error': '登録できませんでした。サポートに連絡して下さい。'})
             serializer.save(stripeCustomerId=customer.id)
         else:
@@ -152,6 +154,44 @@ class UserViewSet(viewsets.ModelViewSet):
             'ご登録ありがとうございます。\n{} {}様のログイン情報は以下のとおりです。\nユーザーID：{}\nパスワード：{}\n\n'
             '以下のページにログインしてクラスZoom情報を確認できます。\n{}\n\n＊このアドレスは送信専用です。ご返信いただいても回答はいたしかねます。'.format(
                 request.data['last_name'], request.data['first_name'], request.data['username'], '*****', settings.BASE_URL),
+            None,
+            [request.data['email'], 'success.academy.us@gmail.com'],
+            fail_silently=False,
+        )
+        mail.send_mail(
+            '会員向けフリーレッスンの参加手順【サクセス・アカデミー】',
+            '{} {}様\n\n'
+            'こんにちは。サクセス・アカデミーの南です。\n'
+            '会員登録いただきありがとうございました！\n\n'
+            '会員向けフリーレッスンの参加手順について、簡単にご説明させていただきます。\n\n'
+            '①会員登録30日後に月会費の自動決済が始まります\n'
+            '登録いただいてから30日間は、無料トライアル期間です。\n'
+            '30日後は、月会費が自動決済されますので、ご了承ください。\n'
+            '紹介コードなしでご登録された方は、月会費と一緒に体験後の入会費US$100も引き落としされます。\n'
+            'キャンセルをご希望の場合は、トライアル中にマイページ上でお手続きください。\n\n'
+            '②クラスへの参加方法\n'
+            '会員向けフリーレッスンは、学年をこえて、クラス取り放題になっております。\n'
+            '小学生クラス・中学生クラスはどなたでもご参加いただけます。\n'
+            'お子様のレベルやスケジュールに合わせて、クラスにご参加ください！\n\n'
+            '※未就学児クラスはオプションですので、コース選択をしないとそれらのクラスにはご参加いただけません。\n'
+            'また、未就学児クラスは人数制限をしている関係で、ご登録いただいた時間帯のみにご参加をお願いしております。ご了承くださいませ。\n\n'
+            'クラスへの参加手順は以下の通りです。\n'
+            '（１）時間割を見て、参加したいクラスをチェックする。\n'
+            '（２）クラスが始まる前までに、参加したいクラスで使用するプリントを印刷しておく。\n'
+            '（印刷ができない場合は、ノートとペンがあれば大丈夫です！）\n'
+            '（３）時間になったら、クラスに参加する。※ZOOMのビデオはオンにしてご参加ください。\n'
+            '★時間割・プリント・ZOOM情報は全てマイページ [https://yoyakusite.herokuapp.com] 上にありますので、ご確認ください。\n\n'
+            '③会員向けフリーレッスンのカリキュラムについて\n'
+            '当塾のフリーレッスンのカリキュラムは3ヶ月でワンクールとなっております。\n'
+            '（通常、１年で学習する内容を３ヶ月にまとめています。）\n'
+            '今クールは4月4日〜6月26日です。\n\n'
+            '過去のメルマガ（2020年12月号）[https://mailchi.mp/2520fc266eb0/12?e=1fb03b9cbc] の『Message』にて、カリキュラムについての詳しい説明が記載されてますので、ご確認いただけると幸いです。\n\n'
+            'ご不明な点などありましたら、遠慮なくご連絡ください。\n'
+            'よろしくお願いします。\n\n'
+            '--\n'
+            'Success Academy  塾長　南　杏樹\n'
+            'minami.anju@mercy-education.com\n'
+            'HP：http://mercy-education.com/LP/'.format(request.data['last_name'], request.data['first_name']),
             None,
             [request.data['email'], 'success.academy.us@gmail.com'],
             fail_silently=False,
