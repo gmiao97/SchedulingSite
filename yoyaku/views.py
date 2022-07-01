@@ -114,7 +114,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 stripe.Customer.modify(customer.id,
                                        invoice_settings={'default_payment_method': request.data['paymentMethodId']})
 
-                trial_days = 30
+                trial_days = 14
                 utc_now = datetime.now(timezone.utc)
                 trial_end_datetime = utc_now + relativedelta.relativedelta(days=trial_days)
                 datetime_next_month_first = utc_now + relativedelta.relativedelta(months=1)
@@ -633,6 +633,20 @@ class StripeWebhook(APIView):
                         auto_advance=True
                     )
                     user.student_profile.should_pay_signup_fee = 'paid_10'
+                    user.student_profile.save()
+                if user.student_profile.should_pay_signup_fee == 'referral':
+                    stripe.InvoiceItem.create(
+                        customer=subscription['customer'],
+                        price=signup_fee_id,
+                        discounts=[{
+                            'coupon': 'ambassador20',
+                        }],
+                    )
+                    stripe.Invoice.create(
+                        customer=subscription['customer'],
+                        auto_advance=True
+                    )
+                    user.student_profile.should_pay_signup_fee = 'referral'
                     user.student_profile.save()
 
         elif event.type == 'customer.subscription.deleted':
