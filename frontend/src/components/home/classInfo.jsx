@@ -45,6 +45,8 @@ export default function ClassInfo(props) {
   const getClassInfo = async () => {
     let response = await axiosInstance.get(`/yoyaku/class-info/`);
     let classInfoToAdd = [];
+    console.log(props.currentProduct.name);
+    console.log(props.currentProduct.name === '月会費');
     if (props.currentUser.user_type === 'STUDENT') {
       for (let info of response.data) {
         if (info.access === 'preschool' && props.currentProduct.name.includes('未就学児')) {
