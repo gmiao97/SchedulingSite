@@ -53,7 +53,7 @@ export default function ClassInfo(props) {
         if (info.access === 'weekend' && props.currentProduct.name.includes('土日')) {
           classInfoToAdd.push(info);
         } 
-        if (info.access === 'all' && !props.currentProduct.name === '月会費') {
+        if (info.access === 'all') {
           classInfoToAdd.push(info);
         }
       }
