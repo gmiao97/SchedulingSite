@@ -45,8 +45,6 @@ export default function ClassInfo(props) {
   const getClassInfo = async () => {
     let response = await axiosInstance.get(`/yoyaku/class-info/`);
     let classInfoToAdd = [];
-    console.log(props.currentProduct.name);
-    console.log(props.currentProduct.name === '月会費');
     if (props.currentUser.user_type === 'STUDENT') {
       for (let info of response.data) {
         if (info.access === 'preschool' && props.currentProduct.name.includes('未就学児')) {
@@ -100,7 +98,7 @@ export default function ClassInfo(props) {
       </Paper>
       <Typography variant='h6' display='block' color='primary'>ZOOM ID</Typography>
       <Typography variant='subtitle1' display='block' color='primary'>毎週日曜日にパスワードを更新します</Typography>
-      {showContent ? 
+      {showContent && !(props.currentProduct.name === '月会費') ? 
         <MaterialTable 
           title='ZOOM情報'
           data={classInfo}
