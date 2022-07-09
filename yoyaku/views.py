@@ -625,7 +625,7 @@ class StripeWebhook(APIView):
                         customer=subscription['customer'],
                         price=signup_fee_id,
                         discounts=[{
-                            'coupon': 'ambassador',
+                            'coupon': 'ambassador80',
                         }],
                     )
                     stripe.Invoice.create(

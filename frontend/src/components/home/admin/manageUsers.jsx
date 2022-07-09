@@ -118,6 +118,8 @@ export function StudentDetails(props) {
         return '$10支払い済み（アンバサダー）';
       case 'referral':
         return '紹介';
+      default:
+        return '紹介';
     }
   }
 
