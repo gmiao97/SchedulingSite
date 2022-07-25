@@ -597,6 +597,7 @@ class StripeWebhook(APIView):
             print('customer.subscription.updated')
             subscription = event.data.object
             user = MyUser.objects.get(stripeCustomerId=subscription['customer'])
+            print(user.email)
             print(user.first_name, user.last_name)
             if subscription['status'] in ('active', 'past_due', 'trialing'):
                 user.stripeSubscriptionProvision = True
