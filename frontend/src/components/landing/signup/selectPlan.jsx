@@ -98,12 +98,12 @@ export default function SelectPlan(props) {
             <FormHelperText>
               <Typography variant='subtitle1' color='textSecondary'>請求詳細</Typography>
               <Typography variant='body2' color='textPrimary'>本日</Typography>
-              <Typography variant='body2' color='textSecondary'>・$0（30日間の無料トライアル）</Typography>
+              <Typography variant='body2' color='textSecondary'>・$0（14日間の無料トライアル）</Typography>
               <Typography variant='body2' color='textPrimary'>
-                30日後
+                14日後
               </Typography>
               <Typography variant='body2' color='textSecondary' className={props.signupFeeStatus !== 'pay_full' ? classes.strikethrough : null}>
-                ・入会費（$100）
+                ・入会費（$50）
               </Typography>
               {props.signupFeeStatus === 'referral' ?
                 <Typography variant='caption' color='textSecondary'>
@@ -134,27 +134,6 @@ export default function SelectPlan(props) {
       </MyGrid>
 
       <Grid id='legalSection' container justify='flex-start' spacing={1}>
-        <Grid item>
-          <MaterialLink 
-            href='http://mercy-education.com/FREE/cn2/2020-07-14-3.html'
-            target='_blank'
-            rel='noopener noreferrer'
-            color='secondary'
-          >
-            プランのご説明
-          </MaterialLink>
-        </Grid>
-        <Grid item>
-          <MaterialLink 
-            href='http://mercy-education.com/FREE/cn2/2020-08-18.html'
-            target='_blank'
-            rel='noopener noreferrer'
-            color='secondary'
-          >
-            お支払いのご案内
-          </MaterialLink>
-        </Grid>
-
         <Grid item xs={12}>
           <Button variant='outlined' color='secondary' size='small' onClick={() => setDialogOpen(true)}>
             利用規約

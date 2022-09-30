@@ -366,7 +366,7 @@ export default function Signup(props) {
         return (
           <MyGrid container spacing={3} className={classes.sectionEnd}>
             <MyGrid item xs={12}>
-              <Typography color='textSecondary' variant='subtitle1'>紹介コードをお持ちですか？紹介された方は入会費（$100）が無料になります</Typography>
+              <Typography color='textSecondary' variant='subtitle1'>紹介コードをお持ちですか？紹介された方は入会費（$50）が無料になります</Typography>
             </MyGrid>
             <MyGrid item xs={12} sm={6}>
               <TextField id='referrer' name='referrer' type='text' label='紹介者' value={signupForm.student_profile.referrer} onChange={handleChangeStudentProfile} fullWidth />
