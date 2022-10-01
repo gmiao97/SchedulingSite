@@ -333,7 +333,7 @@ export default function Signup(props) {
   }
 
   const setSignupFeeStatus = code => {
-    if (code === 'JTKBEDPK') {
+    if (code === 'KPFYQGAW') {
       return 'referral';
     } else if (referralCodeList.includes(code)) {
       return 'referral';
