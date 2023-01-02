@@ -92,7 +92,7 @@ export default function Login(props) {
               <Button color="default" size="small" component={Link} to="/password-reset">パスワードお忘れですか？</Button>
             </Grid>
             <Grid item>
-              <Button color="default" size="small" component={Link} to="/signup">新規登録はこちらへ</Button>
+              <Button disabled color="default" size="small" component={Link} to="/signup">新規登録はこちらへ</Button>
             </Grid>
           </Grid>
         </form> 

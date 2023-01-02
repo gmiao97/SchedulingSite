@@ -49,7 +49,7 @@ export default function Landing(props) {
             <Typography variant="h6" className={classes.title}>
               Success Academy
             </Typography>
-            <Button color="inherit" component={Link} to="/signup">登録</Button>
+            <Button disabled color="inherit" component={Link} to="/signup">登録</Button>
             <Button color="inherit" component={Link} to="/">ログイン</Button>
           </Toolbar>
         </AppBar>
