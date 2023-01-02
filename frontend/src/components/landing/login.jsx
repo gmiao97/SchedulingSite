@@ -92,7 +92,9 @@ export default function Login(props) {
               <Button color="default" size="small" component={Link} to="/password-reset">パスワードお忘れですか？</Button>
             </Grid>
             <Grid item>
-              <Button color="default" size="small" component={Link} href="https://success-j-academy.com/#/sign-in">新規登録はこちらへ</Button>
+              <Box>
+                <Button color="default" size="small" component={Link} target='_blank' rel='noopener noreferrer' href="https://success-j-academy.com/#/sign-in">新規登録はこちらへ</Button>
+              </Box>
               <Typography variant='caption' color='textSecondary'>2023年一月から登録サイトが新しくなりました。</Typography>
             </Grid>
           </Grid>
