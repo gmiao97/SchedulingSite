@@ -595,66 +595,66 @@ class StripeWebhook(APIView):
                     [user.email],
                     fail_silently=False,
                 )
-        # elif event.type == 'customer.subscription.updated':
-        #     print('customer.subscription.updated')
-        #     subscription = event.data.object
-        #     user = MyUser.objects.get(stripeCustomerId=subscription['customer'])
-        #     print(user.email)
-        #     print(user.first_name, user.last_name)
-        #     if subscription['status'] in ('active', 'past_due', 'trialing'):
-        #         user.stripeSubscriptionProvision = True
-        #     else:
-        #         user.stripeSubscriptionProvision = False
-        #     user.stripeSubscriptionId = subscription['id']
-        #     user.stripeProductId = subscription['items']['data'][0]['price']['product']
-        #     user.save()
-        #
-        #     previous = event.data.previous_attributes
-        #
-        #     if previous.get('status') == 'trialing' and subscription['status'] in ('active', 'past_due'):
-        #         signup_fee_id = stripe.Price.list(active=True, type='one_time')['data'][0]['id']
-        #         if user.student_profile.should_pay_signup_fee == 'pay_full':
-        #             print('pay_full', user.student_profile.should_pay_signup_fee)
-        #             stripe.InvoiceItem.create(
-        #                 customer=subscription['customer'],
-        #                 price=signup_fee_id,
-        #             )
-        #             stripe.Invoice.create(
-        #                 customer=subscription['customer'],
-        #                 auto_advance=True
-        #             )
-        #             user.student_profile.should_pay_signup_fee = 'paid_full'
-        #             user.student_profile.save()
-        #         if user.student_profile.should_pay_signup_fee == 'pay_10':
-        #             print('pay_10', user.student_profile.should_pay_signup_fee)
-        #             stripe.InvoiceItem.create(
-        #                 customer=subscription['customer'],
-        #                 price=signup_fee_id,
-        #                 discounts=[{
-        #                     'coupon': 'ambassador80',
-        #                 }],
-        #             )
-        #             stripe.Invoice.create(
-        #                 customer=subscription['customer'],
-        #                 auto_advance=True
-        #             )
-        #             user.student_profile.should_pay_signup_fee = 'paid_10'
-        #             user.student_profile.save()
-        #         if user.student_profile.should_pay_signup_fee == 'referral':
-        #             print('referral', user.student_profile.should_pay_signup_fee)
-        #             stripe.InvoiceItem.create(
-        #                 customer=subscription['customer'],
-        #                 price=signup_fee_id,
-        #                 discounts=[{
-        #                     'coupon': 'ambassador20',
-        #                 }],
-        #             )
-        #             stripe.Invoice.create(
-        #                 customer=subscription['customer'],
-        #                 auto_advance=True
-        #             )
-        #             user.student_profile.should_pay_signup_fee = 'referral'
-        #             user.student_profile.save()
+        elif event.type == 'customer.subscription.updated':
+            print('customer.subscription.updated')
+            subscription = event.data.object
+            user = MyUser.objects.get(stripeCustomerId=subscription['customer'])
+            print(user.email)
+            print(user.first_name, user.last_name)
+            if subscription['status'] in ('active', 'past_due', 'trialing'):
+                user.stripeSubscriptionProvision = True
+            else:
+                user.stripeSubscriptionProvision = False
+            user.stripeSubscriptionId = subscription['id']
+            user.stripeProductId = subscription['items']['data'][0]['price']['product']
+            user.save()
+
+            previous = event.data.previous_attributes
+
+            if previous.get('status') == 'trialing' and subscription['status'] in ('active', 'past_due'):
+                signup_fee_id = stripe.Price.list(active=True, type='one_time')['data'][0]['id']
+                if user.student_profile.should_pay_signup_fee == 'pay_full':
+                    print('pay_full', user.student_profile.should_pay_signup_fee)
+                    stripe.InvoiceItem.create(
+                        customer=subscription['customer'],
+                        price=signup_fee_id,
+                    )
+                    stripe.Invoice.create(
+                        customer=subscription['customer'],
+                        auto_advance=True
+                    )
+                    user.student_profile.should_pay_signup_fee = 'paid_full'
+                    user.student_profile.save()
+                if user.student_profile.should_pay_signup_fee == 'pay_10':
+                    print('pay_10', user.student_profile.should_pay_signup_fee)
+                    stripe.InvoiceItem.create(
+                        customer=subscription['customer'],
+                        price=signup_fee_id,
+                        discounts=[{
+                            'coupon': 'ambassador80',
+                        }],
+                    )
+                    stripe.Invoice.create(
+                        customer=subscription['customer'],
+                        auto_advance=True
+                    )
+                    user.student_profile.should_pay_signup_fee = 'paid_10'
+                    user.student_profile.save()
+                if user.student_profile.should_pay_signup_fee == 'referral':
+                    print('referral', user.student_profile.should_pay_signup_fee)
+                    stripe.InvoiceItem.create(
+                        customer=subscription['customer'],
+                        price=signup_fee_id,
+                        discounts=[{
+                            'coupon': 'ambassador20',
+                        }],
+                    )
+                    stripe.Invoice.create(
+                        customer=subscription['customer'],
+                        auto_advance=True
+                    )
+                    user.student_profile.should_pay_signup_fee = 'referral'
+                    user.student_profile.save()
 
         elif event.type == 'customer.subscription.deleted':
             print('customer.subscription.deleted')
